@@ -1,0 +1,41 @@
+# Correct task formulation for the observed mutually exclusive ACS labels.
+experiment_id: ACS-HMOE-WAVELNET-E4-MULTICLASS-20260826
+task: four_class_softmax
+classes: [OTHER, STEMI, NSTEMI, UA]
+positive_label_source: [STEMI, NSTEMI, UA]
+label_mapping:
+  OTHER: [0, 0, 0]
+  STEMI: [1, 0, 0]
+  NSTEMI: [0, 1, 0]
+  UA: [0, 0, 1]
+model:
+  variant: e4
+  architecture: Xception morphology + LeadSpatial GAT + WavelNet + task routers + KAN heads
+  n_tasks: 4
+  output: softmax
+loss: CrossEntropyLoss
+data:
+  records: 17960
+  patients: 17018
+  split: patient-level joint-label stratified 5-fold
+  fold_seed: 2026
+preprocessing:
+  source: P2 0.5-40 Hz ECG
+  scaler: fold-train robust scaler
+  augmentation: train-only
+training:
+  seed: 2026
+  epochs: 100
+  patience: 15
+  batch_size: 128
+  optimizer: Adam
+  learning_rate: 0.0001
+  scheduler: none
+  gradient_clip_norm: 1.0
+  lambda_balance: 0.01
+evaluation:
+  selection_metric: macro AUROC
+  hard_decision: argmax softmax
+  primary: [macro AUPRC, macro AUROC, macro sensitivity, macro specificity]
+  secondary: [macro F1, macro MCC, PPV, NPV, accuracy]
+  test_labels_used: false

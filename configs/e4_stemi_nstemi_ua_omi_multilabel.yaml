@@ -1,0 +1,51 @@
+experiment_id: ACS-HMOE-WAVELNET-E4-4LABEL-MULTILABEL-20260827
+task: four_label_multilabel_binary_classification
+labels: [STEMI, NSTEMI, UA, OMI]
+label_semantics:
+  output: four independent logits
+  activation: sigmoid
+  hard_decision: per-label threshold
+  loss: BCEWithLogitsLoss
+  non_acs_policy: retain
+  non_acs_definition: STEMI=0, NSTEMI=0, UA=0
+  unknown_label_policy: exclude_only_if_any_of_the_four_labels_is_not_0_or_1
+  note: OMI is an independent label and may co-occur with STEMI or NSTEMI.
+data:
+  records_expected: 17960
+  patients_expected: 17018
+  signal: P2 0.5-40 Hz ECG, 100 Hz, 1000 samples, 12 leads
+  test_records_expected: 1995
+split:
+  protocol: patient_level_multilabel_iterative_stratified_5fold
+  fold_seed: 2026
+  splitter: iterative-stratification MultilabelStratifiedKFold
+  grouping_unit: patient_id
+preprocessing:
+  scaler: robust scaler fit only on each training fold
+  augmentation: train-only
+model:
+  variant: E4
+  architecture: Xception morphology + LeadSpatial GAT + WavelNet + task routers + KAN heads
+  num_heads: 4
+training:
+  seed: 2026
+  optimizer: Adam
+  learning_rate: 0.0001
+  batch_size: 128
+  epochs_max: 100
+  early_stopping_patience: 15
+  scheduler: none
+  gradient_clip_norm: 1.0
+  lambda_gate_balance: 0.01
+  sampling: shuffle only; no oversampling or weighted sampler
+evaluation:
+  checkpoint_selection: validation macro AUROC
+  threshold_grid: [0.01, 0.99, 0.01]
+  recommended_threshold: validation_pooled_oof_youden_j
+  report_thresholds: [fixed_0.5, validation_pooled_oof_f1, validation_pooled_oof_youden_j]
+  metrics: [AUROC, AUPRC, Sensitivity, Specificity, PPV, NPV, F1, MCC, Accuracy, TP, TN, FP, FN]
+  test_labels_used: false
+submission:
+  columns: [ecg_row_record, STEMI, NSTEMI, UA, OMI]
+  platform: http://39.105.59.221:8080/
+  submit_only_after: checkpoints_and_validation_thresholds_are_frozen

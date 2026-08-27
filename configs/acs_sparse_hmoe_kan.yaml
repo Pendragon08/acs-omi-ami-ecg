@@ -1,0 +1,46 @@
+# Revised ACS three-label full-cohort sparse HMoE--KAN feasibility run.
+# The runner also writes the resolved JSON configuration in its output folder.
+task: STEMI_NSTEMI_UA_multilabel_full_cohort
+labels: [STEMI, NSTEMI, UA]
+protocol: patient_level_joint_stratified_5fold
+fold_seed: 2026
+seed: 2026
+n_folds: 5
+model:
+  experts: [Xception_morphology, InceptionTime_multiscale, Lead_GAT, Morlet_CWT_CNN]
+  d_model: 256
+  router: three_class_specific_noisy_top2
+  n_experts: 4
+  noise_std: 0.1
+  head: KAN_256_64_1
+  wavelet: fixed_Morlet_CWT_magnitude
+  cwt_fs_hz: 100
+  cwt_scales: 8
+  cwt_kernel: 65
+  cwt_stride: 4
+  forbidden_preprocessing: [MVMD, VMD]
+training:
+  epochs: 100
+  patience: 15
+  batch_size: 32
+  optimizer: Adam
+  learning_rate: 0.0001
+  scheduler: none
+  augmentation: existing_train_only_augment
+  sampler: shuffle_without_oversampling
+loss:
+  classification: fold_train_only_class_weighted_BCEWithLogitsLoss
+  exclusivity_lambda: 0.05
+  balance_lambda: 0.01
+  entropy_lambda: 0.001
+  entropy_warmup_epochs: 10
+  exclusivity_enabled_after_visible_label_audit: true
+thresholds:
+  - fixed_0.5
+  - validation_Youden
+  - validation_max_F1
+  - validation_balanced_accuracy
+  - validation_joint_NSTEMI_UA
+metrics:
+  primary: [macro_AUPRC, macro_F1, pairwise_NSTEMI_UA_AUROC, pairwise_NSTEMI_UA_AUPRC]
+  secondary: [per_class_AUROC, per_class_AUPRC, sensitivity, specificity, PPV, NPV, MCC, accuracy, micro_F1, Hamming_Loss]
