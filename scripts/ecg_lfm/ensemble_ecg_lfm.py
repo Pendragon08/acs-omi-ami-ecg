@@ -1,4 +1,8 @@
-"""Five-fold external ensemble for the four-label ECG-LFM experiment."""
+"""Legacy four-independent-sigmoid ECG-LFM ensemble.
+
+Retained for historical artifacts only; it is invalid for mutually exclusive
+ACS subtypes. Use ``experiments.ecg_lfm.evaluate_joint`` for corrected runs.
+"""
 from __future__ import annotations
 
 import argparse

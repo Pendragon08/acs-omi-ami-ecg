@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# LEGACY INVALID TASK: this script runs the historical four-independent-
+# sigmoid endpoint. Use scripts/run_corrected_ecg_lfm_joint.sh instead.
 # Five-fold, architecture-preserving adaptation ablation for the ECG-LFM
 # four-label task.  The historical folds and official 500-Hz pipeline are
 # reused verbatim; only model.adapter_method and its prescribed optimizer

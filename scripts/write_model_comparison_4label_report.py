@@ -1,9 +1,13 @@
-"""Create the auditable markdown report for the four-label comparison.
+"""Create the auditable markdown report for the legacy four-label comparison.
 
 The report is intentionally generated from JSON/CSV artifacts rather than
 hand-entered numbers.  It can be run after either GPU worker completes and is
 safe to re-run when additional model summaries (for example the ECG-LFM
 fine-tune) arrive.
+
+The generated report is explicitly marked invalid for the current task because
+this historical generator reads independent-sigmoid outputs.  Corrected runs
+are reported from ``results/corrected_joint_model_comparison``.
 """
 from __future__ import annotations
 

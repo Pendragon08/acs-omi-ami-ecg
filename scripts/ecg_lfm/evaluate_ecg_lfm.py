@@ -1,4 +1,8 @@
-"""Evaluate record-level ECG-LFM OOF predictions and select Youden thresholds."""
+"""Legacy independent-sigmoid ECG-LFM evaluator.
+
+This evaluator is retained only to explain historical artifacts and must not
+be used for current ACS subtype results. Use ``evaluate_joint.py`` instead.
+"""
 from __future__ import annotations
 
 import argparse
