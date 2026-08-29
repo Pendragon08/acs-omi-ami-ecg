@@ -11,10 +11,12 @@ if [[ -z "$visible" || "$visible" == *,* || "$visible" == *" "* ]]; then
   echo "ERROR: exactly one CUDA_VISIBLE_DEVICES value is required" >&2
   exit 2
 fi
-mkdir -p logs/corrected_ecg_lfm_joint results/corrected_ecg_lfm_joint
+OUTPUT_ROOT="${ECG_LFM_OUTPUT_ROOT:-results/corrected_ecg_lfm_joint}"
+LOG_DIR="${ECG_LFM_LOG_DIR:-logs/corrected_ecg_lfm_joint}"
+mkdir -p "$LOG_DIR" "$OUTPUT_ROOT"
 # Keep a compact master log in addition to one log per fold/evaluation.  The
 # raw logs remain on the server; only aggregate summaries are archived in Git.
-exec > >(tee -a logs/corrected_ecg_lfm_joint/master.log) 2>&1
+exec > >(tee -a "$LOG_DIR/master.log") 2>&1
 
 for adaptation in corrected_joint_baseline corrected_joint_lora corrected_joint_dora; do
   case "$adaptation" in
@@ -26,11 +28,11 @@ for adaptation in corrected_joint_baseline corrected_joint_lora corrected_joint_
     echo "START $run_name fold$fold"
     python -u experiments/ecg_lfm/run_joint_fold.py \
       --fold "$fold" --adaptation "$adaptation" --run_name "$run_name" \
-      --output_root results/corrected_ecg_lfm_joint --seed 2026 \
-      > "logs/corrected_ecg_lfm_joint/${run_name}_fold${fold}.log" 2>&1
+      --output_root "$OUTPUT_ROOT" --seed 2026 \
+      > "$LOG_DIR/${run_name}_fold${fold}.log" 2>&1
   done
   python -u experiments/ecg_lfm/evaluate_joint.py \
-    --run_name "$run_name" --run_root results/corrected_ecg_lfm_joint \
-    --device cuda:0 --workers 8 --batch 32 \
-    > "logs/corrected_ecg_lfm_joint/${run_name}_evaluate.log" 2>&1
+    --run_name "$run_name" --run_root "$OUTPUT_ROOT" \
+    --device cuda:0 --workers 8 --batch 64 \
+    > "$LOG_DIR/${run_name}_evaluate.log" 2>&1
 done

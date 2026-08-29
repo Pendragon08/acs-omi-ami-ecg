@@ -28,6 +28,8 @@ task:
 dataset:
   num_workers: 8
   max_tokens: null
+  # A6000 memory smoke: effective batch remains 256 with update_freq=4.
+  batch_size: 64
   valid_subset: valid
   validate_interval: 1
   validate_after_updates: 0
@@ -45,7 +47,7 @@ criterion:
 optimization:
   max_epoch: 100
   max_update: 320000
-  update_freq: [8]
+  update_freq: [4]
   lr: [0.00005]
 optimizer:
   _name: adam
