@@ -45,8 +45,13 @@ Key raw log groups:
 
 ## Traditional architecture comparison
 
+The corrected E4 rerun completed on physical GPU1; its raw screen log is
+`logs/corrected/acs_joint_e4_gpu1.log` and its aggregate report is
+`docs/reports/corrected_joint_e4_20260829.md`.
+
 | Run family | GPU / status | Raw server logs | Versioned evidence |
 |---|---|---|---|
+| Corrected E4 joint ACS categorical + OMI binary | GPU1, complete | `logs/corrected/acs_joint_e4_gpu1.log` | `docs/reports/corrected_joint_e4_20260829.md`, `results/corrected_joint_acs_omi_e4/` |
 | Four-label model comparison training (legacy independent sigmoid) | GPU0/GPU1, complete | `logs/model_comparison_4label/model_cmp_gpu0.log`, `model_cmp_gpu0_resume.log`, `model_cmp_gpu1.log`, `model_cmp_gpu1_resume.log`, `queue.log` | legacy-invalid `docs/reports/model_comparison_4label_20260828.md` |
 | External-platform submissions | complete | `logs/model_comparison_4label_external.log`, `logs/model_comparison_4label_platform_*.log` | per-model aggregate platform metric JSON files |
 
