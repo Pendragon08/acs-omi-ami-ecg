@@ -1,4 +1,7 @@
-# Loss/feature ablation integrity audit
+# 损失函数/特征消融完整性审计
+
+> 中文说明：本文件审计固定划分、单变量改变、训练集权重统计和测试集隔离；
+> 外部测试标签未参与调参。
 
 Overall: **WARN** (provisional deterministic audit; no fresh independent semantic reviewer was authorized).
 

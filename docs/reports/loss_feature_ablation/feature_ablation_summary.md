@@ -1,4 +1,12 @@
-# ECG/age/sex/median-ECG feature ablation summary
+# ECG/年龄/性别/中位数 ECG 特征消融总结
+
+## 中文摘要
+
+在相同 XceptionTimeFusion 初始化和训练流程下，仅遮蔽/加入输入模态，比较原始
+ECG、年龄、性别和中位数 ECG 的增量价值。五种子结果显示：OMI 最好的追加方案
+是 `raw_clin`（AUPRC 仅增加约 0.0010，4/5 seed 改善）；AMI 最好的追加方案
+是 `raw_age`（AUPRC 增加约 0.0032，5/5 seed 改善）。这些是验证集关联和
+增量预测证据，不等同于因果关系，外部测试标签没有用于选择方案。
 
 The controlled neural comparison uses the same XceptionTimeFusion architecture and initialization; only input modalities are masked. Results below use the validation threshold maximizing the F1/Sensitivity harmonic mean.
 

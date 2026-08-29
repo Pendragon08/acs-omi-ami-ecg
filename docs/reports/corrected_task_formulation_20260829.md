@@ -1,4 +1,9 @@
-# Corrected task audit and rerun registry
+# 校正任务审计与重跑登记
+
+> 中文结论：STEMI、NSTEMI、UA 是互斥 ACS 亚型，不能作为三个独立 sigmoid
+> 标签；当前规范是 ACS `OTHER/STEMI/NSTEMI/UA` 四分类 + OMI/NOMI 二分类。
+> 本文件记录代码修正、历史划分复用、Fairseq 标签形状修复和各实验状态；
+> 结果与图表总览见 [`实验结果总报告_20260829.md`](实验结果总报告_20260829.md)。
 
 This report records the correction requested on 2026-08-29.  The canonical
 protocol is described in [`../plans/CORRECTED_TASK_FORMULATION.md`](../plans/CORRECTED_TASK_FORMULATION.md).

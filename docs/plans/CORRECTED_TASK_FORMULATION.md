@@ -1,4 +1,9 @@
-# Corrected ACS subtype + OMI task formulation
+# 校正后的 ACS 亚型 + OMI 任务方案
+
+> 中文执行摘要：本方案是当前所有新实验的唯一标签与评估规范。ACS 的
+> STEMI/NSTEMI/UA 使用互斥四分类（含 OTHER），OMI/NOMI 使用独立二分类；
+> 所有模型、阈值和外部提交必须遵守该定义。旧的四独立 sigmoid 方案保留为
+> `LEGACY/INVALID` 审计记录，不得用于最终性能结论。
 
 **Effective date:** 2026-08-29  
 **Status:** canonical protocol for all new runs

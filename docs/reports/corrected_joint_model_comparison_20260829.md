@@ -1,4 +1,11 @@
-# Corrected ACS-subtype + OMI architecture comparison (2026-08-29)
+# 校正 ACS 亚型 + OMI 架构对比实验报告（2026-08-29）
+
+> 中文摘要：本实验在完全相同的患者级五折、预处理、优化器和训练预算下，
+> 对比 InceptionTime、ResNet1D-Wang、LSTM、ViT-1D、Transformer1D。ACS 采用
+> `OTHER/STEMI/NSTEMI/UA` 互斥四分类，OMI 为独立二分类；每个模型的训练日志
+> 脱敏 CSV、损失/LR 曲线、ROC/PR、混淆矩阵和外部平台聚合结果已在对应
+> `results/corrected_joint_model_comparison/<模型>/` 版本化。中文总览见
+> [`实验结果总报告_20260829.md`](实验结果总报告_20260829.md)。
 
 **Status: complete.** Five architectures were rerun under the corrected target
 definition on physical GPU1, and each model was submitted once to the external

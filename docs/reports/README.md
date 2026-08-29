@@ -1,69 +1,50 @@
-# ACS experiment report index
+# ACS 实验报告索引
 
-Reports are grouped by the task definition used in the run. The current
-research endpoint is the corrected joint task: categorical ACS
-`OTHER/STEMI/NSTEMI/UA` plus independent binary OMI/NOMI. Any report that
-describes three independent ACS sigmoids or four independent sigmoids is
-legacy/invalid for the final task and is retained only for audit history.
+本目录的当前主线是“ACS 四分类 + OMI 二分类”联合任务：
+`OTHER / STEMI / NSTEMI / UA` 是一个互斥 ACS 分类头，OMI/NOMI 是独立二分类
+头。任何把 STEMI、NSTEMI、UA 当作三个独立 sigmoid 的结果都标记为
+`LEGACY/INVALID`，仅用于审计，不用于当前结论。
 
-## Corrected task reports (2026-08-29)
+## 当前有效报告
 
-| Report | Scope | Status |
+| 报告 | 内容 | 状态 |
 |---|---|---|
-| [corrected_task_formulation_20260829.md](corrected_task_formulation_20260829.md) | Label audit, model/loss/split correction and rerun registry | canonical |
-| [corrected_joint_e4_20260829.md](corrected_joint_e4_20260829.md) | E4 HMoE/WavelNet/KAN joint ACS categorical + OMI binary five-fold rerun | complete; GPU1 + external platform |
-| [corrected_joint_model_comparison_20260829.md](corrected_joint_model_comparison_20260829.md) | InceptionTime, ResNet1D-Wang, LSTM, ViT and Transformer1D under corrected task | complete; GPU1 + external platform |
-| [corrected_ecg_lfm_joint_20260829.md](corrected_ecg_lfm_joint_20260829.md) | ECG-LFM Baseline/LoRA/DoRA with joint criterion | running on GPU1 (batch-64 smoke passed) |
+| [实验结果总报告_20260829.md](实验结果总报告_20260829.md) | 数据、划分、校正实验、外部平台和 GitHub 归档总览 | 当前总报告 |
+| [corrected_task_formulation_20260829.md](corrected_task_formulation_20260829.md) | 标签审计、代码修正、重跑登记 | 规范 |
+| [corrected_joint_e4_20260829.md](corrected_joint_e4_20260829.md) | E4 HMoE/WavelNet/KAN 五折联合任务 | 已完成；GPU1 + 外部平台 |
+| [corrected_joint_model_comparison_20260829.md](corrected_joint_model_comparison_20260829.md) | InceptionTime、ResNet1D-Wang、LSTM、ViT、Transformer1D 对比 | 已完成；GPU1 + 外部平台 |
+| [corrected_ecg_lfm_joint_20260829.md](corrected_ecg_lfm_joint_20260829.md) | ECG-LFM Baseline/LoRA/DoRA 校正重跑 | GPU1 运行中 |
 
-## Legacy ECG-LFM reports (independent-sigmoid task; invalid for current ACS subtype formulation)
+## 损失函数与特征消融
 
-| Report | Scope | Status |
+| 报告 | 内容 | 状态 |
 |---|---|---|
-| [ecg_lfm_local_best_lora_dora_optimization_20260828.md](ecg_lfm_local_best_lora_dora_optimization_20260828.md) | Legacy independent-sigmoid Baseline/LoRA/DoRA | legacy—invalid |
-| [ecg_lfm_external_comparison_20260828.md](ecg_lfm_external_comparison_20260828.md) | ECG-LFM Baseline versus historical E4 external-platform comparison | complete |
-| [ecg_lfm_baseline_external_platform_20260828.md](ecg_lfm_baseline_external_platform_20260828.md) | Baseline four-label external-platform submission and per-label metrics | complete |
-| [ecg_lfm_4label_finetuning_20260827.md](ecg_lfm_4label_finetuning_20260827.md) | Legacy independent-sigmoid ECG-LFM preprocessing/fine-tuning | legacy—invalid |
-| [ecg_lfm_hyperparameter_loss_ablation_20260827.md](ecg_lfm_hyperparameter_loss_ablation_20260827.md) | Learning-rate/batch-size checks, loss comparison, training curves and overfitting audit | complete |
-| [model_comparison_4label_20260828.md](model_comparison_4label_20260828.md) | Legacy independent-sigmoid architecture comparison | legacy—invalid |
+| [loss_feature_ablation/loss_ablation_summary.md](loss_feature_ablation/loss_ablation_summary.md) | Baseline、WBCE、Focal、CB-Focal，五种子与阈值策略 | 已完成 |
+| [loss_feature_ablation/feature_ablation_summary.md](loss_feature_ablation/feature_ablation_summary.md) | 原始 ECG、年龄、性别、中位数 ECG 特征比较 | 已完成 |
+| [loss_feature_ablation/feature_association_summary.md](loss_feature_ablation/feature_association_summary.md) | 特征与标签关联分析 | 已完成 |
+| [loss_feature_ablation/EXPERIMENT_LOG.md](loss_feature_ablation/EXPERIMENT_LOG.md) | 消融实验时间线和可追溯记录 | 已完成 |
+| [loss_feature_ablation/EXPERIMENT_AUDIT_ABLATION.md](loss_feature_ablation/EXPERIMENT_AUDIT_ABLATION.md) | 公平比较与泄漏审计 | 已完成 |
 
-## Loss and feature ablation
+## 历史/无效报告（保留用于追溯）
 
-| Report | Scope | Status |
-|---|---|---|
-| [loss_feature_ablation/loss_ablation_summary.md](loss_feature_ablation/loss_ablation_summary.md) | Baseline, automatic weighted BCE, focal and class-balanced focal loss; five seeds and threshold strategies | complete |
-| [loss_feature_ablation/feature_ablation_summary.md](loss_feature_ablation/feature_ablation_summary.md) | Raw ECG, age, sex and median-ECG feature comparisons for AMI/OMI | complete |
-| [loss_feature_ablation/feature_association_summary.md](loss_feature_ablation/feature_association_summary.md) | Feature/label association analysis and interpretation | complete |
-| [loss_feature_ablation/EXPERIMENT_LOG.md](loss_feature_ablation/EXPERIMENT_LOG.md) | Chronological loss/feature ablation run record | complete |
-| [loss_feature_ablation/EXPERIMENT_AUDIT_ABLATION.md](loss_feature_ablation/EXPERIMENT_AUDIT_ABLATION.md) | Fair-comparison and leakage audit | complete |
+以下报告使用旧的独立 sigmoid 端点，不能与当前互斥 ACS 任务混合解释：
 
-## Historical four-label and ACS-subtype reports (legacy unless explicitly marked corrected)
+- [ecg_lfm_local_best_lora_dora_optimization_20260828.md](ecg_lfm_local_best_lora_dora_optimization_20260828.md)
+- [ecg_lfm_4label_finetuning_20260827.md](ecg_lfm_4label_finetuning_20260827.md)
+- [model_comparison_4label_20260828.md](model_comparison_4label_20260828.md)
+- [hmoe_wavelnet_e4_stemi_nstemi_ua_omi_multilabel_20260827.md](hmoe_wavelnet_e4_stemi_nstemi_ua_omi_multilabel_20260827.md)
 
-| Report | Scope | Status |
-|---|---|---|
-| [hmoe_wavelnet_e4_stemi_nstemi_ua_omi_multilabel_20260827.md](hmoe_wavelnet_e4_stemi_nstemi_ua_omi_multilabel_20260827.md) | Historical E4 HMoE/WavelNet/KAN four-label run, OOF thresholds and platform metrics | complete |
-| [e4_stemi_nstemi_ua_omi_multilabel_provenance_20260827.json](e4_stemi_nstemi_ua_omi_multilabel_provenance_20260827.json) | E4 command, split and aggregate artifact provenance | complete |
-| [acs_sparse_hmoe_kan_feasibility_gpu1_20260826.md](acs_sparse_hmoe_kan_feasibility_gpu1_20260826.md) | Revised sparse HMoE/KAN feasibility run | historical |
-| [hmoe_wavelnet_stemi_nstemi_ua_e4_results_20260826.md](hmoe_wavelnet_stemi_nstemi_ua_e4_results_20260826.md) | Historical three-label E4 run | historical |
-| [stemi_nstemi_ua_multilabel_results_20260826.md](stemi_nstemi_ua_multilabel_results_20260826.md) | Earlier GPU0/GPU1 three-label and AMI/OMI experiments | historical |
-| [hmoe_wavelnet_e4_youden_threshold_results_20260826.md](hmoe_wavelnet_e4_youden_threshold_results_20260826.md) | Youden/balanced-accuracy threshold audit | historical |
-| [hmoe_wavelnet_e4_four_class_results_20260826.md](hmoe_wavelnet_e4_four_class_results_20260826.md) | Historical mutually exclusive four-class correction | historical |
+其他历史 ACS/HMoE、阈值、AMI/OMI 和外部平台报告仍保留在本目录；阅读时先
+确认报告中的任务定义和 `LEGACY` 标识。
 
-## Reading the results correctly
+## 指标和外部测试说明
 
-The corrected reports separate categorical ACS metrics (four-way and
-ACS-positive conditional three-way) from OMI binary metrics. Accuracy is not
-the primary criterion for imbalanced OMI/NSTEMI; sensitivity, AUPRC, F1, PPV,
-AUROC and specificity are interpreted together. Only the OMI threshold is
-selected on validation OOF predictions and frozen before external testing;
-ACS uses argmax and cannot produce simultaneous subtype positives. Since the
-outer fold also selects its checkpoint on that fold's validation records,
-pooled OOF hard metrics are descriptive/non-nested rather than confirmatory
-estimates; corrected reports state this limitation explicitly.
+报告分别给出 ACS 四分类、ACS 阳性条件三分类和 OMI 二分类指标。OMI/NSTEMI
+不平衡时优先看 Sensitivity、AUPRC、F1、PPV、AUROC，并同时报告 Specificity、
+NPV、MCC、Accuracy 和 TP/TN/FP/FN。只有 OMI 阈值在验证 OOF 上确定并冻结；
+ACS 使用 argmax，不能产生同时预测多个亚型的结果。
 
-## External artefacts and raw logs
-
-The external-platform response files, per-record predictions, checkpoints and
-raw server logs remain on the controlled execution environment. Only aggregate
-metrics and selected figures are versioned here. See
-[`docs/logs/EXPERIMENT_LOG_INDEX.md`](../logs/EXPERIMENT_LOG_INDEX.md) for the
-run-by-run log mapping and retention policy.
+外部平台的聚合返回值、提交哈希和图表位于 `results/`；逐例预测、提交 CSV、
+患者级划分、checkpoint、原始波形和原始服务器日志按安全边界不进入 GitHub。
+可公开的逐 epoch 脱敏日志、损失/LR、ROC/PR 和混淆矩阵已随对应结果目录
+版本化。

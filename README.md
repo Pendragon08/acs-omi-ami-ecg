@@ -1,4 +1,18 @@
-# ACS ECG OMI/AMI research archive
+# ACS ECG OMI/AMI 研究归档
+
+## 中文入口
+
+当前规范是“ACS 亚型四分类 + OMI 二分类”联合任务：
+`OTHER / STEMI / NSTEMI / UA` 互斥，OMI/NOMI 独立。最新数据、五折结果、外部
+平台指标、训练日志和图表请先阅读
+[`docs/reports/实验结果总报告_20260829.md`](docs/reports/实验结果总报告_20260829.md)。
+报告索引在 [`docs/reports/README.md`](docs/reports/README.md)，日志和 GitHub
+归档规则在 [`docs/logs/EXPERIMENT_LOG_INDEX.md`](docs/logs/EXPERIMENT_LOG_INDEX.md)。
+
+校正后的 E4 与传统架构结果目录已经包含脱敏的逐 epoch loss/LR 日志、损失曲线、
+ROC/PR 曲线和混淆矩阵；ECG-LFM 校正队列完成后会按同一规则追加。原始 ECG、
+患者级文件、checkpoint、逐例预测、提交 CSV 和含服务器路径的原始日志不会进入
+GitHub。
 
 This repository is the versioned, reproducible part of the ACS ECG study. It
 contains model and data-pipeline code, experiment configurations, research

@@ -1,81 +1,49 @@
-# Experiment log index and retention policy
+# 实验日志索引与 GitHub 归档策略
 
-Generated from the execution-server run inventory on 2026-08-29. The paths
-below are relative to the private project root on that server. They identify
-the raw log files that back the versioned reports and aggregate result tables.
+更新时间：2026-08-29。下表的服务器路径用于内部审计；可公开的训练过程已
+从原始日志中提取为不含路径、患者编号和逐例预测的
+`training_log_sanitized.csv`，并随 `results/` 一起提交 GitHub。
 
-## Important answer about GitHub
+## GitHub 中保存什么
 
-The raw files listed below are **not** committed to GitHub. The repository
-contains this curated index, the chronological loss/feature log, aggregate
-training curves, and report/provenance documents. This is intentional: raw
-logs are bulky, can expose infrastructure paths, and fairseq JSONL streams are
-execution artifacts. No raw ECG, patient-level table, checkpoint, or
-record-level prediction is included in the archive.
+- 每折/每 epoch 的训练损失、验证损失、验证指标和学习率（脱敏 CSV）；
+- 损失与学习率曲线、ROC/PR 曲线、混淆矩阵；
+- 汇总 JSON/CSV、阈值搜索、标签审计、外部平台聚合指标及 provenance。
 
-## Current ECG-LFM fine-tuning and adaptation
+原始 screen/Fairseq 日志、原始 ECG、患者级表格、checkpoint、逐例 OOF/外部
+预测和提交 CSV 不上传。原始日志可能包含服务器绝对路径、数据定位信息或重复
+的 Fairseq 事件流，仍留在受控服务器；报告引用本索引即可追溯到原始运行。
 
-| Run family | GPU / status | Raw server logs | Versioned evidence |
+## 当前校正任务
+
+| 运行 | GPU/状态 | 服务器原始日志 | GitHub 证据 |
 |---|---|---|---|
-| Official ECG-LFM preprocessing and baseline gates | GPU1, complete | `logs/ecg_lfm/preprocess_full.log`, `raw_download.log`, `raw_extract.log`, `manifest_and_contracts.log`, `post_checkpoint_gates.log`, `post_checkpoint_gates_storage_fixed.log`, `after_gates.log`, `after_gates_large_batch.log` | `docs/reports/ecg_lfm_4label_finetuning_20260827.md`, `results/ecg_lfm_4label/` |
-| Baseline fold-0 and tuning checks | GPU1, complete | `logs/ecg_lfm/l1a_fold0_parallel.log`, `l1a_fold0_large_batch.log`, `l1a_resume.log`, `l1a_resume_repaired.log`, `logs/ecg_lfm_tuning/fold0_gpu1_queue.log`, `logs/ecg_lfm_tuning/stages.log`, `stages_resume.log` | `docs/reports/ecg_lfm_hyperparameter_loss_ablation_20260827.md`, tuning summaries |
-| LoRA local-best five-fold run (legacy independent sigmoid) | GPU1, complete | `logs/ecg_lfm_local_best_adapters_gpu1.log`, `logs/ecg_lfm_local_best_finalize.log` | legacy-invalid `docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md` |
-| DoRA local-best five-fold run (legacy independent sigmoid) | GPU0, complete | `logs/ecg_lfm_dora_gpu0.log` | legacy-invalid `docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md` |
-| External ECG-LFM Baseline submission | complete | `logs/ecg_lfm_baseline_external_submit.log` | `docs/reports/ecg_lfm_baseline_external_platform_20260828.md` |
+| E4 HMoE/WavelNet/KAN 联合任务 | GPU1，已完成 | `logs/corrected/acs_joint_e4_gpu1.log` | `results/corrected_joint_acs_omi_e4/`、`docs/reports/corrected_joint_e4_20260829.md` |
+| 传统架构对比 | GPU1，已完成 | `logs/corrected_joint_model_comparison/all_gpu1.log` | `results/corrected_joint_model_comparison/<模型>/`、`docs/reports/corrected_joint_model_comparison_20260829.md` |
+| ECG-LFM Baseline/LoRA/DoRA 校正重跑 | GPU1，运行中（v2，标签形状修复后） | `logs/corrected_ecg_lfm_joint_bs64_v2/master.log` 及各折日志 | `docs/reports/corrected_ecg_lfm_joint_20260829.md`；完成后追加结果与脱敏日志 |
 
-## Loss and feature ablation
+## 已完成结果目录中的过程文件
 
-The raw seed-level logs are under `logs/loss_feature_ablation/`, including the
-stage-1 grid, stage-2 confirmations for the five seeds, feature comparisons,
-CB-Focal beta/gamma sweeps, and the pipeline watcher. The canonical
-chronological record is retained as
-[`docs/reports/loss_feature_ablation/EXPERIMENT_LOG.md`](../reports/loss_feature_ablation/EXPERIMENT_LOG.md).
-The aggregate CSV/JSON tables and figures are under
-`results/loss_feature_ablation/`.
+- E4：`results/corrected_joint_acs_omi_e4/training_log_sanitized.csv`、
+  `training_validation_loss_lr.png`、`roc_pr_curves.png`、`confusion_matrices.png`；
+- InceptionTime、ResNet1D_Wang、LSTM、ViT、Transformer1D：每个模型目录均有
+  `training_log_sanitized.csv`、上述三类图、`history_fold*.json`、汇总指标和
+  外部平台 JSON；
+- 生成脱敏日志的脚本：`scripts/export_sanitized_training_logs.py`。
 
-Key raw log groups:
+## ECG-LFM 及历史日志
 
-- `stage1_master.log`, `stage1_complete.log`, `stage2_master.log`,
-  `baseline_master.log`, `baseline_seed2026.log`;
-- `feature_*_seed2026.log` for raw ECG, age, sex, median ECG, and clinical
-  feature variants;
-- `confirm_*_seed*.log` for the five-seed confirmation runs;
-- `loss_cb_b*.log`, `loss_focal_*.log`, `loss_wbce.log` for the loss grid;
-- `pipeline_watcher.log` for completion monitoring.
+ECG-LFM 首次校正运行因 Fairseq 四列标签无法 reshape 到五个 logit 而停止，
+该运行不产生有效指标；v2 已物化 `[OTHER,STEMI,NSTEMI,UA,OMI]` 标签并通过
+fold0 smoke test。其余训练完成后由评估器生成同格式汇总、图表和脱敏 epoch
+日志。
 
-## Traditional architecture comparison
+历史损失/特征消融日志在服务器 `logs/loss_feature_ablation/`，报告中的
+`docs/reports/loss_feature_ablation/EXPERIMENT_LOG.md` 是公开时间线；历史
+独立 sigmoid 四标签模型的日志也只作为 `LEGACY/INVALID` 审计证据。
 
-The corrected E4 rerun completed on physical GPU1; its raw screen log is
-`logs/corrected/acs_joint_e4_gpu1.log` and its aggregate report is
-`docs/reports/corrected_joint_e4_20260829.md`.
+## 内部复核方法
 
-| Run family | GPU / status | Raw server logs | Versioned evidence |
-|---|---|---|---|
-| Corrected E4 joint ACS categorical + OMI binary | GPU1, complete | `logs/corrected/acs_joint_e4_gpu1.log` | `docs/reports/corrected_joint_e4_20260829.md`, `results/corrected_joint_acs_omi_e4/` |
-| Corrected traditional architectures | GPU1, complete | `logs/corrected_joint_model_comparison/all_gpu1.log` | `docs/reports/corrected_joint_model_comparison_20260829.md`, `results/corrected_joint_model_comparison/` |
-| Corrected traditional external submissions | complete | `logs/corrected_joint_model_comparison/platform_*.log`, `external_predict.log` | per-model `official_platform_4label_metrics.json` and provenance JSON |
-| Four-label model comparison training (legacy independent sigmoid) | GPU0/GPU1, complete | `logs/model_comparison_4label/model_cmp_gpu0.log`, `model_cmp_gpu0_resume.log`, `model_cmp_gpu1.log`, `model_cmp_gpu1_resume.log`, `queue.log` | legacy-invalid `docs/reports/model_comparison_4label_20260828.md` |
-| External-platform submissions | complete | `logs/model_comparison_4label_external.log`, `logs/model_comparison_4label_platform_*.log` | per-model aggregate platform metric JSON files |
-
-## Corrected joint ECG-LFM rerun
-
-| Run family | GPU / status | Raw server logs | Versioned evidence |
-|---|---|---|---|
-| Corrected ECG-LFM Baseline/LoRA/DoRA (ACS categorical + OMI binary) | GPU1, running (v2 after label-shape fix) | `logs/corrected_ecg_lfm_joint_bs64_v2/master.log` and per-adaptation/fold logs | `docs/reports/corrected_ecg_lfm_joint_20260829.md`; aggregate outputs will be archived after completion |
-
-## Historical ACS/HMoE experiments
-
-Historical runs remain on the server and are summarized in the reports under
-`docs/reports/`: `logs/hmoe_kan_github_gpu1.log`,
-`logs/hmoe_kan_stemi_nstemi_ua_gpu1.log`, `logs/hmoe_official_test_gpu1.log`,
-`logs/stemi_nstemi_ua_gpu0.log`, `logs/protocol_v2/`,
-`logs/historical_current_rerun/`, and the earlier `logs/vmd_*`/`logs/xct_*`
-families. They are not copied into GitHub as raw files.
-
-## How to retrieve a raw log internally
-
-Use the approved SSH/SFTP access to the private execution project and read the
-relative path listed above. Do not paste credentials into scripts or commit
-the retrieved files. For a reproducible citation, reference the corresponding
-report, configuration, seed, GPU, and aggregate result path in a new report;
-do not add record-level output to Git.
+通过批准的 SSH/SFTP 访问服务器时，只读取本索引给出的相对路径；不要把密码写
+入脚本，也不要把原始日志复制进仓库。若需新增结果，请先运行脱敏导出脚本，
+检查输出不含绝对路径、患者/记录标识和逐例概率，再提交汇总与图表。

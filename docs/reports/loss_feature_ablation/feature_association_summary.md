@@ -1,4 +1,10 @@
-# Age/sex association and clinical-only probe
+# 年龄/性别关联与仅临床特征探针
+
+## 中文说明
+
+本附录只在官方训练池及固定患者级训练/验证划分上估计年龄、性别与标签的关联，
+并报告仅临床特征的探针模型。外部测试集没有被读取；该分析用于解释输入特征
+的相关性和潜在增量价值，不把相关性解释为病因关系。
 
 All inferential summaries use only the official-training pool and its frozen patient-level train/validation split. The external test was not accessed.
 

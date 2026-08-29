@@ -1,14 +1,24 @@
 # 聚合实验产物
 
-本目录只保存不含逐例标识符的汇总结果，例如每折训练历史、指标汇总、标签审计、阈值分析和外部平台聚合指标。
+本目录保存不含逐例标识符的可复核结果：每折训练历史、汇总指标、标签审计、
+阈值分析、外部平台聚合指标、脱敏逐 epoch 训练日志和可视化图。当前任务是
+ACS `OTHER/STEMI/NSTEMI/UA` 互斥四分类 + OMI/NOMI 独立二分类。
 
-逐例 OOF 预测、测试预测、提交 CSV、患者级 split、checkpoint 和原始波形均不在默认 GitHub 发布包中。它们的路径与 SHA-256 可在 docs/reports 的 provenance 文件中审计。
+## 当前有效结果
 
-## 当前结果族
+- `corrected_joint_acs_omi_e4/`：E4 HMoE/WavelNet/KAN 五折结果；含
+  `training_log_sanitized.csv`、损失/LR、ROC/PR、混淆矩阵、阈值审计和外部平台指标。
+- `corrected_joint_model_comparison/<模型>/`：InceptionTime、ResNet1D-Wang、
+  LSTM、ViT-1D、Transformer1D；每个目录含同样的历史、汇总、脱敏日志和图表。
+- `corrected_ecg_lfm_joint_bs64_v2/`：校正 ECG-LFM Baseline/LoRA/DoRA 队列，
+  当前在 GPU1 运行；完成后追加同格式文件。
+- `loss_feature_ablation/`：OMI 的 Baseline/WBCE/Focal/CB-Focal 多种子损失实验，
+  以及原始 ECG/年龄/性别/中位数 ECG 特征对比。
 
-- `ecg_lfm_4label/finetune_paper/summary/`：ECG-LFM Baseline（冻结卷积前端、更新上下文编码器与分类头）的四标签五折 OOF、阈值、外部平台和比较汇总。
-- `ecg_lfm_local_best/lora/summary/` 与 `dora/summary/`：同一历史患者级划分上的 LoRA/DoRA 聚合结果；LoRA 的外部平台指标也在其目录中。
-- `loss_feature_ablation/`：OMI 的 Baseline/WBCE/Focal/CB-Focal 多种子损失实验、原始 ECG/年龄/性别/中位数 ECG 特征实验、阈值网格和统计比较。
-- `model_comparison_4label/`：InceptionTime、ResNet1D-Wang、LSTM、ViT-1D、Transformer1D 与 ECG-LFM 的逐标签聚合指标及外部平台返回指标。
+## 安全边界
 
-每个结果族都只保留聚合 CSV/JSON/Markdown 和必要的图；文件名带有 `prediction`、`submission`、`split` 或模型权重的逐例/大文件已按仓库发布边界排除。原始运行日志的映射见 [`docs/logs/EXPERIMENT_LOG_INDEX.md`](../docs/logs/EXPERIMENT_LOG_INDEX.md)。
+原始 ECG、患者级表格、checkpoint、逐例 OOF/外部预测、提交 CSV 和原始服务器
+日志不在 GitHub。`training_log_sanitized.csv` 仅包含 fold、epoch、loss、验证
+指标和学习率；其导出脚本为 `scripts/export_sanitized_training_logs.py`。
+报告和运行日志索引见 [`docs/reports/README.md`](../docs/reports/README.md) 与
+[`docs/logs/EXPERIMENT_LOG_INDEX.md`](../docs/logs/EXPERIMENT_LOG_INDEX.md)。

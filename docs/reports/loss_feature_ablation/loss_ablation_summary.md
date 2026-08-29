@@ -1,4 +1,13 @@
-# OMI loss ablation summary
+# OMI 损失函数消融实验总结
+
+## 中文摘要
+
+本实验严格只改变损失函数，固定数据、患者级划分、预处理、模型、优化器、
+学习率、batch、训练轮数和阈值选择。结果为 5 个随机种子的均值±样本标准差。
+CB-Focal 的最佳组合是 `beta=0.99, gamma=1.0`，Sensitivity 相对 Baseline
+提高，但 AUPRC、F1、PPV 和 Specificity 同时下降；配对 bootstrap 对 AUROC/
+AUPRC 的差异不显著，因此结论为 **没有令人信服的整体提升**，不能作为当前
+核心创新点。完整脱敏日志、曲线和原始汇总在 `results/loss_feature_ablation/`。
 
 Primary operating point: validation threshold maximizing the harmonic mean of F1 and Sensitivity on the 0.01–0.99 grid. Results are mean ± sample SD over seeds [42, 2024, 2025, 2026, 3407].
 

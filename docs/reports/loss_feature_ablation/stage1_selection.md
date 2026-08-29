@@ -1,4 +1,7 @@
-# Stage-1 validation selection
+# 第一阶段验证集筛选记录
+
+> 中文说明：本阶段只在固定验证流程中筛选候选 loss/特征。最终结论以五种子
+> 均值、标准差和配对统计比较为准，不能把单个 seed 的最高值当作最终结果。
 
 Selection rule: lexicographic_AUPRC_then_F1-Sensitivity-hmean_then_F1_then_Sensitivity_then_Specificity. External test labels/results were not used.
 

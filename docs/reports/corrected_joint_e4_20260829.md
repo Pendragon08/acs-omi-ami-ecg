@@ -1,4 +1,11 @@
-# Corrected E4 joint ACS/OMI experiment
+# E4 校正联合 ACS/OMI 实验报告
+
+> 中文说明：本报告是 E4（Xception 形态专家 + lead-spatial GAT + WavelNet
+> 频域专家 + task router + KAN head）的校正结果。STEMI/NSTEMI/UA 已改为互斥
+> ACS 四分类（含 OTHER），OMI 保持独立二分类；旧的四个独立 sigmoid 结果仅作
+> 历史审计。完整汇总、训练过程 CSV、损失/LR、ROC/PR 和混淆矩阵均已上传到
+> `results/corrected_joint_acs_omi_e4/`，中文总览见
+> [`实验结果总报告_20260829.md`](实验结果总报告_20260829.md)。
 
 **Status:** complete (GPU1, 2026-08-29).  This report is generated from the
 versioned aggregate `results/corrected_joint_acs_omi_e4/summary.json`; no

@@ -1,4 +1,8 @@
-# OMI loss and ECG feature ablation plan
+# OMI 损失函数与 ECG 特征消融计划
+
+> 中文说明：本计划规定 OMI 的 Baseline/WBCE/Focal/CB-Focal 和原始 ECG、
+> 年龄、性别、中位数 ECG 对比；超参数只能由训练集/验证集决定，测试集只作
+> 最终一次评估。
 
 Status: approved for execution; prior independent reviewer plan incorporated.
 
