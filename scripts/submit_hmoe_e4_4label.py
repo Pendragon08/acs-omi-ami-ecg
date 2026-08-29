@@ -1,9 +1,10 @@
-"""Submit the frozen four-label E4 CSV to the ACS external evaluation platform.
+"""Submit the corrected ACS-subtype + OMI CSV to the external platform.
 
 This script performs exactly one POST of the pre-existing submission CSV.  It
-does not train, select thresholds, or read hidden test labels.  The platform
-accepts a CSV containing any subset of its known binary label columns, so this
-run uploads STEMI, NSTEMI, UA and OMI together and records every returned row.
+does not train, select thresholds, or read hidden test labels.  The first three
+columns are checked as mutually exclusive ACS subtype indicators (the fourth
+is independent OMI) before upload, so an old independent-sigmoid file cannot
+silently be submitted as a corrected result.
 """
 from __future__ import annotations
 
@@ -61,16 +62,41 @@ def flash_message(page: str) -> str | None:
     return strip_tags(match.group(1)) if match else None
 
 
+def validate_corrected_submission(path: Path) -> None:
+    import csv
+
+    with path.open(encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    if not rows:
+        raise ValueError("submission is empty")
+    required = {"ecg_row_record", *LABELS}
+    if not required.issubset(rows[0]):
+        raise ValueError(f"submission header must contain {sorted(required)}")
+    ids = [str(row["ecg_row_record"]).strip() for row in rows]
+    if not all(ids) or len(set(ids)) != len(ids):
+        raise ValueError("submission record identifiers must be non-empty and unique")
+    for row in rows:
+        values = []
+        for label in LABELS:
+            value = row[label].strip()
+            if value not in {"0", "1"}:
+                raise ValueError(f"{label} must be binary 0/1")
+            values.append(int(value))
+        if sum(values[:3]) > 1:
+            raise ValueError("STEMI/NSTEMI/UA are mutually exclusive in corrected submissions")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run_dir", default="results/hmoe_kan_stemi_nstemi_ua_omi_e4")
-    parser.add_argument("--submission", default="submission_stemi_nstemi_ua_omi_e4_youden.csv")
+    parser.add_argument("--run_dir", default="results/corrected_joint_acs_omi_e4")
+    parser.add_argument("--submission", default="submission_corrected_acs_subtype_omi.csv")
     parser.add_argument("--timeout", type=int, default=90)
     args = parser.parse_args()
     run_dir = ROOT / args.run_dir
     submission = run_dir / args.submission
     if not submission.exists():
         raise FileNotFoundError(submission)
+    validate_corrected_submission(submission)
 
     result = subprocess.run(
         ["curl", "-sS", "-m", str(args.timeout), "-L", "-c", "/tmp/acs_cj.txt",
