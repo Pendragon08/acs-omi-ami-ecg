@@ -71,7 +71,7 @@ encode the ACS argmax back into one-hot STEMI/NSTEMI/UA columns plus OMI.
 * `experiments/acs_joint_e4.py` — E4 HMoE/WavelNet/KAN.
 * `experiments/acs_joint_model_comparison.py` — InceptionTime, ResNet1D-Wang,
   LSTM, ViT and Transformer1D.
-* `experiments/ecg_lfm/run_joint_fold.py` plus `configs/ecg_lfm/corrected_joint_*.yaml` — official ECG-LFM with the joint criterion.
+* `experiments/ecg_lfm/run_joint_fold.py` plus `configs/ecg_lfm/corrected_joint_*.yaml` — official ECG-LFM with the joint criterion (current GPU1 queue: `results/corrected_ecg_lfm_joint_bs64_v2/`).
 * `third_party/ECG-LFM/fairseq_signals/criterions/acs_joint.py` — stable
   Fairseq criterion; summed loss is returned because Fairseq divides by
   `sample_size` during gradient scaling.
