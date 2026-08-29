@@ -1,4 +1,10 @@
-"""Traceable wrapper around the official fairseq-hydra-train entrypoint."""
+"""Legacy independent-sigmoid ECG-LFM launcher.
+
+This entry point is retained for historical reproducibility only.  It trains
+four independent STEMI/NSTEMI/UA/OMI outputs and is invalid for the corrected
+task because ACS subtypes are mutually exclusive.  Use
+``experiments.ecg_lfm.run_joint_fold`` for current runs.
+"""
 from __future__ import annotations
 
 import argparse

@@ -1,7 +1,9 @@
-# Four-label architecture comparison results
+# LEGACY INVALID — independent-sigmoid four-label architecture comparison
 
-Aggregate summaries and threshold/platform metric JSON files are included for
-ECG-LFM, InceptionTime, ResNet1D-Wang, LSTM, ViT-1D and Transformer1D. The
-comparison preserves the historical patient-level split and changes only the
-model architecture. Checkpoints, split indices and per-record prediction or
-submission files are excluded from the GitHub archive.
+This directory is retained only as an audit record.  Its aggregate training
+summaries were not archived (only historical external-platform provenance
+files remain), and its formulation allowed simultaneous STEMI/NSTEMI/UA
+predictions.  Do not use these files for the corrected task.  The corrected
+categorical-ACS + independent-OMI comparison is rerun under
+`results/corrected_joint_model_comparison` and documented in
+`docs/reports/corrected_joint_model_comparison_20260829.md`.

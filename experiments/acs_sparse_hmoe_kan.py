@@ -1,4 +1,8 @@
-"""Feasibility run for the revised ACS sparse HMoE--KAN plan.
+"""Legacy feasibility run for the revised ACS sparse HMoE--KAN plan.
+
+This historical runner predates the task-definition correction and must not be
+used for current ACS subtype claims.  It is retained for audit history; use
+``experiments.acs_joint_e4`` for the corrected categorical ACS + OMI task.
 
 This is an independent experiment and does not alter the historical baseline
 or the earlier three-expert HMoE run.  It uses the existing ACS arrays and

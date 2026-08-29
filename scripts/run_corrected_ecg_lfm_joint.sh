@@ -12,6 +12,9 @@ if [[ -z "$visible" || "$visible" == *,* || "$visible" == *" "* ]]; then
   exit 2
 fi
 mkdir -p logs/corrected_ecg_lfm_joint results/corrected_ecg_lfm_joint
+# Keep a compact master log in addition to one log per fold/evaluation.  The
+# raw logs remain on the server; only aggregate summaries are archived in Git.
+exec > >(tee -a logs/corrected_ecg_lfm_joint/master.log) 2>&1
 
 for adaptation in corrected_joint_baseline corrected_joint_lora corrected_joint_dora; do
   case "$adaptation" in
@@ -23,7 +26,7 @@ for adaptation in corrected_joint_baseline corrected_joint_lora corrected_joint_
     echo "START $run_name fold$fold"
     python -u experiments/ecg_lfm/run_joint_fold.py \
       --fold "$fold" --adaptation "$adaptation" --run_name "$run_name" \
-      --output_root results/corrected_ecg_lfm_joint --device cuda:0 --seed 2026 \
+      --output_root results/corrected_ecg_lfm_joint --seed 2026 \
       > "logs/corrected_ecg_lfm_joint/${run_name}_fold${fold}.log" 2>&1
   done
   python -u experiments/ecg_lfm/evaluate_joint.py \

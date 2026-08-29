@@ -21,14 +21,18 @@ point now routes there. Pre-correction independent-sigmoid results remain in
 their original directories only as invalid legacy diagnostics and must not be
 used as current performance claims.
 
-The latest local-best comparison uses ECG-LFM with parameter-efficient
-adaptation:
+The parameter-count table from the historical local-best ECG-LFM run is kept
+below only as an audit record.  That run used the now-invalid four-independent-
+sigmoid formulation and its performance must not be interpreted as a result
+for the corrected task.  The corrected ECG-LFM Baseline/LoRA/DoRA comparison
+is rerun under `results/corrected_ecg_lfm_joint` and will be reported there
+after completion.
 
 | Method | Trainable/effective parameters | Relative result |
 |---|---:|---|
-| Baseline (partial fine-tuning) | 622,479,108 / 622,880,004 (99.94% effective) | reference |
-| LoRA | 5,902,340 / 628,778,244 (0.94%) | selected local-best |
-| DoRA | 6,270,980 / 629,146,884 (1.00%) | ablation |
+| Baseline (partial fine-tuning) | 622,479,108 / 622,880,004 (99.94% effective) | **legacy—invalid task** |
+| LoRA | 5,902,340 / 628,778,244 (0.94%) | **legacy—invalid task** |
+| DoRA | 6,270,980 / 629,146,884 (1.00%) | **legacy—invalid task** |
 
 The Baseline freezes the convolutional ECG frontend (`feature_grad_mult=0`)
 while updating the Transformer context/projection/normalization layers and
@@ -39,9 +43,12 @@ reduction should not be interpreted as the same percentage reduction in total
 VRAM or wall-clock time because the frozen backbone and activations are still
 loaded.
 
-The full comparison, OOF metrics, external-platform metrics, threshold
-choices, and caveats are in
+The historical comparison, OOF metrics, external-platform metrics, threshold
+choices, and caveats are retained in
 [`ecg_lfm_local_best_lora_dora_optimization_20260828.md`](docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md).
+It is a legacy record; use
+[`corrected_ecg_lfm_joint_20260829.md`](docs/reports/corrected_ecg_lfm_joint_20260829.md)
+for the corrected categorical-ACS + OMI task.
 
 ## Data and evaluation protocol
 
@@ -56,7 +63,10 @@ choices, and caveats are in
 - Main OOF metrics are AUROC, AUPRC, sensitivity, specificity, PPV, NPV, F1,
   MCC, accuracy, and per-label confusion matrices.
 - Thresholds are chosen on validation OOF predictions only; external labels
-  are never used for tuning.
+  are never used for tuning. Because the current five-fold implementation
+  also selects each fold checkpoint on that fold's validation data, pooled OOF
+  hard metrics are descriptive (not nested, confirmatory estimates); this
+  limitation is stated in each corrected report.
 
 Corrected runs write aggregate results under `results/corrected_*` (the jobs
 are being rerun; paths are output targets until their summaries appear).

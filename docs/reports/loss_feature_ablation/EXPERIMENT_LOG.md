@@ -59,14 +59,20 @@ Best CB-Focal: beta=0.99, gamma=1.0; mean per-seed threshold=0.2180.
 Paired seed AUPRC improvements: 3/5.
 Verdict: **No convincing improvement**.
 
-## CB-Focal minus Baseline
+## CB-Focal minus Baseline (separate bootstrap estimand)
 
-- ΔAUROC=+0.0014; paired patient bootstrap 95% CI [-0.0111, +0.0092], p=0.685
-- ΔAUPRC=-0.0023; paired patient bootstrap 95% CI [-0.0262, +0.0138], p=0.5
-- ΔSensitivity=+0.0745; paired patient bootstrap 95% CI [+0.0723, +0.2118], p=0
-- ΔSpecificity=-0.0318; paired patient bootstrap 95% CI [-0.0635, -0.0422], p=0
-- ΔPPV=-0.0602; paired patient bootstrap 95% CI [-0.1011, -0.0295], p=0
-- ΔF1=-0.0370; paired patient bootstrap 95% CI [-0.0820, +0.0014], p=0.06
+The summary table reports five-seed mean ± sample SD. The paired patient
+bootstrap intervals below use the stored pooled validation predictions and
+2,000 resamples, so their point estimates are a different estimand rather
+than the seed mean. Zero observed bootstrap exceedances are reported as
+`p<1/2001`.
+
+- ΔAUROC=-0.00179; paired patient bootstrap 95% CI [-0.0111, +0.0092], p=0.685
+- ΔAUPRC=-0.00689; paired patient bootstrap 95% CI [-0.0262, +0.0138], p=0.5
+- ΔSensitivity=+0.13897; paired patient bootstrap 95% CI [+0.0723, +0.2118], p<1/2001
+- ΔSpecificity=-0.05259; paired patient bootstrap 95% CI [-0.0635, -0.0422], p<1/2001
+- ΔPPV=-0.06449; paired patient bootstrap 95% CI [-0.1011, -0.0295], p<1/2001
+- ΔF1=-0.04167; paired patient bootstrap 95% CI [-0.0820, +0.0014], p=0.06
 
 External hidden-label test results were not used to select loss parameters or thresholds. This report is validation evidence; one frozen external evaluation may follow after the method is finalized.
 
@@ -141,4 +147,3 @@ Overall: **WARN** (provisional deterministic audit; no fresh independent semanti
 - Deterministic errors: none.
 
 WARN is retained even when deterministic checks pass because the historical scalers include internal-validation data and the required fresh-agent semantic audit could not be performed under the active no-delegation constraint.
-

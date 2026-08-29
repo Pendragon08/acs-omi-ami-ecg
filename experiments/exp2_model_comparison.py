@@ -4,6 +4,9 @@
 + 4 traditional (LSTM / ResNet1D_Wang / InceptionTime / ViT), all [B,2]
 OMI+AMI, ASL, P3, 5 seeds.
 """
+# LEGACY ONLY: this historical OMI+AMI runner depends on the removed
+# experiments.common module and is not valid for the corrected ACS categorical
+# + OMI binary task. Use experiments.acs_joint_model_comparison.py instead.
 from experiments.common import aggregate, run_matrix
 
 MODELS = [

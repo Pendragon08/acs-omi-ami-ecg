@@ -13,13 +13,20 @@ Best CB-Focal: beta=0.99, gamma=1.0; mean per-seed threshold=0.2180.
 Paired seed AUPRC improvements: 3/5.
 Verdict: **No convincing improvement**.
 
-## CB-Focal minus Baseline
+## CB-Focal minus Baseline (estimand note)
 
-- ΔAUROC=+0.0014; paired patient bootstrap 95% CI [-0.0111, +0.0092], p=0.685
-- ΔAUPRC=-0.0023; paired patient bootstrap 95% CI [-0.0262, +0.0138], p=0.5
-- ΔSensitivity=+0.0745; paired patient bootstrap 95% CI [+0.0723, +0.2118], p=0
-- ΔSpecificity=-0.0318; paired patient bootstrap 95% CI [-0.0635, -0.0422], p=0
-- ΔPPV=-0.0602; paired patient bootstrap 95% CI [-0.1011, -0.0295], p=0
-- ΔF1=-0.0370; paired patient bootstrap 95% CI [-0.0820, +0.0014], p=0.06
+The table above is a five-seed mean ± sample SD. The following confidence
+intervals are a separate paired patient-bootstrap analysis of the stored
+pooled validation predictions (2,000 resamples); they are not confidence
+intervals for the five-seed means and must not be compared as if they were the
+same point estimate. A bootstrap count of zero is reported conservatively as
+`p < 1/2001`.
+
+- ΔAUROC=-0.00179; paired patient bootstrap 95% CI [-0.0111, +0.0092], p=0.685
+- ΔAUPRC=-0.00689; paired patient bootstrap 95% CI [-0.0262, +0.0138], p=0.5
+- ΔSensitivity=+0.13897; paired patient bootstrap 95% CI [+0.0723, +0.2118], p<1/2001
+- ΔSpecificity=-0.05259; paired patient bootstrap 95% CI [-0.0635, -0.0422], p<1/2001
+- ΔPPV=-0.06449; paired patient bootstrap 95% CI [-0.1011, -0.0295], p<1/2001
+- ΔF1=-0.04167; paired patient bootstrap 95% CI [-0.0820, +0.0014], p=0.06
 
 External hidden-label test results were not used to select loss parameters or thresholds. This report is validation evidence; one frozen external evaluation may follow after the method is finalized.

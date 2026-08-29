@@ -67,10 +67,12 @@ def load_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict]:
 
     csv_path = ROOT / "data" / "CSV" / "train.csv"
     labels_by_id: dict[str, list[int]] = {}
+    csv_row_count = 0
     invalid_rows: list[dict] = []
     duplicate_ids: list[str] = []
     with csv_path.open(encoding="utf-8-sig", newline="") as handle:
         for row in csv.DictReader(handle):
+            csv_row_count += 1
             rid = stem((row.get("ecg_row_record") or "").strip())
             values = [(row.get(name) or "").strip() for name in LABELS]
             if not rid or any(value not in {"0", "1"} for value in values):
@@ -80,6 +82,12 @@ def load_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict]:
                 duplicate_ids.append(rid)
                 continue
             labels_by_id[rid] = [int(value) for value in values]
+
+    if duplicate_ids:
+        raise ValueError(
+            "Duplicate record identifiers in training labels are not allowed; "
+            f"n={len(duplicate_ids)}, preview={duplicate_ids[:10]}"
+        )
 
     record_ids_all = np.asarray([stem(x) for x in meta["record_ids"]], dtype=object)
     patient_ids_all = np.asarray([str(x) for x in meta["patient_ids"]], dtype=object)
@@ -105,7 +113,7 @@ def load_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict]:
     joint_counts = Counter((int(s), int(o)) for s, o in zip(states, y[:, 3]))
     audit = {
         "csv_path": str(csv_path),
-        "n_csv_rows": int(len(labels_by_id) + len(invalid_rows)),
+        "n_csv_rows": int(csv_row_count),
         "n_meta_records": int(len(record_ids_all)),
         "n_valid_records": int(len(y)),
         "n_excluded_unknown_or_invalid": int((~valid_mask).sum()),

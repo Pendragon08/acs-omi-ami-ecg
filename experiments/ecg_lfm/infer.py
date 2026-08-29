@@ -1,4 +1,9 @@
-"""Record-level inference for official ECG-LFM fine-tuned checkpoints."""
+"""Legacy four-independent-sigmoid record-level inference.
+
+The output is retained for historical artifacts only and must not be used for
+the corrected ACS categorical + OMI binary task.  Use
+``experiments.ecg_lfm.evaluate_joint`` instead.
+"""
 from __future__ import annotations
 
 import argparse
@@ -129,4 +134,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

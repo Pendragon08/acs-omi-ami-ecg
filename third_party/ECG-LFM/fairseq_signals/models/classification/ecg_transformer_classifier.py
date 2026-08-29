@@ -52,7 +52,7 @@ class ECGTransformerClassificationModel(ECGTransformerFinetuningModel):
                 alpha=float(getattr(cfg, "adapter_alpha", 16.0)),
                 dropout=float(getattr(cfg, "adapter_dropout", 0.05)),
             )
-            # Keep the four-label head fully trainable while every pretrained
+            # Keep the joint classification head fully trainable while every pretrained
             # encoder/convolution parameter remains frozen.
             enable_head(self)
 

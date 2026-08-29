@@ -212,7 +212,8 @@ def _write_submission(out_dir: Path, x_raw: np.ndarray, folds, fold_results, arg
     test_ids = _test_csv_ids()
     by_id = {str(rid): i for i, rid in enumerate(test_meta_ids)}
     requested = [stem(x) for x in test_ids]
-    if set(requested) != set(map(str, test_meta_ids)):
+    if (len(requested) != len(test_meta_ids) or len(set(requested)) != len(requested)
+            or set(requested) != set(map(str, test_meta_ids))):
         raise ValueError("test.csv identifiers do not match meta_test identifiers")
     order = np.asarray([by_id[x] for x in requested])
     p_acs, p_omi = p_acs_meta[order], p_omi_meta[order]

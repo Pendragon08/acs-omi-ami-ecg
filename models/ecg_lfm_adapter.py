@@ -1,8 +1,10 @@
 """Thin, architecture-preserving helpers around the official ECG-LFM model.
 
-No backbone code is copied here.  Training uses the official registered
-``ecg_transformer_classifier`` from ``third_party/ECG-LFM`` with
-``model.num_labels=4``.
+No backbone code is copied here.  Corrected training uses the official
+registered ``ecg_transformer_classifier`` from ``third_party/ECG-LFM`` with
+``model.num_labels=5`` (four-way ACS head plus one OMI logit).  The fixed
+four-logit segment helpers below are retained only for the legacy independent-
+sigmoid pipeline and must not be used for current results.
 """
 from __future__ import annotations
 

@@ -55,7 +55,10 @@ ACS-positive conditional three-way) from OMI binary metrics. Accuracy is not
 the primary criterion for imbalanced OMI/NSTEMI; sensitivity, AUPRC, F1, PPV,
 AUROC and specificity are interpreted together. Only the OMI threshold is
 selected on validation OOF predictions and frozen before external testing;
-ACS uses argmax and cannot produce simultaneous subtype positives.
+ACS uses argmax and cannot produce simultaneous subtype positives. Since the
+outer fold also selects its checkpoint on that fold's validation records,
+pooled OOF hard metrics are descriptive/non-nested rather than confirmatory
+estimates; corrected reports state this limitation explicitly.
 
 ## External artefacts and raw logs
 
