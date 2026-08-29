@@ -28,7 +28,7 @@ from experiments import hmoe_kan_github as h  # noqa: E402
 from experiments.acs_joint_task import (  # noqa: E402
     ACS_CLASSES, LABELS, SUBTYPE_LABELS, acs_metrics, acs_subtype_metrics,
     binary_metrics, encode_targets, load_data, load_or_build_folds,
-    save_curves, save_roc_pr_curves, select_omi_threshold,
+    save_confusion_figures, save_curves, save_roc_pr_curves, select_omi_threshold,
 )
 from nets.traditional import InceptionTime, LSTM, ResNet1D_Wang, ViT  # noqa: E402
 
@@ -140,6 +140,8 @@ def main():
         for method in ("fixed_0.5", "max_f1", "youden_j", "sens90", "sens95"): thresholds[method], details[method] = select_omi_threshold(omi, oof_o, method)
         pooled = {m: {"acs": acs_metrics(acs, oof_a), "acs_subtype": acs_subtype_metrics(acs, oof_a), "omi": binary_metrics(omi, oof_o, t)} for m, t in thresholds.items()}
         model_dir = out_dir / name; save_curves(model_dir, histories, f"Corrected joint {name}"); save_roc_pr_curves(model_dir, acs, oof_a, omi, oof_o)
+        cm_omi = np.asarray([[int(((omi == 0) & (oof_o < thresholds["youden_j"])).sum()), int(((omi == 0) & (oof_o >= thresholds["youden_j"])).sum())], [int(((omi == 1) & (oof_o < thresholds["youden_j"])).sum()), int(((omi == 1) & (oof_o >= thresholds["youden_j"])).sum())]])
+        save_confusion_figures(model_dir, np.asarray(pooled["youden_j"]["acs"]["confusion_matrix"]), np.asarray(pooled["youden_j"]["acs_subtype"]["confusion_matrix"]), cm_omi)
         (model_dir / "oof_predictions.npz").write_bytes(b"") if False else np.savez_compressed(model_dir / "oof_predictions.npz", acs=acs, omi=omi, p_acs=oof_a, p_omi=oof_o)
         summary["models"][name] = {"folds": results, "thresholds": thresholds, "threshold_details": details, "pooled_oof_metrics": pooled, "recommended_threshold": "youden_j"}
         (model_dir / "summary.json").write_text(json.dumps({"model": name, **summary["models"][name]}, indent=2, ensure_ascii=False), encoding="utf-8")
