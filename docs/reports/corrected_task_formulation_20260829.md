@@ -19,17 +19,21 @@ validated for record partition completeness and patient disjointness.
 
 The former E4 runner, traditional comparison runner, ECG-LFM configs and
 external predictor used independent sigmoid/BCE outputs for all four columns.
-They are now labelled legacy/invalid in the repository.  New entry points use
+They are now labelled legacy/invalid in the repository. New entry points use
 one categorical ACS head plus one OMI binary head; no ACS threshold vector is
-allowed.
+allowed. During the first corrected ECG-LFM launch, Fairseq exposed a
+four-column versus five-logit validation reshape mismatch. The runner now
+materialises and validates a private five-column
+`[OTHER,STEMI,NSTEMI,UA,OMI]` label file; the failed attempt contributes no
+metrics.
 
 ## Rerun registry
 
 | family | implementation | output directory | status |
 |---|---|---|---|
-| E4 HMoE/WavelNet/KAN | `experiments/acs_joint_e4.py` | `results/corrected_joint_acs_omi_e4/` | running on GPU1 |
-| Traditional architectures | `experiments/acs_joint_model_comparison.py` | `results/corrected_joint_model_comparison/` | queued |
-| ECG-LFM Baseline/LoRA/DoRA | `experiments/ecg_lfm/run_joint_fold.py` | `results/corrected_ecg_lfm_joint/` | queued |
+| E4 HMoE/WavelNet/KAN | `experiments/acs_joint_e4.py` | `results/corrected_joint_acs_omi_e4/` | complete; five folds + external platform; [`corrected_joint_e4_20260829.md`](corrected_joint_e4_20260829.md) |
+| Traditional architectures | `experiments/acs_joint_model_comparison.py` | `results/corrected_joint_model_comparison/` | complete; five models × five folds + external platform; [`corrected_joint_model_comparison_20260829.md`](corrected_joint_model_comparison_20260829.md) |
+| ECG-LFM Baseline/LoRA/DoRA | `experiments/ecg_lfm/run_joint_fold.py` | `results/corrected_ecg_lfm_joint_bs64_v2/` | running on GPU1; [`corrected_ecg_lfm_joint_20260829.md`](corrected_ecg_lfm_joint_20260829.md) |
 
 This file is updated when each job finishes.  It will link the aggregate JSON,
 CSV, figures, training logs and (where authorized) external-platform response
