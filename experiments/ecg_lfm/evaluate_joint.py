@@ -86,7 +86,7 @@ def main():
         with (manifests/f'fold{fold}'/'valid_segments.csv').open(encoding='utf-8',newline='') as f: valid_patients={r['patient_id'] for r in csv.DictReader(f)}
         if train_patients.intersection(valid_patients): raise ValueError(f"patient leakage in fold {fold}")
         if seen.intersection(set(unique.tolist())): raise ValueError(f"duplicate OOF record indices across folds: fold {fold}")
-        seen.update(unique.tolist()); validation_expected.append(unique)
+        seen.update(unique.tolist())
         local=np.asarray([train_pos[int(i)] for i in unique],dtype=np.int64); oof_a[local]=pa; oof_o[local]=po; fold_info.append({'fold':fold,'n_records':int(len(unique)),'checkpoint':str(checkpoint),'checkpoint_sha256':sha256(checkpoint),'valid_segments_sha256':sha256(manifests/f'fold{fold}'/'valid_segments.csv')})
     if seen != set(train_indices.tolist()): raise RuntimeError('OOF validation manifests do not cover each training record exactly once')
     thresholds={}; details={}

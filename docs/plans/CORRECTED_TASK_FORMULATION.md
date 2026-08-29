@@ -65,7 +65,9 @@ encode the ACS argmax back into one-hot STEMI/NSTEMI/UA columns plus OMI.
   Fairseq criterion; summed loss is returned because Fairseq divides by
   `sample_size` during gradient scaling.
 
-All corrected jobs write provenance, split/label audits, per-epoch loss/LR
-curves, ROC/PR and confusion figures.  Raw ECG, patient tables, checkpoints
+The corrected PyTorch runners write provenance, split/label audits, per-epoch
+loss/LR curves, ROC/PR and confusion figures.  ECG-LFM's Fairseq launcher
+writes provenance and raw JSONL first; its joint record-level evaluator is a
+separate post-training step recorded in the ECG-LFM report.  Raw ECG, patient tables, checkpoints
 and row-level predictions stay on the controlled server and are not committed
 to GitHub.

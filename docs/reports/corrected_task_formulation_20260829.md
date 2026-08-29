@@ -10,8 +10,8 @@ The controlled server audit found 17,960 labelled training ECG records from
 OMI 1,151.  There are 9,070 records with no ACS subtype (`[0,0,0]`), including
 one OMI-positive record.  No record has more than one positive ACS subtype.
 
-The corrected loader hard-fails on unknown, non-binary, non-finite or
-overlapping subtype labels and retains the explicit all-zero state as
+The corrected loader excludes rows with unknown/non-binary labels, hard-fails
+on any overlapping ACS subtype, and retains the explicit all-zero state as
 `OTHER`.  The historical patient-level five-fold assignment is reused and
 validated for record partition completeness and patient disjointness.
 
