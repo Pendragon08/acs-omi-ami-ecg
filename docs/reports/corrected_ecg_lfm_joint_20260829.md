@@ -41,10 +41,10 @@ UA 在 ACS 头中使用交叉熵和 softmax-argmax，不能同时为阳性；OMI
 
 ## 当前进度（报告更新时间）
 
-Baseline fold0 已完成到第 8 个 epoch；最近一次记录为验证总损失 1.07025、
-ACS accuracy 0.57779、OMI accuracy 0.93289，训练学习率约 `9.32e-7`。当前
+Baseline fold0 已完成到第 11 个 epoch；最近一次记录为验证总损失 1.11844、
+ACS accuracy 0.55727、OMI accuracy 0.93026，训练学习率约 `9.04e-7`。当前
 中间脱敏日志已归档于 `results/corrected_ecg_lfm_joint_bs64_v2/baseline/fold0/`
-（含 epoch 1–8 的 train/valid 记录）。其余
+（含 epoch 1–11 的 train/valid 记录）。其余
 fold 和 LoRA/DoRA 尚未完成，因此这里不报告“最佳 ECG-LFM 指标”，也不把部分
 epoch 当作模型比较结果。完成后必须等 15 个运行和统一评估器全部结束，才会
 更新本报告的 OOF、五折均值±标准差、混淆矩阵和外部平台逐标签指标。
