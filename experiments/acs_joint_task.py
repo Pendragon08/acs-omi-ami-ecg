@@ -282,6 +282,8 @@ def acs_metrics(y_class: np.ndarray, probs: np.ndarray, prefix: str = "acs") -> 
         hard = binary_metrics(y, (pred == k).astype(float), 0.5)
         for metric in ("sensitivity", "specificity", "ppv", "npv", "f1", "mcc", "accuracy", "tp", "tn", "fp", "fn"):
             per_class[name][metric] = hard[metric]
+        per_class[name]["threshold"] = "argmax_ovr"
+        per_class[name]["youden_j"] = float(hard["sensitivity"] + hard["specificity"] - 1.0)
     valid_auc = [v["auroc"] for v in per_class.values() if np.isfinite(v["auroc"])]
     valid_pr = [v["auprc"] for v in per_class.values() if np.isfinite(v["auprc"])]
     return {
@@ -332,8 +334,8 @@ def select_omi_threshold(y: np.ndarray, prob: np.ndarray, method: str) -> tuple[
     elif method in {"sens90", "sens95"}:
         target = 0.90 if method == "sens90" else 0.95
         feasible = [item for item in candidates if item[1]["sensitivity"] >= target]
-        best = max(feasible or candidates, key=lambda item: (item[1]["specificity"], item[1]["f1"], item[0]))
-        best[1] = dict(best[1], sensitivity_constraint_satisfied=bool(feasible))
+        chosen = max(feasible or candidates, key=lambda item: (item[1]["specificity"], item[1]["f1"], item[0]))
+        best = (chosen[0], dict(chosen[1], sensitivity_constraint_satisfied=bool(feasible)))
     else:
         raise ValueError(method)
     return float(best[0]), best[1]
