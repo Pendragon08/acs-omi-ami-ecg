@@ -71,10 +71,12 @@ for the corrected categorical-ACS + OMI task.
   hard metrics are descriptive (not nested, confirmatory estimates); this
   limitation is stated in each corrected report.
 
-Corrected runs write aggregate results under `results/corrected_*` (the jobs
-are being rerun; paths are output targets until their summaries appear).
-Pre-correction aggregates remain under their original names but are marked
-legacy/invalid. The associated reports are indexed in
+Corrected runs write aggregate results under `results/corrected_*`. The E4
+HMoE/WavelNet/KAN rerun and the five traditional architecture comparison are
+complete; the corrected ECG-LFM Baseline/LoRA/DoRA queue is currently running
+on GPU1 under `results/corrected_ecg_lfm_joint_bs64_v2` after a documented
+label-shape fix. Pre-correction aggregates remain under their original names
+but are marked legacy/invalid. The associated reports are indexed in
 [`docs/reports/README.md`](docs/reports/README.md).
 
 ## Repository layout
