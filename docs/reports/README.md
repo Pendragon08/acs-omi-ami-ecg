@@ -12,7 +12,7 @@ legacy/invalid for the final task and is retained only for audit history.
 |---|---|---|
 | [corrected_task_formulation_20260829.md](corrected_task_formulation_20260829.md) | Label audit, model/loss/split correction and rerun registry | canonical |
 | [corrected_joint_e4_20260829.md](corrected_joint_e4_20260829.md) | E4 HMoE/WavelNet/KAN joint ACS categorical + OMI binary five-fold rerun | complete; GPU1 + external platform |
-| [corrected_joint_model_comparison_20260829.md](corrected_joint_model_comparison_20260829.md) | InceptionTime, ResNet1D-Wang, LSTM, ViT and Transformer1D under corrected task | queued/running |
+| [corrected_joint_model_comparison_20260829.md](corrected_joint_model_comparison_20260829.md) | InceptionTime, ResNet1D-Wang, LSTM, ViT and Transformer1D under corrected task | running on GPU1 |
 | [corrected_ecg_lfm_joint_20260829.md](corrected_ecg_lfm_joint_20260829.md) | ECG-LFM Baseline/LoRA/DoRA with joint criterion | queued/running |
 
 ## Legacy ECG-LFM reports (independent-sigmoid task; invalid for current ACS subtype formulation)
