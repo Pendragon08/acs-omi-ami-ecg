@@ -20,7 +20,7 @@
 |---|---|---|---|
 | E4 HMoE/WavelNet/KAN 联合任务 | GPU1，已完成 | `logs/corrected/acs_joint_e4_gpu1.log` | `results/corrected_joint_acs_omi_e4/`、`docs/reports/corrected_joint_e4_20260829.md` |
 | 传统架构对比 | GPU1，已完成 | `logs/corrected_joint_model_comparison/all_gpu1.log` | `results/corrected_joint_model_comparison/<模型>/`、`docs/reports/corrected_joint_model_comparison_20260829.md` |
-| ECG-LFM Baseline/LoRA/DoRA 校正重跑 | GPU1，运行中（v2，标签形状修复后） | `logs/corrected_ecg_lfm_joint_bs64_v2/master.log` 及各折日志 | `docs/reports/corrected_ecg_lfm_joint_20260829.md`；完成后追加结果与脱敏日志 |
+| ECG-LFM Baseline/LoRA/DoRA 校正重跑 | GPU1，运行中（v2；Baseline fold0–1 已完成，fold2 进行中） | `logs/corrected_ecg_lfm_joint_bs64_v2/master.log` 及各折日志 | `docs/reports/corrected_ecg_lfm_joint_20260829.md`；完成后追加结果与脱敏日志 |
 
 ## 已完成结果目录中的过程文件
 
