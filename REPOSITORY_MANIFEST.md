@@ -1,30 +1,44 @@
-# 仓库整理清单
+# Repository manifest
 
-## 纳入 GitHub 仓库
+This manifest defines what is synchronized to the GitHub research archive and
+what remains on the controlled execution environment.
 
-| 类别 | 来源 | 目标位置 |
+## Included
+
+| Category | GitHub location | Contents |
 |---|---|---|
-| 最终与历史实验代码 | .remote_project_scan 的 source directories | experiments、scripts、preprocessing、data_provider、losses、acs_utils、nets、exp |
-| 基线代码 | ACS-Baseline-main 中的 Python 源码与 README | baselines/ACS-Baseline-main |
-| 配置 | 根目录 configs 与 .remote_project_scan/configs | configs |
-| 方案报告 | 根目录三份 ACS 方案和改进提示词 | docs/plans |
-| 实验报告 | reports、FINAL_REPORT、loss/feature ablation 报告 | docs/reports |
-| 聚合实验产物 | 不含逐例信息的 summary、history、label audit、threshold、平台指标 | results |
+| Historical and current source | `experiments/`, `models/`, `scripts/`, `scripts/ecg_lfm/`, `preprocessing/`, `data_provider/`, `losses/`, `acs_utils/`, `nets/`, `baselines/` | Training, inference, evaluation, split, loss, and reporting code |
+| ECG-LFM upstream source | `third_party/ECG-LFM/` | Code-only snapshot used by the ECG-LFM experiments; no checkpoints or run output |
+| Configurations | `configs/`, `configs/ecg_lfm/` | YAML/JSON experiment settings and environment specifications |
+| Research plans | `docs/plans/` | ACS, HMoE/KAN, ECG-LFM, LoRA/DoRA, and ablation specifications |
+| Reports | `docs/reports/` | Final and historical experiment reports, tables, and machine-readable aggregate provenance |
+| Aggregate results | `results/` | Summary CSV/JSON/Markdown files and selected metric/curve figures only |
+| Traceability | `docs/logs/EXPERIMENT_LOG_INDEX.md` | Curated index of raw server logs, run families, seeds, GPUs, and report/result links |
 
-## 明确排除
+## Excluded by design
 
-| 内容 | 原因 |
-|---|---|
-| med_data、任何 .med、.npy、.npz、data/ | 受控临床数据或波形，待数据治理授权 |
-| train.csv、test.csv、逐例 OOF/测试/提交 CSV、split.json | 包含或可关联患者/ECG 标识 |
-| checkpoint .pt | 体积大且不属于当前安全发布的最小复现包 |
-| ACS-Baseline-main.zip、med_data.zip | 与目录内容重复且超过普通 GitHub Git 文件大小限制 |
-| .ssh_gpu_check_tmp、.tmp_e4_npz2、.remote_exec_tmp.js、.agents | 临时工具、依赖缓存或执行环境文件 |
-| agent-frontend_PR15_README.md、lithium_battery_SOH_RUL_2024_2026_Q1_FULL_research_gaps_updated_20260814.md | 与 ACS ECG 研究无关 |
+- Raw or preprocessed ECG waveforms (`.med`, `.npy`, `.npz`) and controlled
+  `data/`/`med_data/` directories.
+- Train/test CSV files, patient-level tables, split-index files, and any row-
+  level OOF, validation, external-test, or submission predictions.
+- Checkpoints and downloaded pretrained weights (`.pt`, `.pth`, `.bin`).
+- Raw `screen`/training logs and fairseq JSONL event streams. The server keeps
+  them; the repository keeps the curated index and aggregate curves instead.
+- Temporary browser/SSH/archive files, caches, virtual environments, and
+  unrelated projects.
+- Credentials, passwords, access tokens, and private keys. Do not add them to
+  configuration files or commit messages.
 
-## 版本与审计
+The enforced patterns are in [`.gitignore`](.gitignore). Before every push,
+inspect the staged file list and verify that no controlled data, checkpoint,
+credential, or row-level prediction has entered the index.
 
-当前四标签实验使用的代码、配置、训练/测试 CSV、OOF、阈值、提交文件和平台回包的 SHA-256 记录在 docs/reports/e4_stemi_nstemi_ua_omi_multilabel_provenance_20260827.json。
+## Provenance policy
 
-仓库默认保持 private。是否纳入受控数据、逐例结果和权重，须先满足 DATASET.md 的发布前提。
-
+Every report should identify the task definition, data/split contract, seed,
+configuration, model/loss variant, threshold-selection rule, metrics, and
+source result family. Absolute server paths may be retained when needed for
+internal reproducibility, but credentials and record-level identifiers must
+never be included. The latest ECG-LFM LoRA/DoRA parameter-efficiency analysis
+is documented in
+`docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md`.

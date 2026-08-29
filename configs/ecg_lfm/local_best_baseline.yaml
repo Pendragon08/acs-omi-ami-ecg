@@ -1,0 +1,85 @@
+common:
+  fp16: true
+  seed: 2026
+  log_format: json
+  log_interval: 100
+  all_gather_list_size: 2048000
+
+checkpoint:
+  save_dir: ???
+  best_checkpoint_metric: loss
+  maximize_best_checkpoint_metric: false
+  patience: 10
+  save_interval: 1
+  keep_last_epochs: 0
+  keep_best_checkpoints: -1
+  no_epoch_checkpoints: true
+  no_last_checkpoints: true
+  no_save_optimizer_state: true
+
+task:
+  _name: ecg_classification
+  data: ???
+  label_file: ???
+  sample_rate: 500
+  normalize: false
+  filter: false
+  enable_padding: false
+  enable_padding_leads: false
+  leads_to_load: null
+
+dataset:
+  num_workers: 8
+  max_tokens: null
+  batch_size: 32
+  valid_subset: valid
+  validate_interval: 1
+  validate_after_updates: 0
+  validate_interval_updates: 0
+  disable_validation: false
+
+distributed_training:
+  distributed_world_size: 1
+  find_unused_parameters: true
+
+criterion:
+  _name: binary_cross_entropy_with_logits
+  report_auc: true
+  report_cinc_score: false
+  weights_file: null
+  pos_weight: null
+
+optimization:
+  max_epoch: 100
+  max_update: 320000
+  update_freq: [8]
+  lr: [0.000001]
+
+optimizer:
+  _name: adam
+  adam_betas: (0.9, 0.98)
+  adam_eps: 0.00000001
+
+lr_scheduler:
+  _name: step
+  warmup_updates: 0
+  min_lr: 0.000000000001
+  lr_deacy_period: 112
+  lr_decay: 0.99
+
+model:
+  _name: ecg_transformer_classifier
+  model_path: ???
+  num_labels: 4
+  no_pretrained_weights: false
+  encoder_embed_dim: 1024
+  dropout: 0.0
+  attention_dropout: 0.0
+  activation_dropout: 0.1
+  feature_grad_mult: 0.0
+  freeze_finetune_updates: 0
+  in_d: 12
+  adapter_method: none
+  adapter_rank: 8
+  adapter_alpha: 16.0
+  adapter_dropout: 0.05

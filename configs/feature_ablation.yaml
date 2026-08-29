@@ -1,0 +1,18 @@
+study: feature
+tasks: [omi, ami]
+model: XceptionTimeFusion
+variant: P3
+loss: bce
+screening_seed: 2026
+feature_modes: [raw, median, clin, raw_age, raw_sex, raw_clin, raw_median, all]
+controlled_design: same_architecture_and_initialization_with_input_masking
+omi: {learning_rate: 0.0003, batch_size: 256}
+ami: {learning_rate: 0.0001, batch_size: 128}
+epochs: 100
+patience: 15
+gradient_clip: 1.0
+scheduler: null
+sampling: shuffle_without_oversampling
+split: data/splits/patient_split.json
+selection_set: validation
+external_test_use: only_after_feature_choice_is_frozen

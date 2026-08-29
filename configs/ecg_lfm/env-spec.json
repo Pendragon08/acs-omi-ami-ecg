@@ -1,0 +1,69 @@
+{
+  "base": "cuda12.1 + python3.9",
+  "system_pkgs": [
+    "git",
+    "screen"
+  ],
+  "pip_phases": [
+    [
+      "pip==24.0"
+    ],
+    [
+      "torch==2.5.1",
+      "--index-url",
+      "https://download.pytorch.org/whl/cu121"
+    ],
+    [
+      "numpy==1.26.4",
+      "scipy==1.13.1",
+      "pandas==2.2.3",
+      "scikit-learn==1.5.2",
+      "wfdb==4.1.2",
+      "iterative-stratification==0.1.9",
+      "hydra-core==1.0.7",
+      "omegaconf==2.0.6",
+      "cffi==1.17.1",
+      "cython==3.0.11",
+      "regex==2024.11.6",
+      "sacrebleu==2.4.3",
+      "tqdm==4.67.1",
+      "transformers==4.46.3",
+      "matplotlib==3.9.4",
+      "pyyaml==6.0.2"
+    ]
+  ],
+  "env": {
+    "OMP_NUM_THREADS": "8",
+    "MKL_NUM_THREADS": "8",
+    "OPENBLAS_NUM_THREADS": "8"
+  },
+  "run_commands": [
+    "pip install --editable third_party/ECG-LFM"
+  ],
+  "weight_dirs": {
+    "ecg_lfm": {
+      "path": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/checkpoints/ecg_lfm/pretrain.pt",
+      "source": "Zenodo record 20388950",
+      "gated": false,
+      "md5": "afa8dfc680590948f82aabbdb123bf43"
+    }
+  },
+  "smoke": {
+    "import_names": [
+      "torch",
+      "wfdb",
+      "scipy",
+      "fairseq_signals"
+    ],
+    "gpu_tests": [
+      {
+        "cmd": "python -c 'import torch; torch.manual_seed(2026); x=torch.randn(8,8,device=\"cuda\"); y=x@x; print(\"WITNESS\", tuple(y.shape), torch.cuda.get_device_name(), bool(torch.isfinite(y).all()))'",
+        "expect": "^WITNESS (8, 8) NVIDIA RTX A6000 True$"
+      }
+    ],
+    "cli_checks": [
+      "nvidia-smi",
+      "fairseq-hydra-train --help"
+    ]
+  }
+}

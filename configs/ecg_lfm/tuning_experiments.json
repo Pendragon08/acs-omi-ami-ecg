@@ -1,0 +1,93 @@
+{
+  "status": "preregistered; pending external reviewer-agent review because delegation is disabled",
+  "selection_data": "internal patient-level validation folds only",
+  "external_test_policy": "one submission after the final internal five-fold candidate and OOF thresholds are locked; never tune from external metrics",
+  "primary_selection_metric": "record-level macro AUPRC",
+  "secondary_selection_metrics": [
+    "record-level macro AUROC",
+    "NSTEMI AUPRC",
+    "OMI AUPRC",
+    "record-level macro F1 at validation Youden thresholds",
+    "specificity and PPV safety"
+  ],
+  "baseline": {
+    "run_name": "finetune_paper",
+    "config": "finetune_paper",
+    "loss": "unweighted_bce",
+    "learning_rate": 1e-06,
+    "physical_batch": 32,
+    "gradient_accumulation": 8,
+    "effective_batch": 256,
+    "scheduler_decay_updates": 112
+  },
+  "fold0_screen": [
+    {
+      "run_name": "lr3e7_bce_b256",
+      "what_it_tests": "whether the baseline overfits because the full encoder learning rate is too high",
+      "expected_if_matters": "later best epoch, smaller train-validation divergence, stable or improved AUPRC",
+      "priority": 1,
+      "loss": "unweighted_bce",
+      "overrides": ["optimization.lr=[0.0000003]"]
+    },
+    {
+      "run_name": "lr3e6_bce_b256",
+      "what_it_tests": "whether faster domain adaptation improves minority ranking before overfitting",
+      "expected_if_matters": "faster loss reduction and higher early AUPRC without unstable gradients",
+      "priority": 1,
+      "loss": "unweighted_bce",
+      "overrides": ["optimization.lr=[0.000003]"]
+    },
+    {
+      "run_name": "lr1e6_bce_b128",
+      "what_it_tests": "effect of noisier, more frequent optimizer updates at fixed examples per epoch",
+      "expected_if_matters": "minority-label AUPRC improves if gradient diversity helps",
+      "priority": 2,
+      "loss": "unweighted_bce",
+      "overrides": ["optimization.update_freq=[4]", "lr_scheduler.lr_deacy_period=224"]
+    },
+    {
+      "run_name": "lr1e6_bce_b512",
+      "what_it_tests": "effect of smoother, less frequent optimizer updates",
+      "expected_if_matters": "more stable loss but possible loss of minority sensitivity",
+      "priority": 2,
+      "loss": "unweighted_bce",
+      "overrides": ["optimization.update_freq=[16]", "lr_scheduler.lr_deacy_period=56"]
+    },
+    {
+      "run_name": "lr3e7_wbce_b256",
+      "what_it_tests": "inverse-prevalence positive weighting with conservative encoder adaptation",
+      "expected_if_matters": "higher NSTEMI/OMI sensitivity and AUPRC with limited specificity loss",
+      "priority": 1,
+      "loss": "weighted_bce",
+      "overrides": ["optimization.lr=[0.0000003]"]
+    },
+    {
+      "run_name": "lr1e6_wbce_b256",
+      "what_it_tests": "isolated loss-function effect at the exact baseline optimizer settings",
+      "expected_if_matters": "higher minority sensitivity/AUPRC than baseline; specificity and PPV remain acceptable after OOF thresholding",
+      "priority": 1,
+      "loss": "weighted_bce",
+      "overrides": []
+    },
+    {
+      "run_name": "lr3e6_wbce_b256",
+      "what_it_tests": "interaction between larger weighted gradients and faster adaptation",
+      "expected_if_matters": "faster minority learning; reject if loss/gradient becomes unstable or validation deteriorates",
+      "priority": 3,
+      "loss": "weighted_bce",
+      "overrides": ["optimization.lr=[0.000003]"]
+    }
+  ],
+  "promotion_rule": {
+    "stage_1": "run every candidate on Fold 0; reject OOM/NaN, degenerate probabilities, or clear overfitting",
+    "stage_2": "promote the best unweighted and best weighted candidate to folds 1 and 2",
+    "stage_3": "choose by three-fold mean macro AUPRC, then macro AUROC, minority AUPRC, F1 and specificity/PPV safety; finish five folds only for the winner",
+    "test": "ensemble the locked winner's five record-level probabilities and submit once using locked pooled-OOF thresholds"
+  },
+  "unnecessary_first_round_ablations": [
+    "simultaneous architecture changes",
+    "sampler or oversampling combined with weighted BCE",
+    "external-test-driven threshold or hyperparameter search",
+    "full factorial LR x batch x loss sweep before one-factor screening"
+  ]
+}

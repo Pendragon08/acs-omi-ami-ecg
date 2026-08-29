@@ -21,6 +21,27 @@ __pycache__/
 .coverage
 results/**/run.log
 
+# Raw execution logs and fairseq event streams stay on the execution server.
+# Curated, redacted run summaries belong under docs/logs/ instead.
+/logs/
+*.log
+*.jsonl
+*/fairseq_train.jsonl
+**/valid_record_predictions.csv
+**/external_record_predictions.csv
+**/external_test_predictions.csv
+**/oof_predictions.csv
+**/external_ensemble_probabilities.csv
+**/submission*.csv
+**/raw_*.csv
+**/split.json
+
+# Downloaded model/data material is never part of this archive.
+**/checkpoints/
+**/checkpoint*.pt
+**/best_model.pt
+**/*.pth
+
 # Environment and local utilities
 .venv/
 venv/
