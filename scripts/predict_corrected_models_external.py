@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -19,6 +20,14 @@ sys.path.insert(0, str(ROOT))
 from experiments import hmoe_kan_github as h  # noqa: E402
 from experiments.acs_joint_model_comparison import build_model, logits  # noqa: E402
 from experiments.acs_joint_task import ACS_CLASSES, LABELS, stem  # noqa: E402
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def load_test():
@@ -50,7 +59,7 @@ def main():
         pred[:,3]=(po>=threshold).astype(np.int8); out=model_root/f'external_test_predictions_corrected.csv'; sub=model_root/f'submission_corrected_{name}.csv'
         with out.open('w',encoding='utf-8',newline='') as f: w=csv.writer(f); w.writerow(['ecg_row_record',*[f'p_acs_{n}' for n in ACS_CLASSES],'p_omi','acs_pred','omi_pred']); [w.writerow([rid,*a.tolist(),float(o),ACS_CLASSES[int(c)],int(op)]) for rid,a,o,c,op in zip(ids,pa,po,ac,pred[:,3])]
         with sub.open('w',encoding='utf-8',newline='') as f: w=csv.writer(f); w.writerow(['ecg_row_record',*LABELS]); [w.writerow([rid,*pr.tolist()]) for rid,pr in zip(ids,pred)]
-        (model_root/'external_prediction_provenance_corrected.json').write_text(json.dumps({'task':'ACS categorical + OMI binary','threshold_omi':threshold,'external_labels_used':False,'submission':str(sub),'predicted_counts':pred.sum(0).tolist()},indent=2),encoding='utf-8')
+        (model_root/'external_prediction_provenance_corrected.json').write_text(json.dumps({'task':'ACS categorical + OMI binary','threshold_omi':threshold,'external_labels_used':False,'n_external_records':len(ids),'submission':str(sub),'submission_sha256':sha256(sub),'predicted_counts':pred.sum(0).tolist()},indent=2),encoding='utf-8')
         print(json.dumps({'model':name,'submission':str(sub),'predicted_counts':pred.sum(0).tolist()}),flush=True)
 
 
