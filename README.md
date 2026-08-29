@@ -25,8 +25,11 @@ The parameter-count table from the historical local-best ECG-LFM run is kept
 below only as an audit record.  That run used the now-invalid four-independent-
 sigmoid formulation and its performance must not be interpreted as a result
 for the corrected task.  The corrected ECG-LFM Baseline/LoRA/DoRA comparison
-is rerun under `results/corrected_ecg_lfm_joint` and will be reported there
-after completion.
+is rerunning under `results/corrected_ecg_lfm_joint_bs64_v2` (GPU1; effective
+batch 256 after a batch-64 memory check) and will be reported there after
+completion. The first attempt was stopped and documented because Fairseq
+exposed a four-versus-five label shape mismatch; no metrics from that attempt
+are used.
 
 | Method | Trainable/effective parameters | Relative result |
 |---|---:|---|

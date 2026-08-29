@@ -1,5 +1,12 @@
 # ECG-LFM 微调策略对比实验方案（先扫描本地最佳方案，再做 LoRA/DoRA 增量优化）
 
+> **任务定义更正（2026-08-29）**：本文件的早期章节把
+> STEMI/NSTEMI/UA/OMI 写成四个独立 sigmoid，仅保留作历史方案和审计依据。
+> 当前执行版使用 ACS `OTHER/STEMI/NSTEMI/UA` 单标签分类头（softmax/argmax）
+> 与独立 OMI/NOMI 二分类头；修正版配置和结果见
+> [`CORRECTED_TASK_FORMULATION.md`](CORRECTED_TASK_FORMULATION.md)、
+> [`corrected_ecg_lfm_joint_20260829.md`](../reports/corrected_ecg_lfm_joint_20260829.md)。
+
 > **用途**：本报告直接交给 Codex 执行。  
 > **前置条件**：上一版 ECG-LFM 四标签方案已经在本地实现并完成实验，包括 raw 500 Hz WFDB 数据、ECG-LFM 原生预处理、四标签对齐、patient-level 5-fold、external test、官方 `pretrain.pt` 加载以及至少一种已验证的微调方案。  
 > **本次第一步不是重新实现原论文 PFT**，而是要求 Codex **扫描当前本地项目，找出目前真实存在且结果最优的 ECG-LFM 微调方案**，完整记录它的代码、配置、冻结策略、训练参数、checkpoint 规则和指标，作为 `LOCAL_BEST_BASELINE`。  

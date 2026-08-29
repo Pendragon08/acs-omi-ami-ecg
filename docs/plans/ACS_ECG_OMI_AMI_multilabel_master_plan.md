@@ -1,5 +1,13 @@
 # ACS ECG OMI/AMI 多标签分类总体研究方案
 
+> **任务定义说明（2026-08-29）**：本文件保留早期 OMI/AMI 双标签方案
+> 的历史设计。凡涉及 STEMI/NSTEMI/UA 的内容，不能将三个互斥亚型作为
+> 独立 sigmoid；当前执行协议是 ACS `OTHER/STEMI/NSTEMI/UA` 单标签四分类
+> 加独立 OMI/NOMI 二分类。请以
+> [`CORRECTED_TASK_FORMULATION.md`](CORRECTED_TASK_FORMULATION.md) 及
+> `experiments/acs_joint_*.py`、`configs/ecg_lfm/corrected_joint_*.yaml`
+> 为准，旧章节仅用于追溯。
+
 ## 1. 研究目标
 
 基于 ACS 12 导联 ECG 数据集，构建：
