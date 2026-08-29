@@ -1,4 +1,9 @@
-# ECG-LFM four-label experiment
+# ECG-LFM four-label experiment (LEGACY—invalid task formulation)
+
+> **2026-08-29 correction:** the original files in this directory use four
+> independent sigmoid outputs, including mutually-exclusive ACS subtypes.
+> Use `run_joint_fold.py`, `evaluate_joint.py` and `configs/ecg_lfm/corrected_joint_*.yaml`
+> for the canonical categorical ACS + independent OMI task.
 
 This directory is an independent experiment branch. It does not modify the
 historical E4 HMoE-KAN code or results.

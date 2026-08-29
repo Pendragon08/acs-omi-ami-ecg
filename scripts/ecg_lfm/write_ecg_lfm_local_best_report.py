@@ -204,7 +204,9 @@ def main() -> None:
         winner, winner_eval = "Baseline (partial-FT)", available["Baseline (partial-FT)"]
 
     lines = [
-        "# ECG-LFM Local-Best LoRA/DoRA 优化实验报告",
+        "# ECG-LFM Local-Best LoRA/DoRA 优化实验报告（LEGACY—任务定义错误）",
+        "",
+        "> **INVALID FOR CURRENT TASK (2026-08-29)**：本生成器仅能汇总四独立 sigmoid 结果；当前 ACS 亚型必须使用分类头。",
         "",
         f"> 自动生成时间：{datetime.now(timezone.utc).isoformat()}。本文只汇总已落盘且可追溯的实验结果；未完成方法不会被当作结论。",
         "",

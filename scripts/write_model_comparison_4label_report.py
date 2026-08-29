@@ -211,7 +211,9 @@ def main() -> None:
         for label in LABELS
     )
     lines = [
-        "# 四标签模型对比实验结果报告（ECG-LFM Fine-tune vs 传统模型）",
+        "# 四标签模型对比实验结果报告（LEGACY—任务定义错误）",
+        "",
+        "> **INVALID FOR CURRENT TASK (2026-08-29)**：本生成器仅能汇总旧的四独立 sigmoid 结果；当前 ACS 亚型必须使用分类头。",
         "",
         "> 自动生成时间：%s（Asia/Shanghai）；所有数值均来自 `results/model_comparison_4label/` JSON/CSV 产物。" % datetime.now(timezone(timedelta(hours=8))).isoformat(timespec="seconds"),
         "",
