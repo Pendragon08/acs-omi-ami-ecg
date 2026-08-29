@@ -19,8 +19,8 @@ record-level prediction is included in the archive.
 |---|---|---|---|
 | Official ECG-LFM preprocessing and baseline gates | GPU1, complete | `logs/ecg_lfm/preprocess_full.log`, `raw_download.log`, `raw_extract.log`, `manifest_and_contracts.log`, `post_checkpoint_gates.log`, `post_checkpoint_gates_storage_fixed.log`, `after_gates.log`, `after_gates_large_batch.log` | `docs/reports/ecg_lfm_4label_finetuning_20260827.md`, `results/ecg_lfm_4label/` |
 | Baseline fold-0 and tuning checks | GPU1, complete | `logs/ecg_lfm/l1a_fold0_parallel.log`, `l1a_fold0_large_batch.log`, `l1a_resume.log`, `l1a_resume_repaired.log`, `logs/ecg_lfm_tuning/fold0_gpu1_queue.log`, `logs/ecg_lfm_tuning/stages.log`, `stages_resume.log` | `docs/reports/ecg_lfm_hyperparameter_loss_ablation_20260827.md`, tuning summaries |
-| LoRA local-best five-fold run | GPU1, complete | `logs/ecg_lfm_local_best_adapters_gpu1.log`, `logs/ecg_lfm_local_best_finalize.log` | `docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md`, `results/ecg_lfm_local_best/lora/summary/` |
-| DoRA local-best five-fold run | GPU0, complete | `logs/ecg_lfm_dora_gpu0.log` | `docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md`, `results/ecg_lfm_local_best/dora/summary/` |
+| LoRA local-best five-fold run (legacy independent sigmoid) | GPU1, complete | `logs/ecg_lfm_local_best_adapters_gpu1.log`, `logs/ecg_lfm_local_best_finalize.log` | legacy-invalid `docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md` |
+| DoRA local-best five-fold run (legacy independent sigmoid) | GPU0, complete | `logs/ecg_lfm_dora_gpu0.log` | legacy-invalid `docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md` |
 | External ECG-LFM Baseline submission | complete | `logs/ecg_lfm_baseline_external_submit.log` | `docs/reports/ecg_lfm_baseline_external_platform_20260828.md` |
 
 ## Loss and feature ablation
@@ -47,7 +47,7 @@ Key raw log groups:
 
 | Run family | GPU / status | Raw server logs | Versioned evidence |
 |---|---|---|---|
-| Four-label model comparison training | GPU0/GPU1, complete | `logs/model_comparison_4label/model_cmp_gpu0.log`, `model_cmp_gpu0_resume.log`, `model_cmp_gpu1.log`, `model_cmp_gpu1_resume.log`, `queue.log` | `docs/reports/model_comparison_4label_20260828.md`, `results/model_comparison_4label/` aggregate summaries |
+| Four-label model comparison training (legacy independent sigmoid) | GPU0/GPU1, complete | `logs/model_comparison_4label/model_cmp_gpu0.log`, `model_cmp_gpu0_resume.log`, `model_cmp_gpu1.log`, `model_cmp_gpu1_resume.log`, `queue.log` | legacy-invalid `docs/reports/model_comparison_4label_20260828.md` |
 | External-platform submissions | complete | `logs/model_comparison_4label_external.log`, `logs/model_comparison_4label_platform_*.log` | per-model aggregate platform metric JSON files |
 
 ## Historical ACS/HMoE experiments

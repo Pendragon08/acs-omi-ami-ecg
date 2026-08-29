@@ -1,4 +1,6 @@
-# ECG-LFM Local-Best LoRA/DoRA 优化实验报告
+# ECG-LFM Local-Best LoRA/DoRA 优化实验报告（LEGACY—任务定义错误）
+
+> **INVALID FOR CURRENT TASK (2026-08-29)**: this report trained four independent sigmoid labels, including mutually-exclusive STEMI/NSTEMI/UA. It is retained for provenance only. The corrected rerun is indexed in `corrected_ecg_lfm_joint_20260829.md`.
 
 > 最后更新：2026-08-28T19:49:11+00:00。本文只汇总已落盘且可追溯的实验结果；未完成方法不会被当作结论。
 

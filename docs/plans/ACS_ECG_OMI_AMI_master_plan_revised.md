@@ -1,4 +1,6 @@
-# ACS ECG OMI/AMI 多标签分类总体研究方案
+# ACS ECG OMI/AMI 多标签分类总体研究方案（历史版本；当前任务定义见更正协议）
+
+> **任务定义更正（2026-08-29）**：涉及 STEMI/NSTEMI/UA 的旧章节若写成独立 sigmoid，均以 `docs/plans/CORRECTED_TASK_FORMULATION.md` 为准。OMI 是独立病理实质维度，ACS 亚型使用单标签分类。
 
 ## 1. 研究目标
 

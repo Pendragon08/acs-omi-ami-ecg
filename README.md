@@ -5,18 +5,21 @@ contains model and data-pipeline code, experiment configurations, research
 plans, aggregate metrics, figures, and report/provenance documents. Controlled
 ECG waveforms and patient-level files remain outside GitHub.
 
-## Current task and final method
+## Current task and final method (corrected)
 
-The current task predicts four labels independently for every ECG:
+The former four-independent-sigmoid formulation was a task-definition error:
+`STEMI`, `NSTEMI` and `UA` are mutually exclusive ACS subtypes. The current
+task is a joint multi-task model with a categorical ACS head
+(`OTHER`, `STEMI`, `NSTEMI`, `UA`) and an independent binary OMI/NOMI head.
+`OTHER` is the explicit source state `[0,0,0]` and is retained as a valid
+negative. ACS predictions are always one argmax class; only OMI uses a
+validation-selected threshold. Three-way ACS metrics are additionally
+reported conditional on ACS-positive records.
 
-`STEMI`, `NSTEMI`, `UA`, and `OMI`.
-
-Each label has its own logit and sigmoid probability. Thresholds are selected
-per label from validation OOF predictions and then frozen for external test
-submission. This is a four-label multi-label binary task, not a mutually
-exclusive softmax three-/four-class task. Records with
-`STEMI/NSTEMI/UA = [0, 0, 0]` are retained as explicit non-ACS-subtype
-negatives; OMI is an independent label and may co-occur with STEMI or NSTEMI.
+The corrected implementation is `experiments/acs_joint_e4.py`; the old entry
+point now routes there. Pre-correction independent-sigmoid results remain in
+their original directories only as invalid legacy diagnostics and must not be
+used as current performance claims.
 
 The latest local-best comparison uses ECG-LFM with parameter-efficient
 adaptation:
@@ -44,7 +47,8 @@ choices, and caveats are in
 
 - 17,960 ECG records from 17,018 patients.
 - Label counts: STEMI 1,442; NSTEMI 1,235; UA 6,213; OMI 1,151.
-- Patient-level iterative multi-label stratified five-fold split, seed 2026.
+- Patient-level five-fold split, seed 2026; the historical patient assignment
+  is reused when valid and audited for the corrected joint target.
 - P2 ECG preprocessing (0.5--40 Hz band-pass, 100 Hz representation); each
   training fold fits its own robust scaler and augmentation is training-only.
 - The ECG-LFM pipeline uses the official 500 Hz input contract where noted in
@@ -54,9 +58,10 @@ choices, and caveats are in
 - Thresholds are chosen on validation OOF predictions only; external labels
   are never used for tuning.
 
-The aggregate results currently archived for the ECG-LFM Baseline, LoRA/DoRA,
-loss/feature ablations, and traditional architecture comparison are under
-[`results/`](results/). The associated reports are indexed in
+Corrected runs write aggregate results under `results/corrected_*` (the jobs
+are being rerun; paths are output targets until their summaries appear).
+Pre-correction aggregates remain under their original names but are marked
+legacy/invalid. The associated reports are indexed in
 [`docs/reports/README.md`](docs/reports/README.md).
 
 ## Repository layout

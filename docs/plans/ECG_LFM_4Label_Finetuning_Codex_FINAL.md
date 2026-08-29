@@ -1,4 +1,6 @@
-# ECG-LFM 四标签微调实施方案（Codex 最终执行版）
+# ECG-LFM 四标签微调实施方案（LEGACY—已被更正任务替代）
+
+> **任务定义更正（2026-08-29）**：本文原先把 STEMI/NSTEMI/UA/OMI 都作为独立 sigmoid 标签。STEMI/NSTEMI/UA 互斥，当前执行版改为 ACS `OTHER/STEMI/NSTEMI/UA` 单标签分类 + 独立 OMI/NOMI 二分类；见 `CORRECTED_TASK_FORMULATION.md` 与 `configs/ecg_lfm/corrected_joint_*.yaml`。
 
 > **目标**：基于 ECG-LFM 官方公开预训练权重与 fine-tuning 代码，在当前 ACS 数据集上完成  
 > `STEMI / NSTEMI / UA / OMI` 四标签多输出预测，并与现有 `E4 HMoE-KAN` 做严格公平对比。  

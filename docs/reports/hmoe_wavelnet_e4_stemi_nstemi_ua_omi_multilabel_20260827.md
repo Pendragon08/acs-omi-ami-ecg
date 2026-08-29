@@ -1,3 +1,5 @@
+> **INVALID FOR CURRENT TASK (2026-08-29)**: this E4 run used four independent sigmoid heads. The observed labels are subtype-exclusive, so its thresholded multi-positive metrics cannot be interpreted as the final ACS/OMI joint task. Corrected rerun: `corrected_joint_e4_20260829.md`.
+
 ---
 experiment_id: ACS-HMOE-WAVELNET-E4-4LABEL-MULTILABEL-20260827
 date: 2026-08-27

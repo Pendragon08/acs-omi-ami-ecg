@@ -1,4 +1,6 @@
-# 四标签模型对比实验结果报告（ECG-LFM Fine-tune vs 传统模型）
+# 四标签模型对比实验结果报告（LEGACY—任务定义错误）
+
+> **INVALID FOR CURRENT TASK (2026-08-29)**: all rows used four independent sigmoid outputs. STEMI/NSTEMI/UA must be categorical; corrected architecture comparison is rerun under `corrected_joint_model_comparison_20260829.md`.
 
 > 自动生成时间：2026-08-28T14:06:12+08:00（Asia/Shanghai）；所有数值均来自 `results/model_comparison_4label/` JSON/CSV 产物。
 

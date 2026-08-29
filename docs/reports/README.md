@@ -1,19 +1,30 @@
 # ACS experiment report index
 
 Reports are grouped by the task definition used in the run. The current
-research endpoint is the four-label independent binary task; older softmax
-and three-label experiments are retained for audit history.
+research endpoint is the corrected joint task: categorical ACS
+`OTHER/STEMI/NSTEMI/UA` plus independent binary OMI/NOMI. Any report that
+describes three independent ACS sigmoids or four independent sigmoids is
+legacy/invalid for the final task and is retained only for audit history.
 
-## Current ECG-LFM reports
+## Corrected task reports (2026-08-29)
 
 | Report | Scope | Status |
 |---|---|---|
-| [ecg_lfm_local_best_lora_dora_optimization_20260828.md](ecg_lfm_local_best_lora_dora_optimization_20260828.md) | Local-best Baseline (partial fine-tuning), LoRA and DoRA; five-fold OOF metrics, external LoRA evaluation, parameter efficiency and cost caveats | complete |
+| [corrected_task_formulation_20260829.md](corrected_task_formulation_20260829.md) | Label audit, model/loss/split correction and rerun registry | canonical |
+| [corrected_joint_e4_20260829.md](corrected_joint_e4_20260829.md) | E4 HMoE/WavelNet/KAN joint ACS categorical + OMI binary five-fold rerun | running; update after completion |
+| [corrected_joint_model_comparison_20260829.md](corrected_joint_model_comparison_20260829.md) | InceptionTime, ResNet1D-Wang, LSTM, ViT and Transformer1D under corrected task | queued/running |
+| [corrected_ecg_lfm_joint_20260829.md](corrected_ecg_lfm_joint_20260829.md) | ECG-LFM Baseline/LoRA/DoRA with joint criterion | queued/running |
+
+## Legacy ECG-LFM reports (independent-sigmoid task; invalid for current ACS subtype formulation)
+
+| Report | Scope | Status |
+|---|---|---|
+| [ecg_lfm_local_best_lora_dora_optimization_20260828.md](ecg_lfm_local_best_lora_dora_optimization_20260828.md) | Legacy independent-sigmoid Baseline/LoRA/DoRA | legacy—invalid |
 | [ecg_lfm_external_comparison_20260828.md](ecg_lfm_external_comparison_20260828.md) | ECG-LFM Baseline versus historical E4 external-platform comparison | complete |
 | [ecg_lfm_baseline_external_platform_20260828.md](ecg_lfm_baseline_external_platform_20260828.md) | Baseline four-label external-platform submission and per-label metrics | complete |
-| [ecg_lfm_4label_finetuning_20260827.md](ecg_lfm_4label_finetuning_20260827.md) | Official ECG-LFM preprocessing, four-label fine-tuning, gates, five-fold protocol and external submission | complete |
+| [ecg_lfm_4label_finetuning_20260827.md](ecg_lfm_4label_finetuning_20260827.md) | Legacy independent-sigmoid ECG-LFM preprocessing/fine-tuning | legacy—invalid |
 | [ecg_lfm_hyperparameter_loss_ablation_20260827.md](ecg_lfm_hyperparameter_loss_ablation_20260827.md) | Learning-rate/batch-size checks, loss comparison, training curves and overfitting audit | complete |
-| [model_comparison_4label_20260828.md](model_comparison_4label_20260828.md) | ECG-LFM versus InceptionTime, ResNet1D-Wang, LSTM, ViT-1D and Transformer1D | complete |
+| [model_comparison_4label_20260828.md](model_comparison_4label_20260828.md) | Legacy independent-sigmoid architecture comparison | legacy—invalid |
 
 ## Loss and feature ablation
 
@@ -25,7 +36,7 @@ and three-label experiments are retained for audit history.
 | [loss_feature_ablation/EXPERIMENT_LOG.md](loss_feature_ablation/EXPERIMENT_LOG.md) | Chronological loss/feature ablation run record | complete |
 | [loss_feature_ablation/EXPERIMENT_AUDIT_ABLATION.md](loss_feature_ablation/EXPERIMENT_AUDIT_ABLATION.md) | Fair-comparison and leakage audit | complete |
 
-## Historical four-label and ACS-subtype reports
+## Historical four-label and ACS-subtype reports (legacy unless explicitly marked corrected)
 
 | Report | Scope | Status |
 |---|---|---|
@@ -39,12 +50,12 @@ and three-label experiments are retained for audit history.
 
 ## Reading the results correctly
 
-The four-label task reports a metric for each independent label and a macro
-summary. Accuracy is not the primary criterion for the imbalanced OMI/NSTEMI
-labels; sensitivity, AUPRC, F1, PPV, AUROC and specificity are interpreted
-together. Thresholds are selected on validation OOF predictions and frozen
-before external testing. External-platform responses generally provide
-per-label confusion-derived metrics but not AUROC/AUPRC.
+The corrected reports separate categorical ACS metrics (four-way and
+ACS-positive conditional three-way) from OMI binary metrics. Accuracy is not
+the primary criterion for imbalanced OMI/NSTEMI; sensitivity, AUPRC, F1, PPV,
+AUROC and specificity are interpreted together. Only the OMI threshold is
+selected on validation OOF predictions and frozen before external testing;
+ACS uses argmax and cannot produce simultaneous subtype positives.
 
 ## External artefacts and raw logs
 

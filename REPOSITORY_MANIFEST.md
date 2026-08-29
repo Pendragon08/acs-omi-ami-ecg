@@ -3,6 +3,11 @@
 This manifest defines what is synchronized to the GitHub research archive and
 what remains on the controlled execution environment.
 
+The canonical task is the corrected joint formulation: categorical
+`OTHER/STEMI/NSTEMI/UA` ACS subtype plus independent binary OMI/NOMI. The
+former four-independent-sigmoid artifacts remain only as legacy-invalid
+provenance.
+
 ## Included
 
 | Category | GitHub location | Contents |
@@ -39,6 +44,6 @@ Every report should identify the task definition, data/split contract, seed,
 configuration, model/loss variant, threshold-selection rule, metrics, and
 source result family. Absolute server paths may be retained when needed for
 internal reproducibility, but credentials and record-level identifiers must
-never be included. The latest ECG-LFM LoRA/DoRA parameter-efficiency analysis
-is documented in
-`docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md`.
+never be included. The corrected rerun registry is documented in
+`docs/reports/corrected_task_formulation_20260829.md`; the historical
+ECG-LFM LoRA/DoRA parameter-efficiency analysis is explicitly legacy-invalid.

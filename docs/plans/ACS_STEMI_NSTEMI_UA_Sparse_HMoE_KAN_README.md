@@ -1,4 +1,6 @@
-# ACS-MAGPIE-MoE：STEMI / NSTEMI / UA 三标签 ECG Sparse MoE 方案
+# ACS-MAGPIE-MoE：STEMI / NSTEMI / UA 三标签 ECG Sparse MoE 方案（LEGACY—互斥亚型）
+
+> **任务定义更正（2026-08-29）**：STEMI/NSTEMI/UA 必须作为单标签 ACS 分类头（含 OTHER），不能作为三个独立 sigmoid。本文保留为历史方案；当前联合 ACS+OMI 协议见 `CORRECTED_TASK_FORMULATION.md`。
 
 > **用途**：本 README 用于指导 Codex 基于现有旧 MoE / XceptionNet 项目实现新方案，并作为后续论文 Methods、Ablation、Related Work 的设计底稿。  
 > **数据集**：Du et al., *Scientific Data*, 2026, *A large-scale 12-lead electrocardiogram dataset for acute coronary syndrome prediction containing 19,955 ECGs*.  

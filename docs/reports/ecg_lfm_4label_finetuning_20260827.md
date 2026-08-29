@@ -1,4 +1,6 @@
-# ECG-LFM 四标签微调实验记录
+# ECG-LFM 四标签微调实验记录（LEGACY—任务定义错误）
+
+> **INVALID FOR CURRENT TASK (2026-08-29)**: the historical four-output BCE/sigmoid task treated ACS subtypes as independent. Do not use its metrics as final results; see the corrected joint ECG-LFM report.
 
 更新时间：2026-08-27（Asia/Shanghai）  
 状态：**实现、环境、原始数据、队列/切分、全量预处理、官方权重、真实前向、64-record 过拟合门禁及大 batch 单步门禁均通过；L0 Fold 0 正在 GPU1、L1a Fold 0 正在 GPU0 并行训练。**
