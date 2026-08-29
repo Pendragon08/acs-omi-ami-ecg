@@ -169,10 +169,11 @@ Transformer1D 16/17/13/15/21).
 These are OOF descriptive results rather than a nested estimate: the same
 outer-fold validation records select that fold's checkpoint. This limitation
 is recorded explicitly and applies equally to every architecture. On the
-registered OMI criteria, InceptionTime has the strongest OOF AUPRC/F1/MCC,
-while ResNet1D-Wang has the highest OMI sensitivity and ACS accuracy; both
-are close. ViT is consistently weakest. External results preserve the same
-ordering for OMI F1/AUPRC proxy, with InceptionTime best among the five.
+registered OMI criteria, ResNet1D-Wang has the highest pooled OOF AUROC,
+AUPRC, sensitivity and ACS accuracy, while InceptionTime has the highest OOF
+F1/MCC and conditional ACS macro-F1; the differences are small. ViT is
+consistently weakest. External results preserve the same ordering for OMI F1,
+with InceptionTime best among the five (the platform does not provide AUPRC).
 The comparison does not establish statistical superiority; paired bootstrap
 confidence intervals were not part of this architecture script.
 
