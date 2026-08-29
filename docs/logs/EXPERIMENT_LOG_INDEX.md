@@ -61,7 +61,7 @@ The corrected E4 rerun completed on physical GPU1; its raw screen log is
 
 | Run family | GPU / status | Raw server logs | Versioned evidence |
 |---|---|---|---|
-| Corrected ECG-LFM Baseline/LoRA/DoRA (ACS categorical + OMI binary) | GPU1, running | `logs/corrected_ecg_lfm_joint_bs64/master.log` and per-adaptation/fold logs | `docs/reports/corrected_ecg_lfm_joint_20260829.md`; aggregate outputs will be archived after completion |
+| Corrected ECG-LFM Baseline/LoRA/DoRA (ACS categorical + OMI binary) | GPU1, running (v2 after label-shape fix) | `logs/corrected_ecg_lfm_joint_bs64_v2/master.log` and per-adaptation/fold logs | `docs/reports/corrected_ecg_lfm_joint_20260829.md`; aggregate outputs will be archived after completion |
 
 ## Historical ACS/HMoE experiments
 

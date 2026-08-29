@@ -23,8 +23,12 @@ class ACSJointCriterionConfig(Dataclass):
 class ACSJointCriterion(BaseCriterion):
     """Cross entropy for ACS states plus numerically stable OMI BCE.
 
-    Source labels remain four columns (STEMI/NSTEMI/UA/OMI); the criterion
-    derives the categorical ACS target and rejects impossible subtype overlap.
+    The source audit is four columns (STEMI/NSTEMI/UA/OMI). Fairseq's
+    validation loop reshapes labels to ``model.num_labels``; therefore the
+    ECG-LFM runner materialises a five-column training label file
+    (OTHER/STEMI/NSTEMI/UA/OMI). Accept both representations so the criterion
+    remains explicit about the corrected semantics and can still validate a
+    source-label batch in unit tests.
     All optional weights are supplied from the training fold only.
     """
 
@@ -40,15 +44,21 @@ class ACSJointCriterion(BaseCriterion):
         raw = raw.float()
         if raw.ndim == 1:
             raw = raw.unsqueeze(0)
-        if raw.shape[-1] != 4:
-            raise ValueError(f"expected source labels [B,4], got {tuple(raw.shape)}")
+        if raw.shape[-1] not in (4, 5):
+            raise ValueError(f"expected source labels [B,4] or joint labels [B,5], got {tuple(raw.shape)}")
         if not bool(torch.isfinite(raw).all()) or not bool(torch.isin(raw, torch.tensor((0.0, 1.0), device=raw.device)).all()):
             raise ValueError("source labels must be finite binary values in {0,1}")
-        subtype_sum = raw[:, :3].sum(dim=1)
-        if bool((subtype_sum > 1.0).any()):
-            raise ValueError("STEMI/NSTEMI/UA overlap found in a categorical ACS batch")
-        acs = torch.where(subtype_sum == 0, torch.zeros_like(subtype_sum), raw[:, :3].argmax(dim=1) + 1)
-        return acs.long(), raw[:, 3].float()
+        if raw.shape[-1] == 4:
+            subtype_sum = raw[:, :3].sum(dim=1)
+            if bool((subtype_sum > 1.0).any()):
+                raise ValueError("STEMI/NSTEMI/UA overlap found in a categorical ACS batch")
+            acs = torch.where(subtype_sum == 0, torch.zeros_like(subtype_sum), raw[:, :3].argmax(dim=1) + 1)
+            return acs.long(), raw[:, 3].float()
+        # Five-column joint labels are one-hot ACS state + independent OMI.
+        acs_one_hot = raw[:, :4]
+        if bool((acs_one_hot.sum(dim=1) != 1.0).any()):
+            raise ValueError("joint ACS labels must contain exactly one OTHER/STEMI/NSTEMI/UA state")
+        return acs_one_hot.argmax(dim=1).long(), raw[:, 4].float()
 
     def forward(self, model, sample, reduce=True, save_outputs=False):
         net_output = model(**sample["net_input"])
