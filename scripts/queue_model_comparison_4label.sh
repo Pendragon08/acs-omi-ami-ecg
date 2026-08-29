@@ -7,8 +7,8 @@ set -euo pipefail
 # directory. Do not launch a competing job while any protected session lives.
 ROOT=/data/code/ouyanghao/oyh/ACS-OMI-AMI
 CONDA_ROOT=/data/code/ouyanghao/miniconda3
-LOG_DIR="$ROOT/logs/model_comparison_4label"
-OUT_DIR="results/model_comparison_4label"
+LOG_DIR="$ROOT/logs/corrected_joint_model_comparison"
+OUT_DIR="results/corrected_joint_model_comparison"
 mkdir -p "$LOG_DIR"
 
 protected_sessions=(ecg_lfm_l1a_resume ecg_lfm_tune_gpu1 ecg_lfm_tuning_stages)
@@ -51,7 +51,7 @@ start_worker() {
     printf '%s worker already running session=%s\n' "$(date -u +%FT%TZ)" "$session" >> "$LOG_DIR/queue.log"
     return
   fi
-  screen -dmS "$session" bash -lc "cd '$ROOT' && source '$CONDA_ROOT/etc/profile.d/conda.sh' && conda activate oyh && export CUDA_VISIBLE_DEVICES='$gpu' && python experiments/model_comparison_4label.py --models '$models' --out_dir '$OUT_DIR' --device cuda:0 --run_tag '$session' --num_workers 0 > '$log' 2>&1"
+  screen -dmS "$session" bash -lc "cd '$ROOT' && source '$CONDA_ROOT/etc/profile.d/conda.sh' && conda activate oyh && export CUDA_VISIBLE_DEVICES='$gpu' && python experiments/model_comparison_4label.py --models $(printf '%s' '$models' | tr ',' ' ') --out_dir '$OUT_DIR' --device cuda:0 --num_workers 0 > '$log' 2>&1"
   printf '%s started %s on physical GPU%s models=%s\n' "$(date -u +%FT%TZ)" "$session" "$gpu" "$models" >> "$LOG_DIR/queue.log"
 }
 

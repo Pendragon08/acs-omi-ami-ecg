@@ -119,6 +119,9 @@ def run_fold(args, name, fold, train_idx, val_idx, x_raw, acs, omi, patient_ids,
     model.load_state_dict(best_state); ya, yo, pa, po = predict(model, va_loader, device)
     model_dir = out_dir / name; model_dir.mkdir(parents=True, exist_ok=True)
     torch.save(best_state, model_dir / f"fold{fold}_seed{args.seed}.pt")
+    fold_dir = model_dir / f"fold{fold}"; fold_dir.mkdir(parents=True, exist_ok=True)
+    torch.save(best_state, fold_dir / "best_model.pt")
+    (fold_dir / "scaler.json").write_text(json.dumps(scaler, indent=2), encoding="utf-8")
     (model_dir / f"history_fold{fold}.json").write_text(json.dumps(history, indent=2), encoding="utf-8")
     return {"model": name, "fold": fold, "best_epoch": best_epoch, "best_val_joint_score": best, "train_sec": round(time.time() - started, 2), "n_params": sum(p.numel() for p in model.parameters() if p.requires_grad), "history": history}, (ya, yo, pa, po)
 
@@ -139,6 +142,7 @@ def main():
         model_dir = out_dir / name; save_curves(model_dir, histories, f"Corrected joint {name}"); save_roc_pr_curves(model_dir, acs, oof_a, omi, oof_o)
         (model_dir / "oof_predictions.npz").write_bytes(b"") if False else np.savez_compressed(model_dir / "oof_predictions.npz", acs=acs, omi=omi, p_acs=oof_a, p_omi=oof_o)
         summary["models"][name] = {"folds": results, "thresholds": thresholds, "threshold_details": details, "pooled_oof_metrics": pooled, "recommended_threshold": "youden_j"}
+        (model_dir / "summary.json").write_text(json.dumps({"model": name, **summary["models"][name]}, indent=2, ensure_ascii=False), encoding="utf-8")
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"); print("SUMMARY " + json.dumps(summary, ensure_ascii=False), flush=True)
 
 

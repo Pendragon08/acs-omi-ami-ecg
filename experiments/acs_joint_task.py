@@ -134,6 +134,8 @@ def encode_targets(y_source: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     y = np.asarray(y_source, dtype=np.int64)
     if y.ndim != 2 or y.shape[1] != 4:
         raise ValueError(f"expected [N,4] source labels, got {y.shape}")
+    if not np.isfinite(y).all() or not np.isin(y, (0, 1)).all():
+        raise ValueError("source labels must be finite binary values in {0,1}")
     subtype_sum = y[:, :3].sum(axis=1)
     if np.any(subtype_sum > 1):
         raise ValueError("ACS subtype labels are not mutually exclusive")
