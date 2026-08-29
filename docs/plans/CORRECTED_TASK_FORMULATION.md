@@ -29,6 +29,17 @@ Rows with unknown/non-binary labels are excluded.  `[0,0,0]` is never treated
 as missing; it is the explicit non-ACS state.  Any subtype overlap is a hard
 data-integrity error.
 
+### Fairseq label-file compatibility
+
+The official ECG-LFM Fairseq validation loop reshapes each batch label to
+`model.num_labels`. Therefore the ECG-LFM runner materialises a private
+five-column `y_joint_5.npy` file in the execution environment with columns
+`[OTHER, STEMI, NSTEMI, UA, OMI]`. This is a one-hot representation of the
+same target above, not an additional label or a change to the source data.
+The criterion accepts both source `[STEMI, NSTEMI, UA, OMI]` rows (for checks)
+and the Fairseq-compatible five-column rows, and rejects any non-binary or
+overlapping ACS state before training.
+
 ## Model and loss
 
 Every corrected model emits five logits.  The first four are a categorical
