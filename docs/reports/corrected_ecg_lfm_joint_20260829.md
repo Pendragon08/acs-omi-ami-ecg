@@ -1,12 +1,10 @@
 # ECG-LFM 校正联合任务实验报告
 
 更新时间：2026-08-30 10:52（UTC）
-状态：ECG-LFM Baseline 五折已完成并生成 pooled OOF 验证汇总；LoRA
-fold0--4 已完成并生成 pooled OOF 汇总；DoRA fold0--2 已完成。Fold3 于
-2026-08-30 09:34 UTC 训练到 epoch 10（valid_loss=1.03139）并写出
-`checkpoint_best.pt`，随后进程收到 SIGKILL，未正常收尾；fold4 尚未启动，
-DoRA pooled OOF 汇总尚未生成。LoRA/DoRA 最终比较和外部平台提交需等待 DoRA
-恢复并完成五折。
+状态：ECG-LFM Baseline、LoRA、DoRA 五折均已完成并生成 pooled OOF 验证汇总。
+DoRA fold3 曾在 epoch 10 中断，随后从可复现状态恢复至 epoch 20；fold4 在 GPU1
+独立完成后复制到正式目录。DoRA 的 pooled OOF、曲线、脱敏日志已齐全；外部平台
+hard-label 结果正在归档。
 
 ## 任务定义
 
@@ -54,26 +52,26 @@ fold3 `1.04264`（epoch 5）、fold4 `1.04088`（epoch 6）。五折最佳损失
 `0.93697±0.00150`。LoRA fold0--4 已完成，已生成 `lora/summary/summary.json`
 （pooled OOF）。DoRA fold0--2 已正常完成；fold3 训练至 epoch 10、valid_loss
 `1.03139` 后在保存 checkpoint 后被 SIGKILL，现有 `checkpoint_best.pt` 约 2.4 GB，
-但该折没有正常完成标记；fold4 尚未启动。DoRA 五折完成后再生成最终比较、曲线
-和外部平台提交结果。
+并在恢复后正常收尾；fold4 已在 GPU1 完成。DoRA 五折完成后统一评估器已生成
+最终比较、曲线和提交文件。
 
 ## 三种微调方式训练成本对比
 
 参数量取各方式 fold0 的 Fairseq 启动日志；训练时间为各折日志中的
 `done training in`（仅训练，不含统一评估），GPU 内存取训练日志记录的最小
-`gb_free`。Baseline/LoRA 的时间为五折均值±标准差，DoRA 目前只有 fold0，
-因此不外推五折均值。
+`gb_free`。各方式时间均报告五折均值±标准差；DoRA 的 fold3 含恢复过程，单独
+在备注中保留该事实。
 
 | 方法 | 模型总参数 | 可训练参数 | 可训练比例 | 记录的最小剩余显存 | 估计峰值显存 | 单折训练时间 | 五折训练时间 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Baseline（全参） | 622.881 M | 622.881 M | 100.000% | 12.0 GB | ≈35.4 GB | 6670.3±495.7 s | 33351.3 s（9.26 h） |
 | LoRA（rank=8） | 628.779 M | 5.903 M | 0.9389% | 19.0 GB | ≈28.4 GB | 6131.3±367.1 s | 30656.7 s（8.52 h） |
-| DoRA（rank=8） | 629.148 M | 6.272 M | 0.9969% | 16.1 GB | ≈31.3 GB | 7404±1615 s（已完成 fold0--2） | 22213.1 s（已完成 3 折，fold3--4 待运行） |
+| DoRA（rank=8） | 629.148 M | 6.272 M | 0.9969% | 16.1 GB | ≈31.3 GB | 7886.6±1674.8 s（fold3 含恢复） | 39432.8 s（10.95 h） |
 
-因此，当前日志直接支持的结论是：LoRA 将可训练参数降至不到 1%，峰值显存
-较 Baseline 约少 7.0 GB；DoRA 已完成 3 折，较 LoRA 多约 2.9 GB 峰值显存，
-当前单折耗时均值也更长，最终五折成本需等 fold3--4 结束后再比较。上述显存为日志估计
-值，不替代 `nvidia-smi` 的瞬时峰值测量。
+因此，当前日志直接支持的结论是：LoRA/DoRA 将可训练参数降至不到 1%；LoRA
+峰值显存较 Baseline 约少 7.0 GB，DoRA 较 LoRA 多约 2.9 GB。DoRA 五折总耗时
+较长主要来自 fold3 的中断恢复。上述显存为日志估计值，不替代 `nvidia-smi` 的
+瞬时峰值测量。
 
 ## Baseline 五折验证指标（pooled OOF）
 
@@ -145,13 +143,41 @@ OMI 二分类阈值结果：
 
 其中，`threshold=0.25` 给出最高 OMI F1；`threshold=0.05` 是当前偏向灵敏度
 与 Youden J 的工作点。LoRA 相比 Baseline 的 pooled OOF 增量为：ACS
-Macro-AUROC `+0.00450`、Macro-AUPRC `+0.00604`、Macro-F1 `+0.01082`；
-OMI AUROC `+0.00540`、AUPRC `+0.01567`。这些增量仍需 DoRA 完成及外部平台
-测试后再作最终结论。
+ Macro-AUROC `+0.00450`、Macro-AUPRC `+0.00604`、Macro-F1 `+0.01082`；
+OMI AUROC `+0.00540`、AUPRC `+0.01567`。DoRA 相对 Baseline 的增量为 ACS
+Macro-AUROC `+0.00121`、Macro-AUPRC `+0.00392`、Macro-F1 `+0.00748`，OMI
+AUROC `+0.00422`、AUPRC `+0.01087`；三种方式的最终取舍见总报告。
 
-## 结果归档计划
+## DoRA 五折验证指标（pooled OOF）
 
-每个适配方式完成后将写入：
+DoRA 五折均已完成；fold3 在中断后恢复，fold4 在 GPU1 并行完成后复制到正式目录。
+以下结果来自 `dora/summary/summary.json`，`n=17,960`：
+
+| 任务 | Accuracy | AUROC | AUPRC | Macro-F1 |
+|---|---:|---:|---:|---:|
+| ACS 四分类（OTHER/STEMI/NSTEMI/UA） | 0.56798 | 0.78376 | 0.53685 | 0.50692 |
+| ACS 阳性条件三分类（`n=8,890`） | 0.80922 | — | — | 0.65224 |
+| OMI 二分类（Youden） | 0.83959 | 0.90945 | 0.42673 | 0.40537 |
+
+DoRA ACS 逐类 AUROC/AUPRC/F1 为 OTHER `0.6982/0.6878/0.6579`、STEMI
+`0.9497/0.6972/0.6542`、NSTEMI `0.8155/0.2825/0.2748`、UA
+`0.6716/0.4799/0.4408`。OMI 阈值结果：固定 0.5 的 Sensitivity/Specificity
+为 `0.2450/0.9862`；最大 F1 阈值 `0.18`（F1 `0.4790`）；Youden 阈值
+`0.05`（Sensitivity `0.8532`、Specificity `0.8387`、PPV `0.2658`、NPV
+`0.9882`、F1 `0.4054`、MCC `0.4192`，TP/TN/FP/FN=`982/14097/2712/169`）；
+Sensitivity≥0.90 阈值 `0.02`（Sensitivity `0.9105`、Specificity `0.7472`）。
+
+DoRA 外部平台 hard-label 结果为 STEMI `0.7346/0.9744/0.7169/0.9765/0.7256`、
+NSTEMI `0.1912/0.9736/0.3467/0.9427/0.2464`、UA
+`0.4047/0.7814/0.4902/0.7165/0.4434`、OMI
+`0.8594/0.8329/0.2607/0.9886/0.4000`（每组依次为 Sensitivity/Specificity/
+PPV/NPV/F1）。提交文件 SHA-256 为
+`5c0a3dbebf3e21a3dd31d7606395d9997e4aba91fcb983c7212b711b2bc0fcee`，聚合响应保存在
+`results/corrected_ecg_lfm_joint_bs64_v2/dora/official_platform_4label_metrics.json`。
+
+## 结果归档内容
+
+每个适配方式完成后均写入：
 
 - `summary/summary.json`、五折 OOF/阈值/外部平台聚合指标；
 - 每折训练历史和脱敏的 `training_log_sanitized.csv`（仅 fold、epoch、loss、
@@ -160,6 +186,6 @@ OMI AUROC `+0.00540`、AUPRC `+0.01567`。这些增量仍需 DoRA 完成及外�
 - 外部平台返回的聚合 JSON 与提交 provenance（不含提交 CSV）。
 
 原始 ECG、患者级表格、checkpoint、逐例预测、Fairseq 原始 JSONL 和服务器
-路径不会上传 GitHub。Baseline 的可公开脱敏日志和图表已归档；LoRA/DoRA 队列
-完成后再追加最终比较表和外部平台逐标签指标，并在
-`docs/logs/EXPERIMENT_LOG_INDEX.md` 登记。
+路径不会上传 GitHub。Baseline、LoRA、DoRA 的可公开脱敏日志和图表均已归档；
+外部平台逐标签指标写入各方法目录，并在 `docs/logs/EXPERIMENT_LOG_INDEX.md`
+登记。

@@ -9,11 +9,12 @@
 
 | 报告 | 内容 | 状态 |
 |---|---|---|
-| [实验结果总报告_20260829.md](实验结果总报告_20260829.md) | 数据、划分、校正实验、外部平台和 GitHub 归档总览 | 当前总报告 |
+| [实验结果总报告_最终.md](实验结果总报告_最终.md) | 校正任务、ECG-LFM 微调、E4、传统模型、历史消融和外部平台结果总览 | 已完成；当前总报告 |
+| [实验结果总报告_20260829.md](实验结果总报告_20260829.md) | 2026-08-29 过程快照 | 历史快照 |
 | [corrected_task_formulation_20260829.md](corrected_task_formulation_20260829.md) | 标签审计、代码修正、重跑登记 | 规范 |
 | [corrected_joint_e4_20260829.md](corrected_joint_e4_20260829.md) | E4 HMoE/WavelNet/KAN 五折联合任务 | 已完成；GPU1 + 外部平台 |
 | [corrected_joint_model_comparison_20260829.md](corrected_joint_model_comparison_20260829.md) | InceptionTime、ResNet1D-Wang、LSTM、ViT、Transformer1D 对比 | 已完成；GPU1 + 外部平台 |
-| [corrected_ecg_lfm_joint_20260829.md](corrected_ecg_lfm_joint_20260829.md) | ECG-LFM Baseline/LoRA/DoRA 校正重跑 | GPU1 运行中 |
+| [corrected_ecg_lfm_joint_20260829.md](corrected_ecg_lfm_joint_20260829.md) | ECG-LFM Baseline/LoRA/DoRA 校正重跑过程报告 | 过程记录；最终见总报告 |
 
 ## 历史 OMI/AMI 损失函数与特征消融
 

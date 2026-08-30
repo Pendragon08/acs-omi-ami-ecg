@@ -5,14 +5,13 @@
 当前规范是“ACS 亚型四分类 + OMI 二分类”联合任务：
 `OTHER / STEMI / NSTEMI / UA` 互斥，OMI/NOMI 独立。最新数据、五折结果、外部
 平台指标、训练日志和图表请先阅读
-[`docs/reports/实验结果总报告_20260829.md`](docs/reports/实验结果总报告_20260829.md)。
+[`docs/reports/实验结果总报告_最终.md`](docs/reports/实验结果总报告_最终.md)。
 报告索引在 [`docs/reports/README.md`](docs/reports/README.md)，日志和 GitHub
 归档规则在 [`docs/logs/EXPERIMENT_LOG_INDEX.md`](docs/logs/EXPERIMENT_LOG_INDEX.md)。
 
-校正后的 E4 与传统架构结果目录已经包含脱敏的逐 epoch loss/LR 日志、损失曲线、
-ROC/PR 曲线和混淆矩阵；ECG-LFM 校正队列完成后会按同一规则追加。原始 ECG、
-患者级文件、checkpoint、逐例预测、提交 CSV 和含服务器路径的原始日志不会进入
-GitHub。
+校正后的 E4、传统架构和 ECG-LFM 结果目录已经包含脱敏的逐 epoch loss/LR 日志、
+损失曲线、ROC/PR 曲线、混淆矩阵和外部平台聚合指标。原始 ECG、患者级文件、
+checkpoint、逐例预测、提交 CSV 和含服务器路径的原始日志不会进入 GitHub。
 
 This repository is the versioned, reproducible part of the ACS ECG study. It
 contains model and data-pipeline code, experiment configurations, research
@@ -39,12 +38,18 @@ The parameter-count table from the historical local-best ECG-LFM run is kept
 below only as an audit record.  That run used the now-invalid four-independent-
 sigmoid formulation and its performance must not be interpreted as a result
 for the corrected task. The corrected ECG-LFM Baseline/LoRA/DoRA comparison is
-running under `results/corrected_ecg_lfm_joint_bs64_v2` (GPU1; effective batch
-256 after a batch-64 memory check). Baseline five-fold training is complete;
-LoRA fold0--3 are complete and fold4 is currently in epoch 9, while DoRA has
-not started. The first attempt was stopped and documented because Fairseq
+complete under `results/corrected_ecg_lfm_joint_bs64_v2`. DoRA fold3 was recovered
+on GPU0 and fold4 was completed in parallel on GPU1; all three methods have
+pooled OOF summaries, sanitized logs, curves, confusion matrices and external
+platform JSON. The first attempt was stopped and documented because Fairseq
 exposed a four-versus-five label shape mismatch; no metrics from that attempt
 are used.
+
+按完整五折 pooled OOF、外部平台四标签 hard-label 和训练成本综合，当前最终推荐
+ECG-LFM LoRA（rank=8，登记学习率 `1e-4`）：ACS Macro-AUROC/Macro-AUPRC/
+Macro-F1=`0.78705/0.53897/0.51026`，OMI AUROC/AUPRC=`0.91063/0.43153`，
+外部四标签平均 F1=`0.4576`，可训练参数占 `0.9389%`。DoRA 作为已完成的消融
+保留在结果目录，但没有形成稳定总体提升。
 
 | Method | Trainable/effective parameters | Relative result |
 |---|---:|---|
@@ -87,11 +92,10 @@ for the corrected categorical-ACS + OMI task.
   limitation is stated in each corrected report.
 
 Corrected runs write aggregate results under `results/corrected_*`. The E4
-HMoE/WavelNet/KAN rerun and the five traditional architecture comparison are
-complete; the corrected ECG-LFM Baseline/LoRA/DoRA queue is currently running
-on GPU1 under `results/corrected_ecg_lfm_joint_bs64_v2` after a documented
-label-shape fix. Pre-correction aggregates remain under their original names
-but are marked legacy/invalid. The associated reports are indexed in
+HMoE/WavelNet/KAN rerun, five traditional architecture comparisons, and corrected
+ECG-LFM Baseline/LoRA/DoRA queue are complete after the documented label-shape
+fix. Pre-correction aggregates remain under their original names but are marked
+legacy/invalid. The associated reports are indexed in
 [`docs/reports/README.md`](docs/reports/README.md).
 
 ## Repository layout

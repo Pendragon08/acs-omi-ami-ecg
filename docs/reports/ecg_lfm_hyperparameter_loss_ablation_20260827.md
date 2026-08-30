@@ -4,8 +4,10 @@
 > 亚型任务的性能结论。当前执行版为 ACS `OTHER/STEMI/NSTEMI/UA` 单标签
 > 四分类 + 独立 OMI/NOMI 二分类，见 `corrected_task_formulation_20260829.md`。
 
-更新时间：2026-08-28（Asia/Shanghai）  
-状态：**Baseline Fold 0–2 已完成并补齐 record-level 正式评价，Fold 3 正在 GPU0 训练（当前到 epoch 8；最佳 validation loss 暂为 epoch 6 的 0.406），Fold 4 尚未开始；调参队列在 GPU1 已完成 5 个候选、1 个运行中、1 个排队。完整五折 OOF、与 E4 的患者级 paired bootstrap、唯一最终方案冻结和外部平台提交尚未完成。**  
+更新时间：2026-08-28（Asia/Shanghai）
+状态：**历史阶段性快照（已被当前总报告取代）**。下文的 running/pending 仅表示
+2026-08-28 当时的队列状态；当前校正任务的完整五折、外部平台和最终方法判断见
+[`实验结果总报告_最终.md`](实验结果总报告_最终.md)。
 > 这是 2026-08-28 最终 LoRA/DoRA 运行完成前的阶段性快照；最终适配策略与完整结果以 [`ecg_lfm_local_best_lora_dora_optimization_20260828.md`](ecg_lfm_local_best_lora_dora_optimization_20260828.md) 为准。
 审稿式消融状态：**pending external review**（当前会话禁止启动独立评审代理，先执行预注册高优先级实验）。
 

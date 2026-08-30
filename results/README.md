@@ -4,6 +4,8 @@
 阈值分析、外部平台聚合指标、脱敏逐 epoch 训练日志和可视化图。当前任务是
 ACS `OTHER/STEMI/NSTEMI/UA` 互斥四分类 + OMI/NOMI 独立二分类。
 
+完整中文分析见 [`docs/reports/实验结果总报告_最终.md`](../docs/reports/实验结果总报告_最终.md)。
+
 ## 当前有效结果
 
 - `corrected_joint_acs_omi_e4/`：E4 HMoE/WavelNet/KAN 五折结果；含
@@ -11,7 +13,8 @@ ACS `OTHER/STEMI/NSTEMI/UA` 互斥四分类 + OMI/NOMI 独立二分类。
 - `corrected_joint_model_comparison/<模型>/`：InceptionTime、ResNet1D-Wang、
   LSTM、ViT-1D、Transformer1D；每个目录含同样的历史、汇总、脱敏日志和图表。
 - `corrected_ecg_lfm_joint_bs64_v2/`：校正 ECG-LFM Baseline/LoRA/DoRA 队列，
-  当前在 GPU1 运行；完成后追加同格式文件。
+  各方法目录保存汇总、脱敏日志、曲线和已提交的平台 JSON；三种方式均已完成，
+  最终比较见 `docs/reports/实验结果总报告_最终.md`。
 - `loss_feature_ablation/`：OMI 的 Baseline/WBCE/Focal/CB-Focal 多种子损失实验，
   以及原始 ECG/年龄/性别/中位数 ECG 特征对比。
 

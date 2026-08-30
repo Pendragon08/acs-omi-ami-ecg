@@ -3,7 +3,7 @@
 > 中文结论：STEMI、NSTEMI、UA 是互斥 ACS 亚型，不能作为三个独立 sigmoid
 > 标签；当前规范是 ACS `OTHER/STEMI/NSTEMI/UA` 四分类 + OMI/NOMI 二分类。
 > 本文件记录代码修正、历史划分复用、Fairseq 标签形状修复和各实验状态；
-> 结果与图表总览见 [`实验结果总报告_20260829.md`](实验结果总报告_20260829.md)。
+> 结果与图表总览见 [`实验结果总报告_最终.md`](实验结果总报告_最终.md)。
 
 > **术语边界（2026-08-30）**：严格的纯多标签分类要求所有标签独立使用
 > sigmoid；本项目当前采用的是“互斥 ACS 单标签分类头 + 独立 OMI 二分类头”
@@ -42,9 +42,10 @@ metrics.
 |---|---|---|---|
 | E4 HMoE/WavelNet/KAN | `experiments/acs_joint_e4.py` | `results/corrected_joint_acs_omi_e4/` | complete; five folds + external platform; [`corrected_joint_e4_20260829.md`](corrected_joint_e4_20260829.md) |
 | Traditional architectures | `experiments/acs_joint_model_comparison.py` | `results/corrected_joint_model_comparison/` | complete; five models × five folds + external platform; [`corrected_joint_model_comparison_20260829.md`](corrected_joint_model_comparison_20260829.md) |
-| ECG-LFM Baseline/LoRA/DoRA | `experiments/ecg_lfm/run_joint_fold.py` | `results/corrected_ecg_lfm_joint_bs64_v2/` | running on GPU1; [`corrected_ecg_lfm_joint_20260829.md`](corrected_ecg_lfm_joint_20260829.md) |
+| ECG-LFM Baseline/LoRA/DoRA | `experiments/ecg_lfm/run_joint_fold.py` | `results/corrected_ecg_lfm_joint_bs64_v2/` | complete; 三种方式五折训练/OOF、曲线、脱敏日志已归档；DoRA fold3 恢复、fold4 GPU1 并行均有记录 |
 
-This file is updated when each job finishes.  It will link the aggregate JSON,
+This file is updated when each job finishes.  It links the aggregate JSON,
 CSV, figures, training logs and (where authorized) external-platform response
-hashes.  Until a status changes to **complete**, no corrected metric is
-claimed.
+hashes.  Corrected metrics are claimed only from the completed, hashed
+summaries; the final cross-method interpretation is in the final Chinese
+report.
