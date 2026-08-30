@@ -2,9 +2,9 @@
 
 更新时间：2026-08-30（UTC）
 状态：ECG-LFM Baseline 五折已完成并生成 pooled OOF 验证汇总；LoRA
-fold0--3 已完成，fold4 正在 GPU1 运行；DoRA fold0 已于 2026-08-30 02:09 UTC
-在 GPU0 启动，后续折次将继续使用 GPU0。LoRA/DoRA 最终比较和外部平台提交
-需等待全部适配器完成。
+fold0--4 已完成并生成 pooled OOF 汇总；DoRA fold0 正在 GPU0 运行（2026-08-30
+04:22 UTC 已到 epoch 18），fold1--4 尚未启动。LoRA/DoRA 最终比较和外部平台
+提交需等待 DoRA 五折完成。
 
 ## 任务定义
 
@@ -31,7 +31,7 @@ UA 在 ACS 头中使用交叉熵和 softmax-argmax，不能同时为阳性；OMI
 |---|---|
 | 划分 | 历史患者级五折，seed=2026，不重新随机划分 |
 | 适配方式 | Baseline、LoRA、DoRA，各 5 折 |
-| GPU | 物理 GPU1（`CUDA_VISIBLE_DEVICES=1`） |
+| GPU | Baseline/LoRA 使用物理 GPU1；DoRA 使用物理 GPU0（均单卡绑定） |
 | batch | 64；`update_freq=4`，有效 batch size=256 |
 | 优化器 | Adam，沿用各适配方式登记的学习率 |
 | 损失 | ACS CE + OMI 稳定 BCE，未叠加额外 `pos_weight` |
@@ -49,9 +49,10 @@ Baseline fold0--4 已完成，统一评估器已经生成五折 pooled OOF 验�
 （epoch 7）、fold1 `1.05344`（epoch 4）、fold2 `1.04459`（epoch 5）、
 fold3 `1.04264`（epoch 5）、fold4 `1.04088`（epoch 6）。五折最佳损失均值为
 `1.04933±0.01006`；ACS 验证准确率为 `0.56563±0.00508`，OMI 验证准确率为
-`0.93697±0.00150`。LoRA fold0--3 已完成，fold4 正在 GPU1 训练（当前可见
-epoch 9）；DoRA fold0 已在 GPU0 启动。LoRA/DoRA 的最终比较必须等待全部
-10 个适配器运行完成。
+`0.93697±0.00150`。LoRA fold0--4 已完成，已生成 `lora/summary/summary.json`
+（pooled OOF）；DoRA fold0 正在 GPU0 训练，04:22 UTC 已完成 epoch 17 并进入
+epoch 18，fold1--4 尚未启动。DoRA 五折完成后再生成最终比较、曲线和外部平台
+提交结果。
 
 ## Baseline 五折验证指标（pooled OOF）
 
