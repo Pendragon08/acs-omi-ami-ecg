@@ -1,9 +1,9 @@
 # ECG-LFM 校正联合任务实验报告
 
-更新时间：2026-08-30 05:45（UTC）
+更新时间：2026-08-30 06:10（UTC）
 状态：ECG-LFM Baseline 五折已完成并生成 pooled OOF 验证汇总；LoRA
 fold0--4 已完成并生成 pooled OOF 汇总；DoRA fold0 已完成（在 GPU0 触发
-patience=10 的 early stopping），fold1 正在 GPU0 运行（已进入 epoch 9），fold2--4 尚未启动。
+patience=10 的 early stopping），fold1 正在 GPU0 运行（已进入 epoch 13），fold2--4 尚未启动。
 LoRA/DoRA 最终比较和外部平台提交需等待 DoRA 五折完成。
 
 ## 任务定义
@@ -51,7 +51,7 @@ fold3 `1.04264`（epoch 5）、fold4 `1.04088`（epoch 6）。五折最佳损失
 `1.04933±0.01006`；ACS 验证准确率为 `0.56563±0.00508`，OMI 验证准确率为
 `0.93697±0.00150`。LoRA fold0--4 已完成，已生成 `lora/summary/summary.json`
 （pooled OOF）。DoRA fold0 已在 epoch 20 触发 patience=10 并完成，fold1 已在
-GPU0 启动训练并进入 epoch 9，fold2--4 尚未启动。DoRA 五折完成后再生成最终比较、曲线和外部
+GPU0 启动训练并进入 epoch 13，fold2--4 尚未启动。DoRA 五折完成后再生成最终比较、曲线和外部
 平台提交结果。
 
 ## 三种微调方式训练成本对比
