@@ -1,4 +1,8 @@
-# ECG-LFM 四标签超参数与类别不平衡损失实验报告
+# ECG-LFM 四标签超参数与类别不平衡损失实验报告（LEGACY—任务定义错误）
+
+> 本报告记录的损失消融使用旧的四独立 sigmoid 输出，不能用于当前互斥 ACS
+> 亚型任务的性能结论。当前执行版为 ACS `OTHER/STEMI/NSTEMI/UA` 单标签
+> 四分类 + 独立 OMI/NOMI 二分类，见 `corrected_task_formulation_20260829.md`。
 
 更新时间：2026-08-28（Asia/Shanghai）  
 状态：**Baseline Fold 0–2 已完成并补齐 record-level 正式评价，Fold 3 正在 GPU0 训练（当前到 epoch 8；最佳 validation loss 暂为 epoch 6 的 0.406），Fold 4 尚未开始；调参队列在 GPU1 已完成 5 个候选、1 个运行中、1 个排队。完整五折 OOF、与 E4 的患者级 paired bootstrap、唯一最终方案冻结和外部平台提交尚未完成。**  
@@ -7,7 +11,8 @@
 
 ## 1. 目标和数据集
 
-任务为四个独立 sigmoid 二分类输出，固定标签顺序为 `STEMI,NSTEMI,UA,OMI`，不是互斥 Softmax 四分类。明确的 non-ACS `[0,0,0]` 样本作为负样本保留。
+历史任务为四个独立 sigmoid 二分类输出，固定标签顺序为 `STEMI,NSTEMI,UA,OMI`。
+该定义已废止；明确的 non-ACS `[0,0,0]` 在当前协议中映射为 `OTHER` 并保留。
 
 - 内部队列：17,960 ECG / 17,018 patients。
 - 外部盲测队列：1,995 ECG。

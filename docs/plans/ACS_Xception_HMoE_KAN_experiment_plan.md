@@ -1,4 +1,9 @@
-# ACS 多标签分类：Xception + Heterogeneous MMoE + KAN 可行性实验报告
+# ACS 多标签分类：Xception + Heterogeneous MMoE + KAN 可行性实验报告（历史 AMI/OMI 方案）
+
+> **当前任务定义（2026-08-30）**：本文原先的 AMI/OMI 双独立任务以及
+> STEMI/NSTEMI/UA 独立 sigmoid 试验均为历史记录。正式主线现在是 ACS
+> `OTHER/STEMI/NSTEMI/UA` 互斥单标签四分类 + 独立 OMI/NOMI 二分类联合任务。
+> 当前标签、损失和评价以 `CORRECTED_TASK_FORMULATION.md` 为准。
 
 > **方案修订（2026-08-25）**：依据 Kim 等人的 WavelNet 论文及其官方 GitHub 实现，Frequency Expert 已由“MVMD + 外部缓存 + CNN”改为端到端 **WavelNet WaveletConv**。本报告中旧的 MVMD 流程、MVMD 参数搜索、MVMD 缓存和 MVMD 消融均以本修订为准，禁止在网络外部执行 MVMD/VMD 分解。
 
@@ -16,9 +21,9 @@
 
 > **用途**：本报告直接交给 Codex 使用。请先扫描当前项目代码、数据加载流程、现有最佳 XceptionNet 配置和训练脚本，再在**不破坏现有最佳基线**的前提下实现并验证本方案。
 >
-> **任务**：基于 12 导联 ECG 联合预测两个二分类标签：`AMI` 与 `OMI`。
+> **历史任务**：基于 12 导联 ECG 联合预测两个二分类标签：`AMI` 与 `OMI`（已归档）。
 >
-> **核心目标**：验证“异构专家 + AMI/OMI 双 Router + KAN 分类头”是否比当前 XceptionNet 多标签基线稳定提升，尤其关注 OMI 的 AUPRC、F1 和 Sensitivity。
+> **历史核心目标**：验证“异构专家 + AMI/OMI 双 Router + KAN 分类头”是否比旧 XceptionNet 多标签基线稳定提升；该结论不替代当前 ACS/OMI 联合任务。
 
 ---
 
@@ -38,7 +43,10 @@
 
 ---
 
-# 2. 任务定义
+# 2. 历史 AMI/OMI 任务定义（已归档）
+
+> 本节记录早期 AMI/OMI 双二分类设计，仅用于复现实验历史。正式实验请使用
+> 下方“当前 ACS/OMI 联合任务”定义。
 
 ## 2.1 输入
 
@@ -56,7 +64,7 @@ I, II, III, aVR, aVL, aVF, V1, V2, V3, V4, V5, V6
 
 如果原始记录为 10 秒、500 Hz，则 `T=5000`；不要硬编码，必须从现有数据加载器读取实际长度。
 
-## 2.2 输出
+## 2.2 输出（历史）
 
 两个独立二分类标签：
 
@@ -73,7 +81,7 @@ P(OMI)
 
 最终层使用两个独立 Sigmoid，**不要使用 2 类 Softmax**。
 
-## 2.3 标签约束
+## 2.3 标签约束（历史）
 
 - 必须直接使用当前数据集 metadata 中定义的 `AMI` 与 `OMI` 标签。
 - 不要自行通过 STEMI/NSTEMI/UA 推导 AMI 标签，除非当前项目本身就是按数据集官方定义生成标签。
@@ -88,6 +96,20 @@ AMI=1, OMI=1
 ```
 
 并在实验报告中输出患者数和 ECG 数。
+
+## 2.4 当前 ACS/OMI 联合任务
+
+当前模型输出两个头：
+
+```text
+ACS head: OTHER / STEMI / NSTEMI / UA  （4-way softmax/argmax）
+OMI head: OMI / NOMI                    （独立 sigmoid）
+```
+
+STEMI、NSTEMI、UA 互斥；源 `[0,0,0]` 映射为 `OTHER` 并保留，`OTHER + OMI`
+是有效组合。ACS 使用交叉熵，OMI 使用稳定的 `BCEWithLogitsLoss`，只有 OMI
+阈值可在验证 OOF 上确定。当前代码和结果以
+`CORRECTED_TASK_FORMULATION.md` 为准。
 
 ---
 

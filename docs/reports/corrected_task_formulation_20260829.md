@@ -5,6 +5,10 @@
 > 本文件记录代码修正、历史划分复用、Fairseq 标签形状修复和各实验状态；
 > 结果与图表总览见 [`实验结果总报告_20260829.md`](实验结果总报告_20260829.md)。
 
+> **术语边界（2026-08-30）**：严格的纯多标签分类要求所有标签独立使用
+> sigmoid；本项目当前采用的是“互斥 ACS 单标签分类头 + 独立 OMI 二分类头”
+> 的混合输出联合/多任务分类。后续报告不再把它称为四个独立二分类。
+
 This report records the correction requested on 2026-08-29.  The canonical
 protocol is described in [`../plans/CORRECTED_TASK_FORMULATION.md`](../plans/CORRECTED_TASK_FORMULATION.md).
 

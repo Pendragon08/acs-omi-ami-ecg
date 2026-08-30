@@ -2,7 +2,27 @@
 
 > **任务定义更正（2026-08-29）**：涉及 STEMI/NSTEMI/UA 的旧章节若写成独立 sigmoid，均以 `docs/plans/CORRECTED_TASK_FORMULATION.md` 为准。OMI 是独立病理实质维度，ACS 亚型使用单标签分类。
 
+## 当前执行替代定义（2026-08-30）
+
+正式实验采用 ACS 亚型四分类与 OMI 二分类联合任务：
+
+```text
+ACS: OTHER / STEMI / NSTEMI / UA  （互斥，softmax/argmax）
+OMI: OMI / NOMI                    （独立，sigmoid）
+```
+
+因此模型共有五个 logits，但不是四个独立的二分类标签。ACS 使用交叉熵，
+OMI 使用稳定的 `BCEWithLogitsLoss`，OMI 阈值只在验证 OOF 上确定；源
+`[0,0,0]` 保留为 `OTHER`，包括 `OTHER + OMI` 的有效组合。本文件其余
+早期 OMI/AMI 章节仅作为历史设计记录，当前实验以
+`CORRECTED_TASK_FORMULATION.md` 为唯一规范。
+
 ## 1. 研究目标
+
+> **本节正文为历史 OMI/AMI 方案**。当前研究目标已改为：以同一 ECG
+> 同时预测互斥 ACS 亚型 `OTHER/STEMI/NSTEMI/UA`（四分类）和可重叠的
+> OMI/NOMI（二分类）；下方旧的 OMI/AMI 双 sigmoid 图示与损失仅用于历史
+> 溯源，不得作为当前实现或结果解释。
 
 基于 ACS 12 导联 ECG 数据集，构建：
 

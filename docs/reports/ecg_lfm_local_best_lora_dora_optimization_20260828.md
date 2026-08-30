@@ -6,13 +6,15 @@
 
 ## 1. 结论摘要
 
-当前已完成方法：Baseline（冻结卷积前端的部分参数微调）、LoRA、DoRA。按五折验证集全局 OOF 的 macro-AUPRC 优先、macro-AUROC 与 macro-F1 次级排序，当前最佳为 **LoRA**。
+历史运行已完成方法：Baseline（冻结卷积前端的部分参数微调）、LoRA、DoRA。按五折验证集全局 OOF 的 macro-AUPRC 优先、macro-AUROC 与 macro-F1 次级排序，历史最佳为 **LoRA**；这些数值不代表当前校正任务。
 
 本实验的比较因素只有适配策略：Baseline 为冻结卷积特征提取器、更新 Transformer 上下文编码器和分类头的部分参数微调；LoRA 与 DoRA 从同一官方 ECG-LFM 预训练权重开始；不引入采样器、Focal/CB-Focal、数据增强或网络结构改动。
 
 ## 2. 数据与不可变设置
 
-- 任务：四个相互独立的 sigmoid 二分类输出 STEMI/NSTEMI/UA/OMI；保留明确的 `[0,0,0]` non-ACS 样本，仅剔除标签未知样本。
+- 历史任务：四个相互独立的 sigmoid 二分类输出 STEMI/NSTEMI/UA/OMI（已废止，
+  因 STEMI/NSTEMI/UA 互斥）。当前任务将源 `[0,0,0]` 映射为 `OTHER`，使用
+  ACS 四分类头 + 独立 OMI 二分类头；本报告数值仅作 provenance。
 - 内部队列：17,960 条 ECG、17,018 名患者；外部盲测队列：1,995 条 ECG。每条记录使用两个 5 秒片段，先平均 logits 再 sigmoid。
 - 划分：沿用历史 patient-level 五折划分（seed=2026），不重新随机划分；每折训练集约 14,300 条记录、验证集约 3,600 条记录。
 - 预处理：官方 ECG-LFM 500 Hz 原始 ECG 管线；normalize/filter/padding 均保持 baseline 配置。验证/外部集不 oversampling。

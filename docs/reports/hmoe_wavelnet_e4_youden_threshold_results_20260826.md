@@ -1,14 +1,19 @@
 ---
 experiment_id: ACS-HMOE-WAVELNET-STEMI-NSTEMI-UA-E4-THRESHOLD-YOUDEN-20260826
 date: 2026-08-26
-status: completed
-task: E4 three-label threshold re-selection
+status: completed (LEGACY—threshold-only historical task)
+task: historical E4 three-independent-sigmoid threshold re-selection
 model: Frozen E4 (Xception morphology + LeadSpatial + WavelNet + task routers + KAN heads)
 checkpoint_seed: 2026
 fold_seed: 2026
 threshold_selection: Youden J = sensitivity + specificity - 1 (validation OOF only)
 device: NVIDIA RTX A6000 GPU1
 ---
+
+> **任务定义更正（2026-08-30）**：本文只记录旧三 sigmoid 方案的阈值重选，
+> 不能解释为当前 ACS 亚型分类。当前协议为 ACS `OTHER/STEMI/NSTEMI/UA`
+> 单标签四分类 + 独立 OMI 二分类；校正后的阈值和结果见
+> `corrected_joint_e4_20260829.md`。
 
 # E4 三标签阈值更新：联合最大化 Sensitivity 与 Specificity
 

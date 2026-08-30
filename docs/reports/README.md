@@ -15,7 +15,11 @@
 | [corrected_joint_model_comparison_20260829.md](corrected_joint_model_comparison_20260829.md) | InceptionTime、ResNet1D-Wang、LSTM、ViT、Transformer1D 对比 | 已完成；GPU1 + 外部平台 |
 | [corrected_ecg_lfm_joint_20260829.md](corrected_ecg_lfm_joint_20260829.md) | ECG-LFM Baseline/LoRA/DoRA 校正重跑 | GPU1 运行中 |
 
-## 损失函数与特征消融
+## 历史 OMI/AMI 损失函数与特征消融
+
+> 下列消融是在旧的 OMI/AMI 二分类任务上完成的，属于历史方法学记录；它们
+> 不等同于当前 ACS 四分类 + OMI 二分类联合任务的结果，不能直接替代当前主线
+> 的 ACS/OMI 指标。
 
 | 报告 | 内容 | 状态 |
 |---|---|---|

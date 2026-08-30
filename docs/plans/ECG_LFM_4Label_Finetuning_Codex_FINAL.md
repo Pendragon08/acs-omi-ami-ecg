@@ -2,8 +2,9 @@
 
 > **任务定义更正（2026-08-29）**：本文原先把 STEMI/NSTEMI/UA/OMI 都作为独立 sigmoid 标签。STEMI/NSTEMI/UA 互斥，当前执行版改为 ACS `OTHER/STEMI/NSTEMI/UA` 单标签分类 + 独立 OMI/NOMI 二分类；见 `CORRECTED_TASK_FORMULATION.md` 与 `configs/ecg_lfm/corrected_joint_*.yaml`。
 
-> **目标**：基于 ECG-LFM 官方公开预训练权重与 fine-tuning 代码，在当前 ACS 数据集上完成  
-> `STEMI / NSTEMI / UA / OMI` 四标签多输出预测，并与现有 `E4 HMoE-KAN` 做严格公平对比。  
+> **当前执行目标**：基于 ECG-LFM 官方公开预训练权重与 fine-tuning 代码，在当前 ACS 数据集上完成
+> `ACS 亚型四分类（OTHER/STEMI/NSTEMI/UA）+ OMI 二分类` 联合预测，并与现有
+> `E4 HMoE-KAN` 做严格公平对比。本文早期的四独立 sigmoid 设计仅作历史审计，不能启动新实验。
 > **用途**：本 README 可直接交给 Codex，要求基于官方 ECG-LFM 仓库实现一个独立实验分支，不破坏当前 E4 代码与结果。  
 > **核心原则**：先复现官方 ECG-LFM fine-tuning，再适配当前四标签任务；不要一开始把 ECG-LFM 与 E4 的 GAT/WavelNet/HMoE 混在一起。
 
@@ -44,7 +45,7 @@ Raw format:        WFDB (.dat + .hea)
 Median waveform:   .med
 ```
 
-当前研究使用的四个目标标签：
+源数据保留的四个审计列：
 
 ```text
 STEMI
@@ -59,19 +60,19 @@ OMI
 STEMI / NSTEMI / UA
 ```
 
-在当前任务标签定义中按原数据表作为三个独立 binary outputs 训练，但原始临床标签彼此互斥；
+前三列在当前任务中先映射为互斥的 ACS 状态；`[0,0,0]` 映射为 `OTHER`，而不是缺失。
 
 ```text
 OMI
 ```
 
-是独立的闭塞标签，可与 STEMI 或 NSTEMI 同时为阳性，因此最终模型必须使用：
+是独立的闭塞标签，可与任意 ACS 状态共存。当前模型使用：
 
 ```text
-4 independent sigmoid outputs
+4-way ACS softmax head + 1 independent OMI sigmoid head
 ```
 
-而不是四分类 Softmax。
+而不是把四列全部作为独立二分类；ACS 头必须使用交叉熵，只有 OMI 头使用 BCE。
 
 ## 0.1 当前 100 Hz P2 的定位
 
@@ -185,7 +186,7 @@ Macro F1    = 0.4147 ± 0.0256
 
 因此本实验要回答：
 
-> **大规模自监督 ECG foundation model 的通用 ECG 表征，是否比当前从本数据集监督学习得到的 E4 表征更适合 STEMI / NSTEMI / UA / OMI 四标签预测？**
+> **大规模自监督 ECG foundation model 的通用 ECG 表征，是否比当前从本数据集监督学习得到的 E4 表征更适合 ACS 亚型四分类与 OMI 独立二分类联合预测？**
 
 ---
 
@@ -477,25 +478,26 @@ model:
   encoder_embed_dim: 1024
 ```
 
-因此官方模型本身已经支持：
+因此官方模型本身支持通用的二元多标签 criterion；这只是官方实现参考，
+不能直接把本项目的互斥 ACS 亚型当成独立 sigmoid。
 
 ```text
-multi-label BCEWithLogits
+binary_cross_entropy_with_logits
 ```
 
-本任务只需要：
+当前联合任务不再设置单一 `num_labels=4` 的四独立 sigmoid 头，而是使用：
 
 ```text
-num_labels = 4
+num ACS classes = 4  (OTHER/STEMI/NSTEMI/UA)
+num OMI labels   = 1
+total logits     = 5
 ```
 
-即可适配：
+对应：
 
 ```text
-STEMI
-NSTEMI
-UA
-OMI
+CrossEntropyLoss(ACS logits[4], y_ACS)
++ BCEWithLogitsLoss(OMI logit, y_OMI)
 ```
 
 ---
@@ -1377,7 +1379,7 @@ record-level probabilities
 
 ---
 
-# 11. 四标签定义
+# 11. 当前联合任务标签定义
 
 固定 label order：
 
@@ -1388,22 +1390,29 @@ record-level probabilities
 3 OMI
 ```
 
-标签：
+源标签向量（仅用于审计）：
 
 ```text
-y ∈ {0,1}^4
+y_source ∈ {0,1}^4
+```
+
+训练目标：
+
+```text
+y_ACS ∈ {OTHER, STEMI, NSTEMI, UA}
+y_OMI ∈ {0,1}
 ```
 
 例如：
 
 ```text
-non-ACS NOMI = [0,0,0,0]
+non-ACS NOMI = [0,0,0,0] → OTHER + NOMI
 
-STEMI + OMI  = [1,0,0,1]
+STEMI + OMI  = [1,0,0,1] → STEMI + OMI
 
-NSTEMI + OMI = [0,1,0,1]
+NSTEMI + OMI = [0,1,0,1] → NSTEMI + OMI
 
-UA            = [0,0,1,0]
+UA            = [0,0,1,0] → UA + NOMI
 ```
 
 STEMI / NSTEMI / UA 在现有标注中互斥。
@@ -1414,25 +1423,24 @@ OMI：
 can overlap with STEMI or NSTEMI
 ```
 
-因此模型使用：
+因此模型使用两个输出头：
 
 ```text
-4 independent sigmoid outputs
+ACS logits[4] → softmax/argmax；OMI logit[1] → sigmoid/validation threshold
 ```
 
-而不是 softmax。
+前三个 ACS 亚型不能同时为阳性；`ACS=OTHER, OMI=1` 是有效样本。
 
 ---
 
 # 12. Loss
 
-为了与当前 E4 做公平比较：
+为了与当前 E4 做公平比较，校正版使用：
 
 第一轮 ECG-LFM 必须使用：
 
 ```text
-BCEWithLogitsLoss
-unweighted
+CrossEntropyLoss(ACS) + BCEWithLogitsLoss(OMI)
 ```
 
 与 E4 保持一致。
@@ -1440,14 +1448,7 @@ unweighted
 即：
 
 ```math
-L =
-BCE(y_STEMI, z_STEMI)
-+
-BCE(y_NSTEMI, z_NSTEMI)
-+
-BCE(y_UA, z_UA)
-+
-BCE(y_OMI, z_OMI)
+L = CE(y_ACS, z_ACS) + λ_OMI · BCE(y_OMI, z_OMI)
 ```
 
 官方 `diagnosis.yaml` 也是：
@@ -2609,7 +2610,9 @@ https://www.nature.com/articles/s41597-026-07278-0
 
 > 注：以下编号以执行先后为准；新增原始数据下载步骤后，Codex 应按依赖顺序执行，不要仅依赖旧编号。
 
-请基于当前项目实现 ECG-LFM 四标签对比实验，遵循以下要求：
+以下是历史四独立 sigmoid 版本的执行清单；它保留用于复现审计，
+但不得据此启动当前主实验。当前主实验须把下面第 9--11 项替换为
+ACS 四分类 + OMI 二分类的联合输出。
 
 1. **不要修改或删除当前 E4 HMoE-KAN。**
 2. 新建独立 `ecg_lfm` experiment/model path。
@@ -2628,12 +2631,14 @@ https://www.nature.com/articles/s41597-026-07278-0
    - z-score
    - 10 s
    - 2 × 5 s segment
-9. label order 固定：
+9. 源审计列顺序固定（训练前转换）：
    ```text
    STEMI,NSTEMI,UA,OMI
    ```
-10. `model.num_labels=4`。
-11. 第一轮 loss 使用 **unweighted BCEWithLogitsLoss**，与 E4 公平比较。
+10. 当前模型输出固定为 5 个 logit：`ACS[4] + OMI[1]`；ACS 使用
+    `OTHER/STEMI/NSTEMI/UA` 的 softmax/argmax，OMI 使用 sigmoid。
+11. 第一轮 loss 使用 **CrossEntropyLoss(ACS) + BCEWithLogitsLoss(OMI)**，
+    与校正后的 E4 联合任务公平比较；不得把 ACS 三亚型写成独立 sigmoid。
 12. 先实现 linear probe，再实现官方 style fine-tuning。
 13. Fine-tuning 第一版：
    ```text
@@ -2702,7 +2707,7 @@ ECG-LFM 一定优于 E4
 
 # 47. 最终方案一句话
 
-> **直接使用 Nature Communications 2026 开源 ECG-LFM 的 1157 万 ECG 自监督预训练权重，在与当前 E4 完全相同的患者级五折和外部测试划分上，对 STEMI、NSTEMI、UA、OMI 四个独立标签进行官方风格 fine-tuning，重新学习模型自身的 OOF 分类阈值，并重点检验其是否能改善目前最困难的 NSTEMI 以及 NSTEMI-vs-UA 区分。**
+> **直接使用 Nature Communications 2026 开源 ECG-LFM 的 1157 万 ECG 自监督预训练权重，在与当前 E4 完全相同的患者级五折和外部测试划分上，对 ACS `OTHER/STEMI/NSTEMI/UA` 四分类及独立 OMI 二分类进行官方风格 fine-tuning；仅在验证 OOF 上为 OMI 选择阈值，并重点检验其是否能改善目前最困难的 NSTEMI 以及 NSTEMI-vs-UA 区分。**
 
 # 验收门禁：Codex 在完整五折训练前必须全部通过
 

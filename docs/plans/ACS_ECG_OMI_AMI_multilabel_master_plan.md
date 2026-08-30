@@ -1,4 +1,4 @@
-# ACS ECG OMI/AMI 多标签分类总体研究方案
+# ACS ECG OMI/AMI 多标签分类总体研究方案（历史版本；当前任务定义见下方）
 
 > **任务定义说明（2026-08-29）**：本文件保留早期 OMI/AMI 双标签方案
 > 的历史设计。凡涉及 STEMI/NSTEMI/UA 的内容，不能将三个互斥亚型作为
@@ -8,7 +8,27 @@
 > `experiments/acs_joint_*.py`、`configs/ecg_lfm/corrected_joint_*.yaml`
 > 为准，旧章节仅用于追溯。
 
+## 当前执行替代定义（2026-08-30）
+
+本研究当前不执行旧的 OMI/AMI 双标签或 STEMI/NSTEMI/UA/OMI 四独立
+sigmoid 方案。正式任务是：
+
+```text
+ACS head: OTHER / STEMI / NSTEMI / UA  （互斥单标签四分类）
+OMI head:  OMI / NOMI                    （独立二分类）
+```
+
+模型输出为四个 ACS logits 加一个 OMI logit。ACS 头使用 softmax/argmax
+和交叉熵，OMI 头使用 sigmoid 与 `BCEWithLogitsLoss`；只有 OMI 阈值可以在
+验证 OOF 上选择。源标签 `[0,0,0]` 映射为 `OTHER`，`OTHER + OMI` 是有效
+组合。下方旧章节保留为历史方法设计，不能用于当前结果或重新启动实验。
+
 ## 1. 研究目标
+
+> **本节正文为历史 OMI/AMI 方案**。当前研究目标已改为：以同一 ECG
+> 同时预测互斥 ACS 亚型 `OTHER/STEMI/NSTEMI/UA`（四分类）和可重叠的
+> OMI/NOMI（二分类）；下方旧的 OMI/AMI 双 sigmoid 图示与损失仅用于历史
+> 溯源，不得作为当前实现或结果解释。
 
 基于 ACS 12 导联 ECG 数据集，构建：
 

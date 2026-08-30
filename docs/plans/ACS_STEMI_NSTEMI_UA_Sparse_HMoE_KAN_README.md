@@ -1,11 +1,11 @@
-# ACS-MAGPIE-MoE：STEMI / NSTEMI / UA 三标签 ECG Sparse MoE 方案（LEGACY—互斥亚型）
+# ACS-MAGPIE-MoE：STEMI / NSTEMI / UA 三标签 ECG Sparse MoE 方案（历史三标签稿）
 
-> **任务定义更正（2026-08-29）**：STEMI/NSTEMI/UA 必须作为单标签 ACS 分类头（含 OTHER），不能作为三个独立 sigmoid。本文保留为历史方案；当前联合 ACS+OMI 协议见 `CORRECTED_TASK_FORMULATION.md`。
+> **任务定义更正（2026-08-30）**：STEMI/NSTEMI/UA 必须作为互斥的单标签 ACS 分类头（含 OTHER），不能作为三个独立 sigmoid。本文仅保留历史三标签 Sparse-MoE 方案；当前执行协议是“ACS 亚型四分类（OTHER/STEMI/NSTEMI/UA）+ OMI 二分类”联合任务，见 `CORRECTED_TASK_FORMULATION.md`。
 
 > **用途**：本 README 用于指导 Codex 基于现有旧 MoE / XceptionNet 项目实现新方案，并作为后续论文 Methods、Ablation、Related Work 的设计底稿。  
 > **数据集**：Du et al., *Scientific Data*, 2026, *A large-scale 12-lead electrocardiogram dataset for acute coronary syndrome prediction containing 19,955 ECGs*.  
 > DOI: `10.1038/s41597-026-07278-0`  
-> **主任务**：12 导联 ECG → `STEMI / NSTEMI / UA` 三标签预测。  
+> **历史主任务（已废止）**：12 导联 ECG → `STEMI / NSTEMI / UA` 三标签预测。
 > **临床重点子任务**：`NSTEMI vs UA`。  
 > **主要参考框架**：MAGPIE, *npj Digital Medicine*, 2026，采用 `Sparse MoE + 8 Experts + Top-2 Routing + Load-balancing Loss`。  
 > **本版原则**：先**直接迁移 MAGPIE 的 Sparse MoE 核心机制**，不再把 Xception / GAT / Wavelet / InceptionTime 全部作为异构专家。  
@@ -514,9 +514,11 @@ L_cls
 
 ---
 
-# 12. STEMI / NSTEMI / UA 输出
+# 12. 历史 STEMI / NSTEMI / UA 输出与当前任务映射
 
-## 12.1 全 19,955 ECG 三标签模式
+## 12.1 历史全队列三独立 sigmoid 模式（已废止）
+
+以下配置只作为历史实验记录，不能作为当前方案或论文主结果：
 
 输出：
 
@@ -545,11 +547,40 @@ Weighted BCE
 Asymmetric Loss
 ```
 
-禁止因为新模型而同时改变旧 baseline 的 loss，否则无法公平比较。
+禁止因为新模型而同时改变旧 baseline 的 loss，否则无法公平比较。该历史模式的三独立 sigmoid 输出不能代表当前 ACS 亚型任务。
 
 ---
 
-## 12.2 ACS-only 三分类模式
+## 12.2 当前执行：ACS 四分类 + OMI 二分类联合任务
+
+源标签按如下规则转换：
+
+```text
+[STEMI, NSTEMI, UA, OMI]
+→ ACS = OTHER / STEMI / NSTEMI / UA  （前三者互斥）
+→ OMI = 0 / 1                         （独立病理维度）
+```
+
+其中 `[0,0,0]` 明确映射为 `ACS=OTHER` 并保留；`ACS=0, OMI=1` 是合法组合，不能删除。
+
+模型输出为五个 logit：
+
+```text
+4 ACS logits → softmax / argmax
+1 OMI logit  → sigmoid / validation threshold
+```
+
+训练损失为：
+
+```text
+CrossEntropy(ACS) + λ · BCEWithLogits(OMI)
+```
+
+当前结果、阈值和评价指标必须按 ACS 四分类与 OMI 二分类分别报告，不能把四个标签当作四个互斥类别，也不能把 ACS 三个亚型写成独立多标签输出。
+
+---
+
+## 12.3 历史 ACS-only 三分类模式
 
 如果只用：
 

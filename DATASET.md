@@ -47,7 +47,7 @@ train.csv 的字段含 Patient_id、ecg_row_record、ecg_med_record、gender、a
 
 备选：若数据治理方书面批准 GitHub 托管，则在 private 仓库中用 Git LFS 追踪 .med、.npy、.npz 与 CSV；不要提交重复压缩包 ACS-Baseline-main.zip 或 med_data.zip。
 
-## 6. 最终四标签训练所需目录
+## 6. 最终联合任务训练所需目录
 
     data/
     ├── arrays/
@@ -60,4 +60,8 @@ train.csv 的字段含 Patient_id、ecg_row_record、ecg_med_record、gender、a
         ├── train.csv
         └── test.csv
 
-data/arrays 中的 meta 文件需提供 ECG record ID 与 patient ID，以支持患者级五折划分。训练脚本将只剔除四个目标标签中缺失或非 0/1 的 ECG；STEMI/NSTEMI/UA=[0,0,0] 是明确阴性而非缺失。
+data/arrays 中的 meta 文件需提供 ECG record ID 与 patient ID，以支持患者级五折划分。源数据仍保留四列
+`[STEMI,NSTEMI,UA,OMI]` 供审计，但训练目标不是四个独立二分类：前三列先映射为互斥
+`OTHER/STEMI/NSTEMI/UA` 四分类，OMI 单独作为二分类头。训练脚本只剔除未知或非二值的源标签；
+STEMI/NSTEMI/UA=`[0,0,0]` 是明确的 `OTHER` 阴性状态，不能删除。`ACS=0, OMI=1` 也保留为
+`OTHER + OMI` 的有效联合样本。

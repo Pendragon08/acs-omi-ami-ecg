@@ -1,4 +1,4 @@
-# ACS ECG OMI/AMI 研究归档
+# ACS ECG/OMI 研究归档（任务定义已校正）
 
 ## 中文入口
 

@@ -4,7 +4,7 @@
 experiment_id: ACS-HMOE-WAVELNET-E4-4LABEL-MULTILABEL-20260827
 date: 2026-08-27
 status: completed
-task: full-cohort four-label multilabel binary classification
+task: historical full-cohort four-independent-sigmoid classification (invalid)
 labels: STEMI, NSTEMI, UA, OMI
 model: E4 (Xception morphology + LeadSpatial GAT + WavelNet + task routers + KAN heads)
 loss: BCEWithLogitsLoss (unweighted)
@@ -19,9 +19,13 @@ device: NVIDIA RTX A6000 GPU1
 
 > GitHub 整理版说明：本报告保留实验原始结论和 SHA-256 溯源。受控临床数据、逐例 OOF/测试预测、提交 CSV、患者级 split 和 checkpoint 未纳入默认发布包；本仓库可公开复查的聚合产物位于仓库根目录 results/，详细数据边界见 ../../DATASET.md。
 
-## 1. 结论与最终任务口径
+## 1. 结论与历史任务口径
 
-本次完成的是四个独立二分类输出：STEMI、NSTEMI、UA、OMI。每条 ECG 输出四个 logits，并分别经 sigmoid 得到四个概率；训练用未加权 BCEWithLogitsLoss，不是 softmax 三/四分类。
+本次历史运行完成的是四个独立二分类输出：STEMI、NSTEMI、UA、OMI。该
+定义错误地把互斥 ACS 亚型当成独立标签，因此所有指标仅用于审计，不能作为
+当前方案结论。当前正式任务为 ACS `OTHER/STEMI/NSTEMI/UA` 单标签四分类
+（softmax/argmax）+ 独立 OMI/NOMI 二分类（sigmoid）；校正结果见
+`corrected_joint_e4_20260829.md`。
 
 这一口径符合 OMI 可与 ACS 亚型重叠的真实标签结构：训练集中有 STEMI∩OMI=727、NSTEMI∩OMI=423 条 ECG。因此 OMI 不能被塞入与三种 ACS 亚型互斥的单一 softmax 类别。此前讨论的三标签独立输出、四类 softmax、ACS-only 三分类均作为历史实验保留，不与本报告的结果混合比较。
 
@@ -153,7 +157,9 @@ AUROC/AUPRC 只由概率排序决定，在这些阈值策略下固定为 0.8129 
 
 ## 7. 外部测试平台结果
 
-提交文件为四个独立 0/1 列：ecg_row_record, STEMI, NSTEMI, UA, OMI。
+历史提交文件为四个独立 0/1 列：ecg_row_record, STEMI, NSTEMI, UA, OMI；
+该格式不再用于当前任务。当前提交应将 ACS argmax 编码为互斥的
+STEMI/NSTEMI/UA 列，并额外提交独立 OMI 列。
 
 它由五折 checkpoint 概率平均并应用上节冻结的 Youden 阈值生成。提交前进行了 header、1,995 行数、唯一 ID、取值均为 0/1 的检查；本地没有读取平台测试标签。平台不返回 AUROC 或 AUPRC，因此二者只在本地 OOF 报告。
 
@@ -165,7 +171,8 @@ AUROC/AUPRC 只由概率排序决定，在这些阈值策略下固定为 0.8129 
 | OMI | 0.9375 | 0.7284 | 0.1914 | 0.9942 | 0.7419 | 0.3179 |
 | Macro（简单平均） | 0.8694 | 0.6677 | 0.2819 | 0.9425 | 0.7010 | 0.4077 |
 
-外部测试输出中，STEMI/NSTEMI/UA/OMI 的预测阳性数分别为 412/857/1202/627；无阳性标签 273 条，多标签阳性 820 条。后者在四独立 sigmoid 任务中允许出现，尤其 OMI 与 STEMI/NSTEMI 可共阳性；但对于三个互斥的 ACS 亚型，同时阳性不等于已得到一个可直接用于临床最终分型的互斥结论。
+外部测试输出中，历史 STEMI/NSTEMI/UA/OMI 的预测阳性数分别为 412/857/1202/627；
+无阳性标签和多标签阳性计数只描述旧任务，不能用于当前互斥 ACS 分型结论。
 
 该平台为历史实验期间已经访问过的评测平台。因此这是一份按冻结方案得到的外部平台分数，但不应表述为全新、一次性盲法确认性终点评估；后续正式论文应保留未访问的独立外部队列，或预注册后进行一次最终封存评估。
 

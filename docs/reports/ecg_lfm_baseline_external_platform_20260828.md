@@ -1,8 +1,14 @@
-# ECG-LFM Baseline 外部平台逐标签盲评记录
+# ECG-LFM Baseline 外部平台逐标签盲评记录（LEGACY—任务定义错误）
+
+> 本报告的历史提交使用 `STEMI/NSTEMI/UA/OMI` 四个独立 sigmoid 输出。
+> STEMI、NSTEMI、UA 互斥，因此这些平台指标不能解释为当前 ACS/OMI 联合任务
+> 的结果。当前正式任务为 ACS `OTHER/STEMI/NSTEMI/UA` 单标签四分类 + 独立
+> OMI/NOMI 二分类；校正后的 ECG-LFM 结果见
+> `corrected_ecg_lfm_joint_20260829.md`。
 
 - **Experiment ID:** `ECG-LFM-4LABEL-BASELINE-EXTERNAL-20260828`
 - **提交时间（服务器 UTC）：** 2026-08-28 10:03
-- **任务：** STEMI / NSTEMI / UA / OMI 四个独立 sigmoid 二分类输出（多标签形式）
+- **历史任务：** STEMI / NSTEMI / UA / OMI 四个独立 sigmoid 二分类输出（已废止）
 - **模型：** ECG-LFM full-parameter fine-tuning Baseline
 - **集成方式：** 五个历史 patient-level fold 的 record-level 概率算术平均
 - **阈值：** 仅由内部 pooled OOF Youden J 确定并锁定：STEMI `0.06`、NSTEMI `0.07`、UA `0.35`、OMI `0.05`

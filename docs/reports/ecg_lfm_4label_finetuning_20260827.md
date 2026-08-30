@@ -16,10 +16,13 @@
 旧 E4 关键文件在启动新分支后再次取证：结果目录共 21 个文件；`e4_4label_summary.json`、`oof_predictions.csv`、`split.json` 的 SHA-256 分别为 `b72ca93fdaa530fb73ef11ab7ec6bb79d0ee2ed8317518bd95e6295c41714e60`、`f99fecbad6acb517e224dccb2bf437f427951d7efbf0f28c0146ded402d47f9a`、`63bd69e7d19811ef25074376efacb240500135fd6db824831ed2a99c110fc510`。新分支只读取这些文件用于 exact split 与配对比较，不向旧目录写入。
 - `results/hmoe_kan_stemi_nstemi_ua_omi_e4/`
 
-## 1. 任务定义
+## 1. 任务定义（历史错误口径，不能作为当前结果）
 
-- 四个独立 sigmoid 二分类输出：`STEMI,NSTEMI,UA,OMI`。
-- 保留明确的 subtype `[0,0,0]` non-ACS 负样本。
+- 本报告记录的历史运行使用四个独立 sigmoid 二分类输出：`STEMI,NSTEMI,UA,OMI`。
+- 该做法错误地把互斥的 STEMI/NSTEMI/UA 当作独立标签，因此所有数值仅用于
+  追溯，不能与当前结果比较。
+- 当前正式任务为 ACS `OTHER/STEMI/NSTEMI/UA` 单标签四分类 + 独立 OMI/NOMI
+  二分类；明确 `[0,0,0]` 映射为 `OTHER` 并保留。
 - 内部训练队列：17,960 ECG，17,018 patients。
 - 隔离外部队列：1,995 ECG。
 - 全队列：19,955 ECG。

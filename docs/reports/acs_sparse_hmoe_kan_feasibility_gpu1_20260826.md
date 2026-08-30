@@ -1,14 +1,19 @@
 ---
 experiment_id: ACS-SPARSE-HMOE-KAN-FULLCOHORT-GPU1-20260826
 date: 2026-08-26
-status: completed
-task: STEMI/NSTEMI/UA three-label multilabel feasibility
+status: completed (LEGACY—three-independent-sigmoid task)
+task: historical STEMI/NSTEMI/UA independent multilabel feasibility
 model: Xception + InceptionTime + Lead-GAT + fixed Morlet CWT-CNN + class-specific Noisy Top-2 + KAN
 loss: fold-train weighted BCEWithLogits + record-level exclusivity + router balance - entropy
 seed: 2026
 fold_seed: 2026
 device: NVIDIA RTX A6000 GPU1
 ---
+
+> **任务定义更正（2026-08-30）**：本可行性实验使用旧的三个独立 sigmoid
+> ACS 输出，不能代表当前互斥 ACS 亚型任务。当前正式协议为
+> `OTHER/STEMI/NSTEMI/UA` 单标签四分类 + 独立 OMI 二分类；本报告结果仅作
+> 工程历史记录。
 
 # Revised sparse HMoE-KAN feasibility experiment
 

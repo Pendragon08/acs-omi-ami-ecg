@@ -14,6 +14,10 @@ decision_rule: argmax(softmax)
 
 # E4 四类 Softmax 分类实验（修正版）
 
+> 本报告只覆盖 ACS 四分类头，是当前 ACS/OMI 联合任务中的 ACS 子任务；OMI
+> 二分类头及联合五 logit 结果见 `corrected_joint_e4_20260829.md`。不要把本报告
+> 的四类输出误读为四个独立标签。
+
 ## 1. 修改原因
 
 原 E4 使用三个独立 sigmoid 输出（STEMI/NSTEMI/UA），形式上属于三标签多输出；但当前 ACS 训练数据中没有重叠阳性标签，实际观测到的是四个互斥状态：

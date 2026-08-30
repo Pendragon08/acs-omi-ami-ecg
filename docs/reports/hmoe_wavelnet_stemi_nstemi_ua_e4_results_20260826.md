@@ -1,7 +1,7 @@
 ---
 experiment_id: ACS-HMOE-WAVELNET-STEMI-NSTEMI-UA-E4-20260826
 date: 2026-08-26
-status: completed
+status: completed (LEGACY—invalid task definition)
 task: independent multi-label STEMI/NSTEMI/UA classification
 variant: E4
 model: Morphology + LeadSpatial + WavelNet Frequency + task routers + KAN heads
@@ -10,6 +10,11 @@ seed: 2026
 fold_seed: 2026
 device: NVIDIA RTX A6000 GPU1
 ---
+
+> **任务定义更正（2026-08-30）**：本报告把互斥的 STEMI/NSTEMI/UA 作为三个
+> 独立 sigmoid 输出，属于历史错误多标签实验。结果仅用于追溯；当前正式任务为
+> ACS `OTHER/STEMI/NSTEMI/UA` 单标签四分类 + 独立 OMI/NOMI 二分类，见
+> `corrected_joint_e4_20260829.md`。
 
 # GPU1：WavelNet + HMoE + KAN 三标签分类结果
 

@@ -5,8 +5,18 @@
 > 所有模型、阈值和外部提交必须遵守该定义。旧的四独立 sigmoid 方案保留为
 > `LEGACY/INVALID` 审计记录，不得用于最终性能结论。
 
-**Effective date:** 2026-08-29  
+**Effective date:** 2026-08-30
 **Status:** canonical protocol for all new runs
+
+## Terminology boundary
+
+严格意义的纯多标签分类要求所有输出均为彼此独立的二元标签：输出为
+`[B,K]` 个 logits，逐列 sigmoid，多个标签可以同时为 1。由于 STEMI、
+NSTEMI、UA 是互斥的 ACS 亚型，本项目不再把它们作为三个独立的多标签
+sigmoid 输出。当前任务是一个**混合输出联合/多任务分类**：一个互斥的 ACS
+单标签分类头，加一个可与 ACS 状态共存的 OMI 二分类头。后续论文和报告统一
+使用“ACS 亚型四分类 + OMI 二分类联合任务”这一表述；“四个独立二分类”只
+用于标记旧实验的错误口径。
 
 ## Why the previous four-label task was invalid
 

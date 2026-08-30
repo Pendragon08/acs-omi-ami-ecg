@@ -1,11 +1,17 @@
-# 四标签外部平台逐标签对比：ECG-LFM Baseline vs E4
+# 四标签外部平台逐标签对比：ECG-LFM Baseline vs E4（LEGACY—任务定义错误）
+
+> 本报告比较的是旧的四独立 sigmoid 任务，不能作为当前 ACS 亚型分类结果。
+> 当前任务使用 ACS `OTHER/STEMI/NSTEMI/UA` 单标签四分类头和独立 OMI 二分类
+> 头；校正后对比见 `corrected_joint_model_comparison_20260829.md`。
 
 本报告比较同一外部盲评集（1,995 条 ECG）上已经提交并成功返回平台指标的两个四标签模型：
 
 - **ECG-LFM Baseline**：五折 record-level 概率平均，OOF Youden 阈值 `STEMI=0.06, NSTEMI=0.07, UA=0.35, OMI=0.05`。
 - **Historical E4**：HMoE/WavelNet/KAN 四标签方案，已保存的提交阈值为 `STEMI=0.06, NSTEMI=0.04, UA=0.35, OMI=0.03`。
 
-两者均为四个独立 sigmoid 二分类输出；平台按 one-vs-rest 返回硬标签指标。平台不返回 AUROC/AUPRC/MCC，因此这些排序指标不能从外部盲评表推算。
+两者在本历史运行中均为四个独立 sigmoid 二分类输出；平台按 one-vs-rest
+返回硬标签指标。该输出定义已废止，平台不返回 AUROC/AUPRC/MCC，因此这些
+排序指标也不能从外部盲评表推算。
 
 ## 外部平台逐标签结果
 

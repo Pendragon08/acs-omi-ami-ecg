@@ -6,7 +6,10 @@
 
 ## 1. 任务与数据
 
-本任务是四个相互独立的 sigmoid 二分类输出：STEMI、NSTEMI、UA、OMI；不是互斥 softmax 四分类。明确的 subtype `[0,0,0]` non-ACS 记录保留为负样本，仅排除标签未知/非二值的记录。
+本报告的历史任务是四个相互独立的 sigmoid 二分类输出：STEMI、NSTEMI、UA、OMI；
+该定义错误地忽略了 ACS 亚型互斥性。当前任务改为 ACS
+`OTHER/STEMI/NSTEMI/UA` 单标签四分类 + 独立 OMI/NOMI 二分类；明确的
+`[0,0,0]` 映射为 `OTHER` 并保留。本报告数值仅作旧方案审计。
 
 - 训练队列标签计数（正/负）：STEMI=1442/16518, NSTEMI=1235/16725, UA=6213/11747, OMI=1151/16809。
 - 划分：历史方案的 patient-level iterative multilabel stratified five-fold，fold seed=2026；每一折患者集合不重叠，OOF 覆盖全部有效训练记录。

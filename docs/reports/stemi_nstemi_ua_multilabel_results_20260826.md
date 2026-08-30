@@ -1,8 +1,8 @@
 ---
 experiment_id: ACS-STEMI-NSTEMI-UA-20260825-GPU0
 date: 2026-08-25
-status: completed
-task: independent multi-label classification of STEMI, NSTEMI and UA
+status: completed (LEGACY—invalid task definition)
+task: historical independent multi-label classification of STEMI, NSTEMI and UA
 model: XceptionTime
 loss: BCEWithLogitsLoss
 preprocessing: P3
@@ -12,9 +12,16 @@ device: NVIDIA RTX A6000 GPU0
 
 # STEMI / NSTEMI / UA 多标签分类实验结果
 
+> **任务定义更正（2026-08-30）**：本报告的三个独立 sigmoid 输出把互斥 ACS
+> 亚型当作独立标签，结果仅保留用于历史追溯。当前正式任务为
+> `OTHER/STEMI/NSTEMI/UA` 单标签四分类 + 独立 OMI/NOMI 二分类；当前结果
+> 不得使用本报告的多标签指标替代。
+
 ## 1. 结论摘要
 
-本次三标签任务已经完成训练、验证集阈值选择、外部测试集提交和平台盲评。模型对三个标签分别输出一个 sigmoid 概率，三个标签之间相互独立，因此这是**多标签**评价，不是 softmax 三分类。
+本次历史三标签任务已经完成训练、验证集阈值选择、外部测试集提交和平台
+盲评；它对三个互斥亚型分别输出 sigmoid 概率，因此是**错误的多标签口径**。
+所有结果仅保留作为 legacy 审计，不是当前 ACS 分型结论。
 
 - 验证集宏平均：AUROC **0.7896**，AUPRC **0.4765**，F1 **0.5138**。
 - 外部平台盲评逐标签结果：STEMI F1 **0.6647**，NSTEMI F1 **0.3045**，UA F1 **0.5619**。

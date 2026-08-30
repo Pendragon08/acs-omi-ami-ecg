@@ -178,7 +178,7 @@ https://doi.org/10.6084/m9.figshare.29925314
 WFDB .dat + .hea
 ```
 
-四个目标标签固定为：
+源数据保留四个审计列：
 
 ```text
 STEMI
@@ -187,14 +187,15 @@ UA
 OMI
 ```
 
-输出：
+当前训练目标和输出：
 
 ```text
-4 independent logits
-→ 4 independent sigmoid probabilities
+ACS logits[4]（OTHER/STEMI/NSTEMI/UA）→ softmax/argmax
+OMI logit[1] → sigmoid/validation-selected threshold
 ```
 
-不是四分类 Softmax。
+这是 ACS 互斥单标签四分类与 OMI 独立二分类的联合任务，不是四个独立
+sigmoid 标签。源 `[0,0,0]` 映射为 `OTHER`，`OTHER + OMI` 是有效组合。
 
 ---
 
@@ -683,7 +684,7 @@ ECG-LFM pretrained model
                     │
               Linear Head
                     │
-           STEMI/NSTEMI/UA/OMI
+           ACS(OTHER/STEMI/NSTEMI/UA) + OMI
 ```
 
 真正更新：
@@ -691,7 +692,7 @@ ECG-LFM pretrained model
 ```text
 LoRA A
 LoRA B
-4-label classification head
+five-logit joint classification head
 ```
 
 其余参数全部 frozen。
@@ -719,7 +720,7 @@ ECG-LFM pretrained model
                     │
               Linear Head
                     │
-           STEMI/NSTEMI/UA/OMI
+           ACS(OTHER/STEMI/NSTEMI/UA) + OMI
 ```
 
 真正更新：
@@ -727,7 +728,7 @@ ECG-LFM pretrained model
 ```text
 DoRA low-rank A/B
 DoRA magnitude
-4-label classification head
+five-logit joint classification head
 ```
 
 ---
