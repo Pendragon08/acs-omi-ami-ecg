@@ -5,8 +5,8 @@ ACS `OTHER/STEMI/NSTEMI/UA` 互斥单标签四分类 + 独立 OMI/NOMI 二分类
 不是四个独立 sigmoid 标签。
 
 Baseline 五折已经完成，并已归档 `baseline/summary/summary.json`、阈值分析、
-ROC/PR 曲线、混淆矩阵、训练/验证曲线以及五折脱敏 epoch 日志。LoRA fold0--2
-已完成，fold3 仍在运行，DoRA 尚未开始；因此 LoRA/DoRA 的最终比较指标尚未
+ROC/PR 曲线、混淆矩阵、训练/验证曲线以及五折脱敏 epoch 日志。LoRA fold0--3
+已完成，fold4 正在运行，DoRA 尚未开始；因此 LoRA/DoRA 的最终比较指标尚未
 生成。
 
 脱敏日志只包含 phase、epoch、loss、准确率、学习率和最佳验证损失，不含原始
