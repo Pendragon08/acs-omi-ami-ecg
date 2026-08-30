@@ -1,9 +1,9 @@
 # ECG-LFM 校正联合任务实验报告
 
-更新时间：2026-08-30 06:10（UTC）
+更新时间：2026-08-30 08:49（UTC）
 状态：ECG-LFM Baseline 五折已完成并生成 pooled OOF 验证汇总；LoRA
 fold0--4 已完成并生成 pooled OOF 汇总；DoRA fold0 已完成（在 GPU0 触发
-patience=10 的 early stopping），fold1 正在 GPU0 运行（已进入 epoch 13），fold2--4 尚未启动。
+patience=10 的 early stopping），DoRA fold0--2 已完成，fold3 正在 GPU0 运行（已进入 epoch 4），fold4 尚未启动。
 LoRA/DoRA 最终比较和外部平台提交需等待 DoRA 五折完成。
 
 ## 任务定义
@@ -50,8 +50,8 @@ Baseline fold0--4 已完成，统一评估器已经生成五折 pooled OOF 验�
 fold3 `1.04264`（epoch 5）、fold4 `1.04088`（epoch 6）。五折最佳损失均值为
 `1.04933±0.01006`；ACS 验证准确率为 `0.56563±0.00508`，OMI 验证准确率为
 `0.93697±0.00150`。LoRA fold0--4 已完成，已生成 `lora/summary/summary.json`
-（pooled OOF）。DoRA fold0 已在 epoch 20 触发 patience=10 并完成，fold1 已在
-GPU0 启动训练并进入 epoch 13，fold2--4 尚未启动。DoRA 五折完成后再生成最终比较、曲线和外部
+（pooled OOF）。DoRA fold0 已在 epoch 20 触发 patience=10 并完成，fold1--2 也已
+完成，fold3 已在 GPU0 启动训练并进入 epoch 4，fold4 尚未启动。DoRA 五折完成后再生成最终比较、曲线和外部
 平台提交结果。
 
 ## 三种微调方式训练成本对比
@@ -65,11 +65,11 @@ GPU0 启动训练并进入 epoch 13，fold2--4 尚未启动。DoRA 五折完成�
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Baseline（全参） | 622.881 M | 622.881 M | 100.000% | 12.0 GB | ≈35.4 GB | 6670.3±495.7 s | 33351.3 s（9.26 h） |
 | LoRA（rank=8） | 628.779 M | 5.903 M | 0.9389% | 19.0 GB | ≈28.4 GB | 6131.3±367.1 s | 30656.7 s（8.52 h） |
-| DoRA（rank=8） | 629.148 M | 6.272 M | 0.9969% | 16.1 GB | ≈31.3 GB | 9198.6 s（fold0） | 待 fold1--4 |
+| DoRA（rank=8） | 629.148 M | 6.272 M | 0.9969% | 16.1 GB | ≈31.3 GB | 7404±1615 s（已完成 fold0--2） | 22213.1 s（已完成 3 折，fold3--4 待运行） |
 
 因此，当前日志直接支持的结论是：LoRA 将可训练参数降至不到 1%，峰值显存
-较 Baseline 约少 7.0 GB；DoRA 仍只完成 fold0，已比 LoRA 多约 2.9 GB 峰值
-显存，且单折耗时暂时更长，最终成本需等五折结束后再比较。上述显存为日志估计
+较 Baseline 约少 7.0 GB；DoRA 已完成 3 折，较 LoRA 多约 2.9 GB 峰值显存，
+当前单折耗时均值也更长，最终五折成本需等 fold3--4 结束后再比较。上述显存为日志估计
 值，不替代 `nvidia-smi` 的瞬时峰值测量。
 
 ## Baseline 五折验证指标（pooled OOF）

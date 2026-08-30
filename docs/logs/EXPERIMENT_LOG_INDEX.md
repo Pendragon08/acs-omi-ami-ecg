@@ -1,6 +1,6 @@
 # 实验日志索引与 GitHub 归档策略
 
-更新时间：2026-08-30 06:10 UTC。下表的服务器路径用于内部审计；可公开的训练过程已
+更新时间：2026-08-30 08:49 UTC。下表的服务器路径用于内部审计；可公开的训练过程已
 从原始日志中提取为不含路径、患者编号和逐例预测的
 `training_log_sanitized.csv`，并随 `results/` 一起提交 GitHub。
 
@@ -20,7 +20,7 @@
 |---|---|---|---|
 | E4 HMoE/WavelNet/KAN 联合任务 | GPU1，已完成 | `logs/corrected/acs_joint_e4_gpu1.log` | `results/corrected_joint_acs_omi_e4/`、`docs/reports/corrected_joint_e4_20260829.md` |
 | 传统架构对比 | GPU1，已完成 | `logs/corrected_joint_model_comparison/all_gpu1.log` | `results/corrected_joint_model_comparison/<模型>/`、`docs/reports/corrected_joint_model_comparison_20260829.md` |
-| ECG-LFM Baseline/LoRA/DoRA 校正重跑 | GPU1/GPU0 并行（v2；Baseline 五折完成，LoRA 五折完成并已有 pooled OOF 汇总，DoRA fold0 已完成 early stopping，fold1 在 GPU0 运行至 epoch 13，fold2--4 待运行） | `logs/corrected_ecg_lfm_joint_bs64_v2/master.log`、`dora_gpu0_master.log` 及各折日志 | `results/corrected_ecg_lfm_joint_bs64_v2/baseline/summary/`、`docs/reports/corrected_ecg_lfm_joint_20260829.md` |
+| ECG-LFM Baseline/LoRA/DoRA 校正重跑 | GPU1/GPU0 并行（v2；Baseline/LoRA 五折完成并已有 LoRA pooled OOF 汇总，DoRA fold0--2 完成，fold3 在 GPU0 运行至 epoch 4，fold4 待运行） | `logs/corrected_ecg_lfm_joint_bs64_v2/master.log`、`dora_gpu0_master.log` 及各折日志 | `results/corrected_ecg_lfm_joint_bs64_v2/baseline/summary/`、`docs/reports/corrected_ecg_lfm_joint_20260829.md` |
 
 ## 已完成结果目录中的过程文件
 
