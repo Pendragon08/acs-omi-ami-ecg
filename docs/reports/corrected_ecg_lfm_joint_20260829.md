@@ -2,8 +2,9 @@
 
 更新时间：2026-08-30（UTC）
 状态：ECG-LFM Baseline 五折已完成并生成 pooled OOF 验证汇总；LoRA
-fold0--3 已完成，fold4 正在运行（2026-08-30 01:51 UTC 进入第 9 个 epoch），
-DoRA 尚未开始。LoRA/DoRA 最终比较和外部平台提交需等待全部适配器完成。
+fold0--3 已完成，fold4 正在 GPU1 运行；DoRA fold0 已于 2026-08-30 02:09 UTC
+在 GPU0 启动，后续折次将继续使用 GPU0。LoRA/DoRA 最终比较和外部平台提交
+需等待全部适配器完成。
 
 ## 任务定义
 
@@ -48,8 +49,9 @@ Baseline fold0--4 已完成，统一评估器已经生成五折 pooled OOF 验�
 （epoch 7）、fold1 `1.05344`（epoch 4）、fold2 `1.04459`（epoch 5）、
 fold3 `1.04264`（epoch 5）、fold4 `1.04088`（epoch 6）。五折最佳损失均值为
 `1.04933±0.01006`；ACS 验证准确率为 `0.56563±0.00508`，OMI 验证准确率为
-`0.93697±0.00150`。LoRA fold0--3 已完成，fold4 正在训练（当前可见 epoch 9），
-DoRA 尚未开始。LoRA/DoRA 的最终比较必须等待全部 10 个适配器运行完成。
+`0.93697±0.00150`。LoRA fold0--3 已完成，fold4 正在 GPU1 训练（当前可见
+epoch 9）；DoRA fold0 已在 GPU0 启动。LoRA/DoRA 的最终比较必须等待全部
+10 个适配器运行完成。
 
 ## Baseline 五折验证指标（pooled OOF）
 
