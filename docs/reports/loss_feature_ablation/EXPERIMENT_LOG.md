@@ -30,7 +30,7 @@ external_test_accessed: false
 - XceptionTime + P3 + BCE historical baseline; seed-2026 reproduction gate passed exactly.
 - Adam, no scheduler, fixed learning rate/batch size by task, 100 epochs, patience 15, clipping 1.0.
 - No oversampling, WeightedRandomSampler, SMOTE or additional pos_weight in CB-Focal.
-- All loss weights use training labels only. Validation selects hyperparameters and thresholds. External hidden-label test is not used during ablation.
+- 所有损失权重只使用训练标签；验证集用于选择超参数和阈值；消融期间不使用外部隐藏标签测试集。
 
 ## Reproduction gate
 
@@ -54,7 +54,7 @@ Historical P3 waveform/median/clinical scalers were fitted on the complete offic
 
 # OMI loss ablation summary
 
-Primary operating point: validation threshold maximizing the harmonic mean of F1 and Sensitivity on the 0.01–0.99 grid. Results are mean ± sample SD over seeds [42, 2024, 2025, 2026, 3407].
+主要工作点：在 0.01–0.99 网格内选择使 F1 与 Sensitivity 调和平均最大的验证阈值。结果为五个种子的均值 ± 样本标准差。
 
 | Loss | AUROC | AUPRC | Sensitivity | Specificity | PPV | NPV | F1 | MCC | Accuracy |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -65,7 +65,7 @@ Primary operating point: validation threshold maximizing the harmonic mean of F1
 
 Best CB-Focal: beta=0.99, gamma=1.0; mean per-seed threshold=0.2180.
 Paired seed AUPRC improvements: 3/5.
-Verdict: **No convincing improvement**.
+结论：**无令人信服的提升**。
 
 ## CB-Focal minus Baseline (separate bootstrap estimand)
 
@@ -82,7 +82,7 @@ than the seed mean. Zero observed bootstrap exceedances are reported as
 - ΔPPV=-0.06449; paired patient bootstrap 95% CI [-0.1011, -0.0295], p<1/2001
 - ΔF1=-0.04167; paired patient bootstrap 95% CI [-0.0820, +0.0014], p=0.06
 
-External hidden-label test results were not used to select loss parameters or thresholds. This report is validation evidence; one frozen external evaluation may follow after the method is finalized.
+外部隐藏标签测试结果没有用于选择损失参数或阈值。本报告属于验证证据；方法冻结后才适合进行一次外部评价。
 
 
 # ECG/age/sex/median-ECG feature ablation summary
@@ -103,13 +103,13 @@ The controlled neural comparison uses the same XceptionTimeFusion architecture a
 - OMI: best screened addition `raw_clin`; ΔAUPRC=+0.0010; improved in 4/5 seeds — **stable gain**.
 - AMI: best screened addition `raw_age`; ΔAUPRC=+0.0032; improved in 5/5 seeds — **stable gain**.
 
-Standalone `median` and `clin` rows quantify predictive association, while raw-plus-feature rows test incremental value beyond raw ECG. External test feedback was not used.
+单独的 `median` 和 `clin` 行衡量预测关联，原始 ECG 加特征的行检验相对原始 ECG 的增量价值。未使用外部测试反馈。
 
 ## Clinical association appendix
 
 # Age/sex association and clinical-only probe
 
-All inferential summaries use only the official-training pool and its frozen patient-level train/validation split. The external test was not accessed.
+所有推断性汇总只使用官方训练池及其冻结的患者级训练/验证划分，未访问外部测试集。
 
 Records: train 16,174; validation 1,786. Missing age: 0; missing sex: 0.
 
@@ -146,12 +146,12 @@ These probes quantify marginal predictive association; they do not establish cau
 
 # Loss/feature ablation integrity audit
 
-Overall: **WARN** (provisional deterministic audit; no fresh independent semantic reviewer was authorized).
+总体结论：**WARN**（暂定的确定性审计；当时未授权新的独立语义审阅器）。
 
-- Parsed and recomputed 63 run JSON files and their validation prediction CSVs.
-- Baseline checkpoint exactly reproduces the historical checkpoint: True.
-- Ablation runner references the external test: False.
-- Final loss seed sets: {'baseline': [42, 2024, 2025, 2026, 3407], 'weighted_bce': [42, 2024, 2025, 2026, 3407], 'focal': [42, 2024, 2025, 2026, 3407], 'cb_focal': [42, 2024, 2025, 2026, 3407]}.
-- Deterministic errors: none.
+- 已解析并重新计算 63 个运行 JSON 及其验证预测 CSV。
+- Baseline checkpoint 与历史 checkpoint 完全一致：是。
+- 消融运行器是否引用外部测试：否。
+- 最终损失函数种子集合：Baseline、Weighted BCE、Focal、CB-Focal 均为 [42, 2024, 2025, 2026, 3407]。
+- 确定性错误：未发现。
 
 WARN is retained even when deterministic checks pass because the historical scalers include internal-validation data and the required fresh-agent semantic audit could not be performed under the active no-delegation constraint.

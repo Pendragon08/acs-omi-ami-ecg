@@ -12,7 +12,7 @@ CB-Focal 的最佳组合是 `beta=0.99, gamma=1.0`，Sensitivity 相对 Baseline
 AUPRC 的差异不显著，因此结论为 **没有令人信服的整体提升**，不能作为当前
 核心创新点。完整脱敏日志、曲线和原始汇总在 `results/loss_feature_ablation/`。
 
-Primary operating point: validation threshold maximizing the harmonic mean of F1 and Sensitivity on the 0.01–0.99 grid. Results are mean ± sample SD over seeds [42, 2024, 2025, 2026, 3407].
+主要工作点：在 0.01–0.99 网格内选择使 F1 与 Sensitivity 调和平均最大的验证阈值。结果为种子 [42, 2024, 2025, 2026, 3407] 的均值 ± 样本标准差。
 
 | Loss | AUROC | AUPRC | Sensitivity | Specificity | PPV | NPV | F1 | MCC | Accuracy |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -23,7 +23,7 @@ Primary operating point: validation threshold maximizing the harmonic mean of F1
 
 Best CB-Focal: beta=0.99, gamma=1.0; mean per-seed threshold=0.2180.
 Paired seed AUPRC improvements: 3/5.
-Verdict: **No convincing improvement**.
+结论：**无令人信服的提升**。
 
 ## CB-Focal minus Baseline (estimand note)
 
@@ -41,4 +41,4 @@ same point estimate. A bootstrap count of zero is reported conservatively as
 - ΔPPV=-0.06449; paired patient bootstrap 95% CI [-0.1011, -0.0295], p<1/2001
 - ΔF1=-0.04167; paired patient bootstrap 95% CI [-0.0820, +0.0014], p=0.06
 
-External hidden-label test results were not used to select loss parameters or thresholds. This report is validation evidence; one frozen external evaluation may follow after the method is finalized.
+外部隐藏标签测试结果没有用于选择损失参数或阈值。本报告属于验证证据；方法冻结后才适合进行一次外部评价。

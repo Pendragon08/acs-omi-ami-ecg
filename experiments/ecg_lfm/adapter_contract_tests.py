@@ -29,12 +29,12 @@ class DummyEncoder(nn.Module):
         for layer in self.encoder.encoder.layers:
             layer.q = nn.Linear(16, 16)
             layer.ffn = nn.Linear(16, 32)
-        self.proj = nn.Linear(16, 4)
+        self.proj = nn.Linear(16, 5)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, default=Path("artifacts/ecg_lfm/local_best_adapter_contract.json"))
+    parser.add_argument("--output", type=Path, default=Path("artifacts/ecg_lfm/joint_adapter_contract.json"))
     args = parser.parse_args()
     torch.manual_seed(2026)
     x = torch.randn(5, 16)

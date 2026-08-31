@@ -1,99 +1,58 @@
-# 校正后的 ACS 亚型 + OMI 任务方案
+# 当前唯一任务与实施规范
 
-> 中文执行摘要：本方案是当前所有新实验的唯一标签与评估规范。ACS 的
-> STEMI/NSTEMI/UA 使用互斥四分类（含 OTHER），OMI/NOMI 使用独立二分类；
-> 所有模型、阈值和外部提交必须遵守该定义。旧的四独立 sigmoid 方案保留为
-> `LEGACY/INVALID` 审计记录，不得用于最终性能结论。
+生效日期：2026-08-31。
 
-**Effective date:** 2026-08-30
-**Status:** canonical protocol for all new runs
+## 1. 任务定义
 
-## Terminology boundary
+本项目是联合多任务分类，不是四个独立标签的纯多标签分类：
 
-严格意义的纯多标签分类要求所有输出均为彼此独立的二元标签：输出为
-`[B,K]` 个 logits，逐列 sigmoid，多个标签可以同时为 1。由于 STEMI、
-NSTEMI、UA 是互斥的 ACS 亚型，本项目不再把它们作为三个独立的多标签
-sigmoid 输出。当前任务是一个**混合输出联合/多任务分类**：一个互斥的 ACS
-单标签分类头，加一个可与 ACS 状态共存的 OMI 二分类头。后续论文和报告统一
-使用“ACS 亚型四分类 + OMI 二分类联合任务”这一表述；“四个独立二分类”只
-用于标记旧实验的错误口径。
+1. ACS 阳性亚型：`STEMI / NSTEMI / UA` 互斥单标签三分类；
+2. 病理实质维度：`OMI / NOMI` 独立二分类。
 
-## Why the previous four-label task was invalid
+全队列中的 `[0,0,0]` 是 non-ACS。当前一阶段实现为了保留这些记录，增加
+`OTHER` 工程状态并训练四状态 softmax；主报告仍将 ACS 临床端点定义为限定
+ACS 阳性后的三分类。
 
-The source columns `STEMI`, `NSTEMI` and `UA` describe mutually exclusive ACS
-subtypes.  A record cannot be both NSTEMI and UA.  Training three independent
-sigmoid/BCE heads nevertheless permits impossible multi-positive predictions
-and makes independent threshold selection a different task from ACS subtype
-classification.  The old code and metrics are preserved as legacy evidence,
-but are not post-hoc reinterpreted.
+## 2. 模型输出与损失
 
-## Correct target representation
+- 状态头：`OTHER/STEMI/NSTEMI/UA` 四个 logit，交叉熵训练，softmax+argmax；
+- OMI 头：一个 logit，数值稳定的 `BCEWithLogitsLoss`，sigmoid 推理；
+- 总损失：`L = L_state_CE + lambda * L_OMI_BCE`；
+- 权重只能由当前训练折统计；验证/外部集禁止参与权重计算；
+- ACS 不使用 Youden 阈值；只有 OMI 可以在验证集选择阈值。
 
-The source four columns are retained for audit.  For each record:
+若后续改为两阶段模型，应先独立判断 ACS/non-ACS，再只对 ACS 阳性进行三分类，
+并重新训练和评价；不得把当前一阶段结果直接当作两阶段结果。
 
-| source state | ACS target | OMI target |
-|---|---|---|
-| `[0,0,0,0]` | `OTHER` (class 0) | NOMI (0) |
-| `[1,0,0,0]` | `STEMI` (class 1) | NOMI (0) |
-| `[0,1,0,0]` | `NSTEMI` (class 2) | NOMI (0) |
-| `[0,0,1,0]` | `UA` (class 3) | NOMI (0) |
-| any subtype above with `OMI=1` | same ACS class | OMI (1) |
-| `[0,0,0,1]` | `OTHER` | OMI (1) |
+## 3. 数据与划分
 
-Rows with unknown/non-binary labels are excluded.  `[0,0,0]` is never treated
-as missing; it is the explicit non-ACS state.  Any subtype overlap is a hard
-data-integrity error.
+- 17,960 条训练 ECG、17,018 位患者；
+- 患者级五折，seed=2026；
+- 每折训练/验证患者交集必须为 0，五个验证折精确覆盖训练池；
+- `[0,0,0]` 保留，亚型多阳性、重复冲突或非二值标签立即报错；
+- scaler、augmentation、类别权重只使用训练折；
+- 外部 1,995 条 ECG 只在方案冻结后推理一次。
 
-### Fairseq label-file compatibility
+## 4. 评价
 
-The official ECG-LFM Fairseq validation loop reshapes each batch label to
-`model.num_labels`. Therefore the ECG-LFM runner materialises a private
-five-column `y_joint_5.npy` file in the execution environment with columns
-`[OTHER, STEMI, NSTEMI, UA, OMI]`. This is a one-hot representation of the
-same target above, not an additional label or a change to the source data.
-The criterion accepts both source `[STEMI, NSTEMI, UA, OMI]` rows (for checks)
-and the Fairseq-compatible five-column rows, and rejects any non-binary or
-overlapping ACS state before training.
+ACS 阳性三分类主指标：Macro-F1、Accuracy、三分类混淆矩阵；有连续概率时再
+报告 macro one-vs-rest AUROC/AUPRC。OMI 报告 AUROC、AUPRC、Sensitivity、
+Specificity、PPV、NPV、F1、MCC、Accuracy 和 TP/TN/FP/FN。
 
-## Model and loss
+OMI 同时记录固定 0.5、最大 F1、Youden J 和敏感度约束工作点。所有阈值必须
+在内部验证数据确定后冻结。平台只返回逐类别 hard-label 指标时，不得将其称为
+联合三分类总指标。
 
-Every corrected model emits five logits.  The first four are a categorical
-ACS head (`OTHER/STEMI/NSTEMI/UA`) trained with `CrossEntropyLoss`; the fifth is
-an independent OMI logit trained with numerically stable
-`BCEWithLogitsLoss`.  The objective is
+## 5. 当前实现入口
 
-`L = L_ACS_CE + lambda_OMI * L_OMI_BCE`.
+- E4：`experiments/acs_joint_e4.py`；
+- 传统模型：`experiments/acs_joint_model_comparison.py`；
+- ECG-LFM：`experiments/ecg_lfm/run_joint_fold.py` 与 `evaluate_joint.py`；
+- 配置：`configs/ecg_lfm/corrected_joint_*.yaml`；
+- 外部提交：`scripts/submit_joint_acs_omi.py`。
 
-No OMI loss is allowed to add a second `pos_weight` unless it is a separately
-registered ablation.  Any class/positive weighting is computed from the
-training fold only.  ACS inference is `argmax(softmax)` and therefore cannot
-produce two subtypes.  Only OMI receives a validation-selected threshold
-(0.5, max-F1, Youden J, sensitivity-constrained 0.90/0.95 are recorded).
+## 6. 解释限制
 
-## Split and evaluation
-
-The historical patient-level five-fold assignment is reused when valid;
-otherwise a deterministic patient-level iterative split uses the joint
-one-hot ACS-state + OMI target.  No patient appears in both train and
-validation.  Training-only augmentation and train-fold robust scaling are
-unchanged.  Reports separate four-way ACS metrics, ACS-positive conditional
-three-way subtype metrics, and OMI binary metrics (AUROC, AUPRC, sensitivity,
-specificity, PPV, NPV, F1, MCC, accuracy, TP/TN/FP/FN).  External submissions
-encode the ACS argmax back into one-hot STEMI/NSTEMI/UA columns plus OMI.
-
-## Corrected entry points
-
-* `experiments/acs_joint_e4.py` — E4 HMoE/WavelNet/KAN.
-* `experiments/acs_joint_model_comparison.py` — InceptionTime, ResNet1D-Wang,
-  LSTM, ViT and Transformer1D.
-* `experiments/ecg_lfm/run_joint_fold.py` plus `configs/ecg_lfm/corrected_joint_*.yaml` — official ECG-LFM with the joint criterion (current GPU1 queue: `results/corrected_ecg_lfm_joint_bs64_v2/`).
-* `third_party/ECG-LFM/fairseq_signals/criterions/acs_joint.py` — stable
-  Fairseq criterion; summed loss is returned because Fairseq divides by
-  `sample_size` during gradient scaling.
-
-The corrected PyTorch runners write provenance, split/label audits, per-epoch
-loss/LR curves, ROC/PR and confusion figures.  ECG-LFM's Fairseq launcher
-writes provenance and raw JSONL first; its joint record-level evaluator is a
-separate post-training step recorded in the ECG-LFM report.  Raw ECG, patient tables, checkpoints
-and row-level predictions stay on the controlled server and are not committed
-to GitHub.
+当前 pooled OOF 使用验证损失选择 checkpoint，并在同一 pooled OOF 上选择 OMI
+阈值后回算硬指标，因此工作点指标属于调优后的描述性结果。论文确认性实验应
+采用嵌套患者级校准或预先固定阈值；未完成配对统计检验时不得宣称统计显著。

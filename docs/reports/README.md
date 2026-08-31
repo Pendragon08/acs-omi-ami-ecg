@@ -1,55 +1,28 @@
-# ACS 实验报告索引
+# 实验报告索引
 
-本目录的当前主线是“ACS 四分类 + OMI 二分类”联合任务：
-`OTHER / STEMI / NSTEMI / UA` 是一个互斥 ACS 分类头，OMI/NOMI 是独立二分类
-头。任何把 STEMI、NSTEMI、UA 当作三个独立 sigmoid 的结果都标记为
-`LEGACY/INVALID`，仅用于审计，不用于当前结论。
+所有当前报告优先使用中文。旧独立 sigmoid 任务的报告已从当前分支删除。
 
-## 当前有效报告
+## 当前主报告
 
-| 报告 | 内容 | 状态 |
-|---|---|---|
-| [实验结果总报告_最终.md](实验结果总报告_最终.md) | 校正任务、ECG-LFM 微调、E4、传统模型、历史消融和外部平台结果总览 | 已完成；当前总报告 |
-| [实验结果总报告_20260829.md](实验结果总报告_20260829.md) | 2026-08-29 过程快照 | 历史快照 |
-| [corrected_task_formulation_20260829.md](corrected_task_formulation_20260829.md) | 标签审计、代码修正、重跑登记 | 规范 |
-| [corrected_joint_e4_20260829.md](corrected_joint_e4_20260829.md) | E4 HMoE/WavelNet/KAN 五折联合任务 | 已完成；GPU1 + 外部平台 |
-| [corrected_joint_model_comparison_20260829.md](corrected_joint_model_comparison_20260829.md) | InceptionTime、ResNet1D-Wang、LSTM、ViT、Transformer1D 对比 | 已完成；GPU1 + 外部平台 |
-| [corrected_ecg_lfm_joint_20260829.md](corrected_ecg_lfm_joint_20260829.md) | ECG-LFM Baseline/LoRA/DoRA 校正重跑过程报告 | 过程记录；最终见总报告 |
+- [实验结果总报告_最终.md](实验结果总报告_最终.md)：任务、数据、模型对比、
+  ECG-LFM Baseline/LoRA/DoRA、外部平台、训练成本和限制；
+- [实验完整性审计_20260831.md](实验完整性审计_20260831.md)：代码与结果完整性复核、
+  清理范围和剩余限制；
+- [../plans/CORRECTED_TASK_FORMULATION.md](../plans/CORRECTED_TASK_FORMULATION.md)：
+  当前唯一任务规范。
 
-## 历史 OMI/AMI 损失函数与特征消融
+## 有效历史消融
 
-> 下列消融是在旧的 OMI/AMI 二分类任务上完成的，属于历史方法学记录；它们
-> 不等同于当前 ACS 四分类 + OMI 二分类联合任务的结果，不能直接替代当前主线
-> 的 ACS/OMI 指标。
+`loss_feature_ablation/` 保存 OMI/AMI 二分类阶段完成的损失和输入特征消融，
+包括 CB-Focal、年龄、性别、中位数 ECG 等实验。它们使用不同端点，只能作为
+历史方法学记录，不能替代当前 ACS 亚型 + OMI 联合结果。
 
-| 报告 | 内容 | 状态 |
-|---|---|---|
-| [loss_feature_ablation/loss_ablation_summary.md](loss_feature_ablation/loss_ablation_summary.md) | Baseline、WBCE、Focal、CB-Focal，五种子与阈值策略 | 已完成 |
-| [loss_feature_ablation/feature_ablation_summary.md](loss_feature_ablation/feature_ablation_summary.md) | 原始 ECG、年龄、性别、中位数 ECG 特征比较 | 已完成 |
-| [loss_feature_ablation/feature_association_summary.md](loss_feature_ablation/feature_association_summary.md) | 特征与标签关联分析 | 已完成 |
-| [loss_feature_ablation/EXPERIMENT_LOG.md](loss_feature_ablation/EXPERIMENT_LOG.md) | 消融实验时间线和可追溯记录 | 已完成 |
-| [loss_feature_ablation/EXPERIMENT_AUDIT_ABLATION.md](loss_feature_ablation/EXPERIMENT_AUDIT_ABLATION.md) | 公平比较与泄漏审计 | 已完成 |
+## 结果证据
 
-## 历史/无效报告（保留用于追溯）
+- ECG-LFM：`results/corrected_ecg_lfm_joint_bs64_v2/`；
+- E4：`results/corrected_joint_acs_omi_e4/`；
+- 传统模型：`results/corrected_joint_model_comparison/`；
+- 脱敏日志索引：`docs/logs/EXPERIMENT_LOG_INDEX.md`。
 
-以下报告使用旧的独立 sigmoid 端点，不能与当前互斥 ACS 任务混合解释：
-
-- [ecg_lfm_local_best_lora_dora_optimization_20260828.md](ecg_lfm_local_best_lora_dora_optimization_20260828.md)
-- [ecg_lfm_4label_finetuning_20260827.md](ecg_lfm_4label_finetuning_20260827.md)
-- [model_comparison_4label_20260828.md](model_comparison_4label_20260828.md)
-- [hmoe_wavelnet_e4_stemi_nstemi_ua_omi_multilabel_20260827.md](hmoe_wavelnet_e4_stemi_nstemi_ua_omi_multilabel_20260827.md)
-
-其他历史 ACS/HMoE、阈值、AMI/OMI 和外部平台报告仍保留在本目录；阅读时先
-确认报告中的任务定义和 `LEGACY` 标识。
-
-## 指标和外部测试说明
-
-报告分别给出 ACS 四分类、ACS 阳性条件三分类和 OMI 二分类指标。OMI/NSTEMI
-不平衡时优先看 Sensitivity、AUPRC、F1、PPV、AUROC，并同时报告 Specificity、
-NPV、MCC、Accuracy 和 TP/TN/FP/FN。只有 OMI 阈值在验证 OOF 上确定并冻结；
-ACS 使用 argmax，不能产生同时预测多个亚型的结果。
-
-外部平台的聚合返回值、提交哈希和图表位于 `results/`；逐例预测、提交 CSV、
-患者级划分、checkpoint、原始波形和原始服务器日志按安全边界不进入 GitHub。
-可公开的逐 epoch 脱敏日志、损失/LR、ROC/PR 和混淆矩阵已随对应结果目录
-版本化。
+外部平台没有返回概率或联合三分类混淆矩阵，因此外部 AUROC/AUPRC 和严格的
+ACS 三分类总指标目前不可计算。

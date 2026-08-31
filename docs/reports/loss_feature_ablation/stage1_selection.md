@@ -6,7 +6,7 @@
 > 中文说明：本阶段只在固定验证流程中筛选候选 loss/特征。最终结论以五种子
 > 均值、标准差和配对统计比较为准，不能把单个 seed 的最高值当作最终结果。
 
-Selection rule: lexicographic_AUPRC_then_F1-Sensitivity-hmean_then_F1_then_Sensitivity_then_Specificity. External test labels/results were not used.
+筛选规则：依次按 AUPRC、F1 与 Sensitivity 调和平均、F1、Sensitivity、Specificity 进行字典序选择。未使用外部测试标签或结果。
 
 ## best_focal
 

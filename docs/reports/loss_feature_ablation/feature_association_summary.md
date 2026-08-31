@@ -1,7 +1,7 @@
 # 年龄/性别关联与仅临床特征探针（历史 OMI/AMI 任务）
 
-> 本附录面向旧 OMI/AMI 二分类任务；相关性结果不能直接外推为当前 ACS 四分类
-> 或联合 OMI 头的性能提升。
+> 本附录面向旧 OMI/AMI 二分类任务；相关性结果不能直接外推为当前 ACS 阳性
+> 亚型三分类或联合 OMI 头的性能提升。
 
 ## 中文说明
 
@@ -9,7 +9,7 @@
 并报告仅临床特征的探针模型。外部测试集没有被读取；该分析用于解释输入特征
 的相关性和潜在增量价值，不把相关性解释为病因关系。
 
-All inferential summaries use only the official-training pool and its frozen patient-level train/validation split. The external test was not accessed.
+所有推断性汇总只使用官方训练池及其冻结的患者级训练/验证划分，未访问外部测试集。
 
 Records: train 16,174; validation 1,786. Missing age: 0; missing sex: 0.
 

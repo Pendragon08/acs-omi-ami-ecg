@@ -1,13 +1,13 @@
 # OMI 损失函数与 ECG 特征消融计划（历史 OMI/AMI 任务）
 
-> 本计划针对旧 OMI/AMI 二分类器。当前正式任务是 ACS 四分类 + OMI 二分类
-> 联合任务，当前实验不得直接套用本计划的标签头或结果解释。
+> 本计划针对旧 OMI/AMI 二分类器。当前正式任务是 ACS 阳性亚型三分类 + OMI
+> 二分类联合任务；全队列内部保留 OTHER。当前实验不得直接套用本计划的标签头或结果解释。
 
 > 中文说明：本计划规定 OMI 的 Baseline/WBCE/Focal/CB-Focal 和原始 ECG、
 > 年龄、性别、中位数 ECG 对比；超参数只能由训练集/验证集决定，测试集只作
 > 最终一次评估。
 
-Status: approved for execution; prior independent reviewer plan incorporated.
+状态：已批准执行，并已纳入此前独立审阅意见。
 
 ## Frozen historical protocol
 

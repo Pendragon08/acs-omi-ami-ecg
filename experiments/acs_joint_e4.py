@@ -278,7 +278,7 @@ def main() -> None:
         result["val_metrics_at_pooled_youden"] = {"acs": acs_metrics(acs[val_idx], oof_acs[val_idx]), "acs_subtype": acs_subtype_metrics(acs[val_idx], oof_acs[val_idx]), "omi": binary_metrics(omi[val_idx], oof_omi[val_idx], thresholds["youden_j"])}
     pooled = {}
     for name, threshold in thresholds.items():
-        pooled[name] = {"acs": acs_metrics(acs, oof_acs), "acs_subtype": acs_subtype_metrics(acs, oof_acs), "omi": binary_metrics(omi, oof_omi, threshold)}
+        pooled[name] = {"acs": acs_metrics(acs, oof_acs), "acs_subtype": acs_subtype_metrics(acs, oof_acs), "omi": None if threshold is None else binary_metrics(omi, oof_omi, threshold)}
     save_curves(out_dir, histories, "Corrected joint ACS categorical + OMI binary E4")
     save_roc_pr_curves(out_dir, acs, oof_acs, omi, oof_omi)
     y_pred_acs = oof_acs.argmax(axis=1); omi_pred = (oof_omi >= thresholds["youden_j"]).astype(int)

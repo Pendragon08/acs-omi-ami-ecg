@@ -1,8 +1,8 @@
-"""Multi-label (OMI + AMI) evaluation metrics.
+"""历史 OMI/AMI 二分类消融专用指标。
 
-Per label: AUROC, AUPRC (threshold-free), and at a chosen threshold the clinical
-metrics Sensitivity / Specificity / PPV / NPV / Accuracy / F1.  Macro AUPRC /
-AUROC / F1 are averaged over the two labels (OMI, AMI).
+本模块只供 ``exp/exp_acs.py`` 中旧 OMI/AMI 实验使用，不是当前“ACS 亚型三分类
++ OMI 二分类”联合任务的通用指标入口。当前联合任务统一使用
+``experiments/acs_joint_task.py``。
 """
 import numpy as np
 from sklearn.metrics import (

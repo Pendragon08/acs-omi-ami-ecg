@@ -1,44 +1,14 @@
-"""Thin, architecture-preserving helpers around the official ECG-LFM model.
+"""官方 ECG-LFM 模型的轻量加载与参数统计工具。
 
-No backbone code is copied here.  Corrected training uses the official
-registered ``ecg_transformer_classifier`` from ``third_party/ECG-LFM`` with
-``model.num_labels=5`` (four-way ACS head plus one OMI logit).  The fixed
-four-logit segment helpers below are retained only for the legacy independent-
-sigmoid pipeline and must not be used for current results.
+当前联合训练使用五个 logit：全队列状态头为
+``OTHER/STEMI/NSTEMI/UA``，另有一个独立 OMI logit。旧四个独立 sigmoid
+推理辅助函数已删除，避免被误用于当前任务。
 """
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
 
-import numpy as np
 import torch
-
-
-LABELS = ("STEMI", "NSTEMI", "UA", "OMI")
-
-
-def aggregate_two_segment_logits(logits: torch.Tensor) -> torch.Tensor:
-    """Average two non-overlapping 5 s logits into one 10 s record logit."""
-    if logits.ndim != 3 or logits.shape[1:] != (2, len(LABELS)):
-        raise ValueError(f"Expected [records,2,4] logits, got {tuple(logits.shape)}")
-    return logits.float().mean(dim=1)
-
-
-def aggregate_numpy_logits(logits: np.ndarray, record_indices: Iterable[int]) -> tuple[np.ndarray, np.ndarray]:
-    """Aggregate manifest-ordered segment logits by master record index."""
-    values = np.asarray(logits, dtype=np.float32)
-    indices = np.asarray(list(record_indices), dtype=np.int64)
-    if values.ndim != 2 or values.shape[1] != len(LABELS) or len(values) != len(indices):
-        raise ValueError("Segment logits and record index vector are incompatible")
-    unique = np.unique(indices)
-    aggregated = np.empty((len(unique), len(LABELS)), dtype=np.float32)
-    for row, idx in enumerate(unique):
-        selected = values[indices == idx]
-        if selected.shape != (2, len(LABELS)):
-            raise ValueError(f"Record {idx} has {len(selected)} segments instead of two")
-        aggregated[row] = selected.mean(axis=0)
-    return unique, aggregated
 
 
 def load_finetuned_model(checkpoint: Path, manifest_dir: Path):

@@ -315,23 +315,41 @@ def acs_subtype_metrics(y_class: np.ndarray, probs: np.ndarray) -> dict:
         return {"n_acs": 0, "error": "no ACS-positive records"}
     # Keep only ACS records and remap OTHER-free classes to 0..2.
     y = np.asarray(y_class)[mask] - 1
-    p = np.asarray(probs)[mask, 1:4]
+    p = np.asarray(probs, dtype=np.float64)[mask, 1:4]
+    # 条件于 ACS 阳性后重新归一化三种亚型概率。AUROC/AUPRC 必须由连续概率
+    # 计算；Sensitivity/Specificity/F1 等工作点指标仍由互斥 argmax 预测计算。
+    denom = p.sum(axis=1, keepdims=True)
+    if np.any(denom <= 0) or not np.isfinite(p).all():
+        raise ValueError("invalid ACS-subtype probabilities")
+    p = p / denom
     pred = p.argmax(axis=1)
     cm = confusion_matrix(y, pred, labels=np.arange(3))
     per_class = {}
     for k, name in enumerate(SUBTYPE_LABELS):
-        hard = binary_metrics((y == k).astype(np.int64), (pred == k).astype(float), 0.5)
-        per_class[name] = hard
+        target = (y == k).astype(np.int64)
+        metrics = binary_metrics(target, p[:, k], 0.5)
+        hard = binary_metrics(target, (pred == k).astype(float), 0.5)
+        for metric in ("sensitivity", "specificity", "ppv", "npv", "f1", "mcc", "accuracy", "tp", "tn", "fp", "fn"):
+            metrics[metric] = hard[metric]
+        metrics["threshold"] = "argmax_ovr"
+        metrics["youden_j"] = float(hard["sensitivity"] + hard["specificity"] - 1.0)
+        per_class[name] = metrics
+    valid_auc = [v["auroc"] for v in per_class.values() if np.isfinite(v["auroc"])]
+    valid_pr = [v["auprc"] for v in per_class.values() if np.isfinite(v["auprc"])]
     return {
         "n_acs": int(mask.sum()),
         "accuracy": float(accuracy_score(y, pred)),
         "macro_f1": float(f1_score(y, pred, average="macro", zero_division=0)),
+        "weighted_f1": float(f1_score(y, pred, average="weighted", zero_division=0)),
+        "multiclass_mcc": _safe_mcc(y, pred),
+        "macro_auroc_ovr": float(np.mean(valid_auc)) if valid_auc else float("nan"),
+        "macro_auprc_ovr": float(np.mean(valid_pr)) if valid_pr else float("nan"),
         "confusion_matrix": cm.astype(int).tolist(),
         "per_class": per_class,
     }
 
 
-def select_omi_threshold(y: np.ndarray, prob: np.ndarray, method: str) -> tuple[float, dict]:
+def select_omi_threshold(y: np.ndarray, prob: np.ndarray, method: str) -> tuple[float | None, dict]:
     candidates = [(0.5, binary_metrics(y, prob, 0.5))] if method == "fixed_0.5" else [
         (float(t), binary_metrics(y, prob, float(t))) for t in GRID
     ]
@@ -344,8 +362,19 @@ def select_omi_threshold(y: np.ndarray, prob: np.ndarray, method: str) -> tuple[
     elif method in {"sens90", "sens95"}:
         target = 0.90 if method == "sens90" else 0.95
         feasible = [item for item in candidates if item[1]["sensitivity"] >= target]
-        chosen = max(feasible or candidates, key=lambda item: (item[1]["specificity"], item[1]["f1"], item[0]))
-        best = (chosen[0], dict(chosen[1], sensitivity_constraint_satisfied=bool(feasible)))
+        if not feasible:
+            return None, {
+                "status": "infeasible",
+                "target_sensitivity": target,
+                "sensitivity_constraint_satisfied": False,
+            }
+        chosen = max(feasible, key=lambda item: (item[1]["specificity"], item[1]["f1"], item[0]))
+        best = (chosen[0], dict(
+            chosen[1],
+            status="feasible",
+            target_sensitivity=target,
+            sensitivity_constraint_satisfied=True,
+        ))
     else:
         raise ValueError(method)
     return float(best[0]), best[1]

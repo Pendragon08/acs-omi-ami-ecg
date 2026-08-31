@@ -138,7 +138,7 @@ def main():
             res, pred = run_fold(args, name, fold, tr, va, x, acs, omi, patients, device, out_dir); ya, yo, pa, po = pred; oof_a[va] = pa; oof_o[va] = po; histories.append(res.pop("history")); results.append(res)
         thresholds = {}; details = {}
         for method in ("fixed_0.5", "max_f1", "youden_j", "sens90", "sens95"): thresholds[method], details[method] = select_omi_threshold(omi, oof_o, method)
-        pooled = {m: {"acs": acs_metrics(acs, oof_a), "acs_subtype": acs_subtype_metrics(acs, oof_a), "omi": binary_metrics(omi, oof_o, t)} for m, t in thresholds.items()}
+        pooled = {m: {"acs": acs_metrics(acs, oof_a), "acs_subtype": acs_subtype_metrics(acs, oof_a), "omi": None if t is None else binary_metrics(omi, oof_o, t)} for m, t in thresholds.items()}
         model_dir = out_dir / name; save_curves(model_dir, histories, f"Corrected joint {name}"); save_roc_pr_curves(model_dir, acs, oof_a, omi, oof_o)
         cm_omi = np.asarray([[int(((omi == 0) & (oof_o < thresholds["youden_j"])).sum()), int(((omi == 0) & (oof_o >= thresholds["youden_j"])).sum())], [int(((omi == 1) & (oof_o < thresholds["youden_j"])).sum()), int(((omi == 1) & (oof_o >= thresholds["youden_j"])).sum())]])
         save_confusion_figures(model_dir, np.asarray(pooled["youden_j"]["acs"]["confusion_matrix"]), np.asarray(pooled["youden_j"]["acs_subtype"]["confusion_matrix"]), cm_omi)

@@ -1,8 +1,9 @@
 # 聚合实验产物
 
 本目录保存不含逐例标识符的可复核结果：每折训练历史、汇总指标、标签审计、
-阈值分析、外部平台聚合指标、脱敏逐 epoch 训练日志和可视化图。当前任务是
-ACS `OTHER/STEMI/NSTEMI/UA` 互斥四分类 + OMI/NOMI 独立二分类。
+阈值分析、外部平台聚合指标、脱敏逐 epoch 训练日志和可视化图。当前临床任务是
+ACS 阳性 `STEMI/NSTEMI/UA` 单标签三分类 + OMI/NOMI 独立二分类；全队列模型
+内部保留 `OTHER` 作为 non-ACS 状态。
 
 完整中文分析见 [`docs/reports/实验结果总报告_最终.md`](../docs/reports/实验结果总报告_最终.md)。
 

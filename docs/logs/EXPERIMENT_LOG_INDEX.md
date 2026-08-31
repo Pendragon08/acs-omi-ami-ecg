@@ -1,49 +1,47 @@
 # 实验日志索引与 GitHub 归档策略
 
-更新时间：2026-08-30 14:10 UTC。下表的服务器路径用于内部审计；可公开的训练过程已
-从原始日志中提取为不含路径、患者编号和逐例预测的
-`training_log_sanitized.csv`，并随 `results/` 一起提交 GitHub。
+**更新时间：** 2026-08-31
 
-## GitHub 中保存什么
+## GitHub 保存内容
 
-- 每折/每 epoch 的训练损失、验证损失、验证指标和学习率（脱敏 CSV）；
+- 每折/每 epoch 的训练损失、验证损失、验证指标和学习率脱敏 CSV；
 - 损失与学习率曲线、ROC/PR 曲线、混淆矩阵；
-- 汇总 JSON/CSV、阈值搜索、标签审计、外部平台聚合指标及 provenance。
+- 汇总 JSON/CSV、阈值搜索、标签审计、外部平台聚合指标和 provenance；
+- 中文实验报告与完整性审计。
 
-原始 screen/Fairseq 日志、原始 ECG、患者级表格、checkpoint、逐例 OOF/外部
-预测和提交 CSV 不上传。原始日志可能包含服务器绝对路径、数据定位信息或重复
-的 Fairseq 事件流，仍留在受控服务器；报告引用本索引即可追溯到原始运行。
+原始 ECG、患者级表格、checkpoint、逐例 OOF/外部预测、提交 CSV、下载权重及含
+服务器绝对路径的原始日志不进入 GitHub。原始运行日志保留在受控服务器；GitHub 中的
+`training_log_sanitized.csv` 仅保留 fold、epoch、loss、验证指标和学习率。
 
-## 当前校正任务
+## 当前有效实验
 
-| 运行 | GPU/状态 | 服务器原始日志 | GitHub 证据 |
+| 实验 | 运行状态 | 受控服务器日志 | GitHub 证据 |
 |---|---|---|---|
-| E4 HMoE/WavelNet/KAN 联合任务 | GPU1，已完成 | `logs/corrected/acs_joint_e4_gpu1.log` | `results/corrected_joint_acs_omi_e4/`、`docs/reports/corrected_joint_e4_20260829.md` |
-| 传统架构对比 | GPU1，已完成 | `logs/corrected_joint_model_comparison/all_gpu1.log` | `results/corrected_joint_model_comparison/<模型>/`、`docs/reports/corrected_joint_model_comparison_20260829.md` |
-| ECG-LFM Baseline/LoRA/DoRA 校正重跑 | 已完成；DoRA fold3 在 GPU0 恢复，fold4 在 GPU1 并行（均绑定单卡） | `logs/corrected_ecg_lfm_joint_bs64_v2/master.log`、`dora_recovery_master.log`、`dora_external_master.log` 及各折日志 | `results/corrected_ecg_lfm_joint_bs64_v2/{baseline,lora,dora}/`、`docs/reports/实验结果总报告_最终.md` |
+| E4 HMoE/WavelNet/KAN 联合任务 | GPU1，已完成 | `logs/corrected/acs_joint_e4_gpu1.log` | `results/corrected_joint_acs_omi_e4/` |
+| 传统架构对比 | GPU1，已完成 | `logs/corrected_joint_model_comparison/all_gpu1.log` | `results/corrected_joint_model_comparison/` |
+| ECG-LFM Baseline/LoRA/DoRA | 已完成；恢复运行均绑定单卡 | `logs/corrected_ecg_lfm_joint_bs64_v2/` 下的 master/折日志 | `results/corrected_ecg_lfm_joint_bs64_v2/` |
+| 历史 OMI/AMI 损失与特征消融 | 已完成 | `logs/loss_feature_ablation/` | `results/loss_feature_ablation/` |
 
-## 已完成结果目录中的过程文件
+统一结果解释见 `docs/reports/实验结果总报告_最终.md`，完整性审计见
+`docs/reports/实验完整性审计_20260831.md`。
 
-- E4：`results/corrected_joint_acs_omi_e4/training_log_sanitized.csv`、
-  `training_validation_loss_lr.png`、`roc_pr_curves.png`、`confusion_matrices.png`；
-- InceptionTime、ResNet1D_Wang、LSTM、ViT、Transformer1D：每个模型目录均有
-  `training_log_sanitized.csv`、上述三类图、`history_fold*.json`、汇总指标和
-  外部平台 JSON；
-- 生成脱敏日志的脚本：`scripts/export_sanitized_training_logs.py`。
+## 结果目录中的过程文件
 
-## ECG-LFM 及历史日志
+- E4：`training_log_sanitized.csv`、`training_validation_loss_lr.png`、
+  `roc_pr_curves.png`、`confusion_matrices.png`；
+- 五种传统模型：各模型目录保存脱敏训练日志、三类图、`history_fold*.json`、汇总指标和
+  `official_platform_metrics.json`；
+- ECG-LFM：Baseline/LoRA/DoRA 各保存五折汇总、脱敏日志、损失/LR、ROC/PR、
+  混淆矩阵和平台聚合 JSON；
+- 历史消融：五种子汇总、阈值策略、bootstrap、脱敏日志与曲线。
 
-ECG-LFM 首次校正运行因 Fairseq 四列标签无法 reshape 到五个 logit 而停止，
-该运行不产生有效指标；v2 已物化 `[OTHER,STEMI,NSTEMI,UA,OMI]` 标签并通过
-fold0 smoke test。Baseline/LoRA/DoRA 已由评估器生成同格式汇总、图表、脱敏 epoch 日志
-和平台 JSON。DoRA 曾中断的 fold3 及 GPU1 并行 fold4 均在过程日志中保留恢复/复制记录。
+生成脱敏训练日志的脚本为 `scripts/export_sanitized_training_logs.py`。
 
-历史损失/特征消融日志在服务器 `logs/loss_feature_ablation/`，报告中的
-`docs/reports/loss_feature_ablation/EXPERIMENT_LOG.md` 是公开时间线；历史
-独立 sigmoid 四标签模型的日志也只作为 `LEGACY/INVALID` 审计证据。
+## 审核与复现规则
 
-## 内部复核方法
-
-通过批准的 SSH/SFTP 访问服务器时，只读取本索引给出的相对路径；不要把密码写
-入脚本，也不要把原始日志复制进仓库。若需新增结果，请先运行脱敏导出脚本，
-检查输出不含绝对路径、患者/记录标识和逐例概率，再提交汇总与图表。
+1. 服务器长任务必须使用 `screen`，写日志，并通过 `CUDA_VISIBLE_DEVICES` 绑定一张 GPU。
+2. 新结果提交前先检查日志不含密码、绝对数据路径、患者标识和逐例概率。
+3. 报告中的数值必须能追溯到当前 `results/corrected_*` 或明确标为历史消融的目录。
+4. 旧 STEMI/NSTEMI/UA 三个独立 sigmoid 的错误任务已从当前分支删除，只能从 Git 历史
+   恢复，不能作为当前任务的实验依据。
+5. 外部平台已经参与模型选择，当前平台指标只能作为描述性工程证据。

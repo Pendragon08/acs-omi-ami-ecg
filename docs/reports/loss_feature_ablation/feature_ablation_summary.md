@@ -27,13 +27,13 @@ The controlled neural comparison uses the same XceptionTimeFusion architecture a
 - OMI: best screened addition `raw_clin`; ΔAUPRC=+0.0010; improved in 4/5 seeds — **stable gain**.
 - AMI: best screened addition `raw_age`; ΔAUPRC=+0.0032; improved in 5/5 seeds — **stable gain**.
 
-Standalone `median` and `clin` rows quantify predictive association, while raw-plus-feature rows test incremental value beyond raw ECG. External test feedback was not used.
+单独的 `median` 和 `clin` 行衡量预测关联，原始 ECG 加特征的行检验相对原始 ECG 的增量价值。未使用外部测试反馈。
 
 ## Clinical association appendix
 
 # Age/sex association and clinical-only probe
 
-All inferential summaries use only the official-training pool and its frozen patient-level train/validation split. The external test was not accessed.
+所有推断性汇总只使用官方训练池及其冻结的患者级训练/验证划分，未访问外部测试集。
 
 Records: train 16,174; validation 1,786. Missing age: 0; missing sex: 0.
 

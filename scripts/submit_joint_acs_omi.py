@@ -104,7 +104,7 @@ def main() -> None:
         capture_output=True, text=True,
     )
     page = result.stdout
-    (run_dir / "official_platform_4label_response.html").write_text(page, encoding="utf-8")
+    (run_dir / "official_platform_response.html").write_text(page, encoding="utf-8")
     rows = parse_all_rows(page)
     by_label = {str(row.get("label")): row for row in rows}
     payload = {
@@ -119,7 +119,7 @@ def main() -> None:
         "missing_metric_labels": [label for label in LABELS if label not in by_label],
         "test_labels_used_locally": False,
     }
-    (run_dir / "official_platform_4label_metrics.json").write_text(
+    (run_dir / "official_platform_metrics.json").write_text(
         json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
     )
     print(json.dumps(payload, ensure_ascii=False), flush=True)

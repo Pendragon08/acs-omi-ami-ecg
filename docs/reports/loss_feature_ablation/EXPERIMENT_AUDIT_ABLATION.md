@@ -5,12 +5,12 @@
 > 中文说明：本文件审计固定划分、单变量改变、训练集权重统计和测试集隔离；
 > 外部测试标签未参与调参。
 
-Overall: **WARN** (provisional deterministic audit; no fresh independent semantic reviewer was authorized).
+总体结论：**WARN**（暂定的确定性审计；当时未授权新的独立语义审阅器）。
 
-- Parsed and recomputed 63 run JSON files and their validation prediction CSVs.
-- Baseline checkpoint exactly reproduces the historical checkpoint: True.
-- Ablation runner references the external test: False.
-- Final loss seed sets: {'baseline': [42, 2024, 2025, 2026, 3407], 'weighted_bce': [42, 2024, 2025, 2026, 3407], 'focal': [42, 2024, 2025, 2026, 3407], 'cb_focal': [42, 2024, 2025, 2026, 3407]}.
-- Deterministic errors: none.
+- 已解析并重新计算 63 个运行 JSON 及其验证预测 CSV。
+- Baseline checkpoint 与历史 checkpoint 完全一致：是。
+- 消融运行器是否引用外部测试：否。
+- 最终损失函数种子集合：Baseline、Weighted BCE、Focal、CB-Focal 均为 [42, 2024, 2025, 2026, 3407]。
+- 确定性错误：未发现。
 
-WARN is retained even when deterministic checks pass because the historical scalers include internal-validation data and the required fresh-agent semantic audit could not be performed under the active no-delegation constraint.
+即使确定性检查通过，仍保留 WARN：历史 scaler 包含内部验证数据，并且当时受禁止委派约束，无法执行所需的新代理语义审计。

@@ -1,151 +1,67 @@
-# ACS ECG/OMI 研究归档（任务定义已校正）
+# ACS 亚型与 OMI 联合 ECG 分类
 
-## 中文入口
+本仓库保存 ACS/OMI ECG 研究中可以公开版本化的代码、配置、聚合实验结果、
+脱敏训练日志和中文报告。原始 ECG、患者级表格、checkpoint、逐例预测及提交
+CSV 不进入 GitHub。
 
-当前规范是“ACS 亚型四分类 + OMI 二分类”联合任务：
-`OTHER / STEMI / NSTEMI / UA` 互斥，OMI/NOMI 独立。最新数据、五折结果、外部
-平台指标、训练日志和图表请先阅读
-[`docs/reports/实验结果总报告_最终.md`](docs/reports/实验结果总报告_最终.md)。
-报告索引在 [`docs/reports/README.md`](docs/reports/README.md)，日志和 GitHub
-归档规则在 [`docs/logs/EXPERIMENT_LOG_INDEX.md`](docs/logs/EXPERIMENT_LOG_INDEX.md)。
+## 当前任务
 
-校正后的 E4、传统架构和 ECG-LFM 结果目录已经包含脱敏的逐 epoch loss/LR 日志、
-损失曲线、ROC/PR 曲线、混淆矩阵和外部平台聚合指标。原始 ECG、患者级文件、
-checkpoint、逐例预测、提交 CSV 和含服务器路径的原始日志不会进入 GitHub。
+当前任务不是四个独立二分类标签，而是一个联合多任务模型：
 
-This repository is the versioned, reproducible part of the ACS ECG study. It
-contains model and data-pipeline code, experiment configurations, research
-plans, aggregate metrics, figures, and report/provenance documents. Controlled
-ECG waveforms and patient-level files remain outside GitHub.
+- **ACS 亚型**：限定 ACS 阳性样本后，在 `STEMI / NSTEMI / UA` 中进行互斥的
+  单标签三分类，使用 softmax 和 argmax；
+- **OMI**：独立的 OMI/NOMI 二分类，使用 sigmoid，阈值只由内部验证数据选择。
 
-## Current task and final method (corrected)
+训练全队列明确保留 `[0,0,0]` 的 non-ACS 记录。为此，现有一阶段实现内部使用
+`OTHER / STEMI / NSTEMI / UA` 四状态头；`OTHER` 只是 non-ACS 状态，不是第四种
+ACS 亚型。报告分别列出全队列状态结果和 ACS 阳性条件三分类结果。
 
-The former four-independent-sigmoid formulation was a task-definition error:
-`STEMI`, `NSTEMI` and `UA` are mutually exclusive ACS subtypes. The current
-task is a joint multi-task model with a categorical ACS head
-(`OTHER`, `STEMI`, `NSTEMI`, `UA`) and an independent binary OMI/NOMI head.
-`OTHER` is the explicit source state `[0,0,0]` and is retained as a valid
-negative. ACS predictions are always one argmax class; only OMI uses a
-validation-selected threshold. Three-way ACS metrics are additionally
-reported conditional on ACS-positive records.
+## 最终推荐方案
 
-The corrected implementation is `experiments/acs_joint_e4.py`; the old entry
-point now routes there. Pre-correction independent-sigmoid results remain in
-their original directories only as invalid legacy diagnostics and must not be
-used as current performance claims.
+当前推荐 **ECG-LFM LoRA**（rank=8、alpha=16、dropout=0.05、学习率 `1e-4`）。
+患者级五折 pooled OOF 中：
 
-The parameter-count table from the historical local-best ECG-LFM run is kept
-below only as an audit record.  That run used the now-invalid four-independent-
-sigmoid formulation and its performance must not be interpreted as a result
-for the corrected task. The corrected ECG-LFM Baseline/LoRA/DoRA comparison is
-complete under `results/corrected_ecg_lfm_joint_bs64_v2`. DoRA fold3 was recovered
-on GPU0 and fold4 was completed in parallel on GPU1; all three methods have
-pooled OOF summaries, sanitized logs, curves, confusion matrices and external
-platform JSON. The first attempt was stopped and documented because Fairseq
-exposed a four-versus-five label shape mismatch; no metrics from that attempt
-are used.
+| 任务 | 主要结果 |
+|---|---|
+| ACS 阳性亚型三分类 | Accuracy `0.8058`，Macro-F1 `0.6541` |
+| OMI 二分类（Youden 阈值 0.05） | AUROC `0.9106`，AUPRC `0.4315`，Sensitivity `0.8549`，Specificity `0.8359`，F1 `0.4021` |
 
-按完整五折 pooled OOF、外部平台四标签 hard-label 和训练成本综合，当前最终推荐
-ECG-LFM LoRA（rank=8，登记学习率 `1e-4`）：ACS Macro-AUROC/Macro-AUPRC/
-Macro-F1=`0.78705/0.53897/0.51026`，OMI AUROC/AUPRC=`0.91063/0.43153`，
-外部四标签平均 F1=`0.4576`，可训练参数占 `0.9389%`。DoRA 作为已完成的消融
-保留在结果目录，但没有形成稳定总体提升。
+外部平台共 1,995 条 ECG，只返回逐类别 hard-label 指标，未返回联合三分类混淆
+矩阵或概率，因此不能计算严格的外部三分类总 Accuracy、AUROC 或 AUPRC。
 
-| Method | Trainable/effective parameters | Relative result |
-|---|---:|---|
-| Baseline (partial fine-tuning) | 622,479,108 / 622,880,004 (99.94% effective) | **legacy—invalid task** |
-| LoRA | 5,902,340 / 628,778,244 (0.94%) | **legacy—invalid task** |
-| DoRA | 6,270,980 / 629,146,884 (1.00%) | **legacy—invalid task** |
+完整结果见 [实验结果总报告_最终.md](docs/reports/实验结果总报告_最终.md)，报告索引见
+[docs/reports/README.md](docs/reports/README.md)。
 
-The Baseline freezes the convolutional ECG frontend (`feature_grad_mult=0`)
-while updating the Transformer context/projection/normalization layers and
-classification head; it is therefore partial fine-tuning, not literal
-all-parameter fine-tuning. LoRA updates about 105.5x fewer effective
-parameters than this Baseline and DoRA about 99.3x fewer. This parameter count
-reduction should not be interpreted as the same percentage reduction in total
-VRAM or wall-clock time because the frozen backbone and activations are still
-loaded.
+## 当前有效实现
 
-The historical comparison, OOF metrics, external-platform metrics, threshold
-choices, and caveats are retained in
-[`ecg_lfm_local_best_lora_dora_optimization_20260828.md`](docs/reports/ecg_lfm_local_best_lora_dora_optimization_20260828.md).
-It is a legacy record; use
-[`corrected_ecg_lfm_joint_20260829.md`](docs/reports/corrected_ecg_lfm_joint_20260829.md)
-for the corrected categorical-ACS + OMI task.
+- `experiments/acs_joint_task.py`：标签、患者级五折、指标和阈值公共逻辑；
+- `experiments/acs_joint_e4.py`：E4 HMoE/WavelNet/KAN；
+- `experiments/acs_joint_model_comparison.py`：五种传统网络对比；
+- `experiments/ecg_lfm/run_joint_fold.py`：ECG-LFM 单折训练；
+- `experiments/ecg_lfm/evaluate_joint.py`：五折 OOF、图表和外部推理；
+- `configs/ecg_lfm/corrected_joint_*.yaml`：Baseline、LoRA、DoRA 配置；
+- `scripts/submit_joint_acs_omi.py`：互斥性检查与外部平台提交。
 
-## Data and evaluation protocol
+旧的 STEMI/NSTEMI/UA 独立 sigmoid 代码、结果和报告已从当前分支删除，仍可从
+Git 历史恢复，但不得用于当前性能结论。
 
-- 17,960 ECG records from 17,018 patients.
-- Label counts: STEMI 1,442; NSTEMI 1,235; UA 6,213; OMI 1,151.
-- Patient-level five-fold split, seed 2026; the historical patient assignment
-  is reused when valid and audited for the corrected joint target.
-- P2 ECG preprocessing (0.5--40 Hz band-pass, 100 Hz representation); each
-  training fold fits its own robust scaler and augmentation is training-only.
-- The ECG-LFM pipeline uses the official 500 Hz input contract where noted in
-  the corresponding plan/report.
-- Main OOF metrics are AUROC, AUPRC, sensitivity, specificity, PPV, NPV, F1,
-  MCC, accuracy, and per-label confusion matrices.
-- Thresholds are chosen on validation OOF predictions only; external labels
-  are never used for tuning. Because the current five-fold implementation
-  also selects each fold checkpoint on that fold's validation data, pooled OOF
-  hard metrics are descriptive (not nested, confirmatory estimates); this
-  limitation is stated in each corrected report.
+## 结果目录
 
-Corrected runs write aggregate results under `results/corrected_*`. The E4
-HMoE/WavelNet/KAN rerun, five traditional architecture comparisons, and corrected
-ECG-LFM Baseline/LoRA/DoRA queue are complete after the documented label-shape
-fix. Pre-correction aggregates remain under their original names but are marked
-legacy/invalid. The associated reports are indexed in
-[`docs/reports/README.md`](docs/reports/README.md).
+- `results/corrected_ecg_lfm_joint_bs64_v2/`：ECG-LFM Baseline/LoRA/DoRA；
+- `results/corrected_joint_acs_omi_e4/`：E4；
+- `results/corrected_joint_model_comparison/`：传统模型；
+- `results/loss_feature_ablation/`：历史 OMI/AMI 二分类的损失和特征消融。
 
-## Repository layout
+每个有效结果目录尽量保存汇总 JSON/CSV、脱敏逐 epoch 日志、损失/LR、ROC/PR、
+混淆矩阵和外部平台聚合结果。
 
-```
-acs_utils/                 metrics, thresholds, seeds, and configuration helpers
-baselines/                 historical ACS baseline implementations
-configs/                   historical and ECG-LFM experiment configurations
-data_provider/             loaders and patient-level split utilities
-experiments/               HMoE/KAN and ECG-LFM experiment entry points
-losses/                    BCE, focal, and asymmetric-loss implementations
-models/                    ECG-LFM adapter and parameter-summary code
-nets/                      time-series model adapters
-preprocessing/             ECG preprocessing and augmentation
-scripts/                   historical scripts and scripts/ecg_lfm/ utilities
-third_party/ECG-LFM/       pinned upstream source used by the ECG-LFM runs
-docs/plans/                research plans and implementation specifications
-docs/reports/              experiment reports and provenance summaries
-docs/logs/                 curated log index (raw logs are not committed)
-results/                   aggregate metrics, tables, and selected figures
-```
+## 数据与复现边界
 
-## Reproduction boundary
+- 训练池：17,960 条 ECG、17,018 位患者；
+- ACS 阳性亚型计数：STEMI 1,442、NSTEMI 1,235、UA 6,213；
+- non-ACS/OTHER：9,070；OMI 阳性：1,151；
+- 患者级五折，seed=2026；外部平台 1,995 条 ECG；
+- 训练、验证和外部数据严格隔离；外部标签未在本地读取。
 
-The repository intentionally does **not** contain raw `.med`/`.npy`/`.npz`
-waveforms, train/test CSV files, patient-level tables, OOF or external
-per-record predictions, split-index files, checkpoints, or downloaded model
-weights. These are controlled clinical data or large execution artifacts and
-must be supplied through the approved local/server data path described in
-[`DATASET.md`](DATASET.md). The upstream ECG-LFM source is included as code
-only; downloaded checkpoints remain outside Git.
-
-Use the YAML files under `configs/ecg_lfm/` and the entry points under
-`experiments/ecg_lfm/`/`scripts/ecg_lfm/` to reproduce the ECG-LFM runs. Paths
-to data, checkpoints, and the execution device are environment-specific and
-must be supplied locally.
-
-## Logs and traceability
-
-The execution server retains the raw `screen`/training logs and fairseq JSONL
-streams. They are not committed to GitHub because they are bulky and may
-expose infrastructure paths or record-level context. The repository does
-contain a curated experiment log index at
-[`docs/logs/EXPERIMENT_LOG_INDEX.md`](docs/logs/EXPERIMENT_LOG_INDEX.md),
-aggregate training curves, and report/provenance files that identify the
-configuration, seed, GPU, output family, and completion status. Thus the
-current GitHub archive has traceability summaries, not every raw log byte.
-
-## License and data use
-
-See [`DATASET.md`](DATASET.md) and [`REPOSITORY_MANIFEST.md`](REPOSITORY_MANIFEST.md)
-before sharing this repository. Keep the repository private unless the data
-and code-release approvals explicitly allow publication.
+安全与发布规则见 [DATASET.md](DATASET.md) 和
+[REPOSITORY_MANIFEST.md](REPOSITORY_MANIFEST.md)。

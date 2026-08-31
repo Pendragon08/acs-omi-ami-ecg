@@ -1,0 +1,43 @@
+{
+  "audit_date": "2026-08-31",
+  "overall_status": "WARN",
+  "review_independence": "same-family",
+  "acceptance_status": "provisional",
+  "post_cleanup": true,
+  "checks": {
+    "ground_truth_provenance": {
+      "status": "WARN",
+      "evaluation_type": "real_gt",
+      "note": "哈希、患者隔离和 OOF 覆盖检查通过；仍需 record-ID 标签 join。"
+    },
+    "score_normalization": {
+      "status": "PASS",
+      "note": "使用原始 softmax/sigmoid 连续概率，未发现自归一化。"
+    },
+    "selection_independence": {
+      "status": "WARN",
+      "note": "checkpoint 与 OMI 阈值选择非嵌套，外部平台已参与选型。"
+    },
+    "result_existence": {
+      "status": "PASS",
+      "json_files_checked": 66
+    },
+    "dead_or_invalid_task_code": {
+      "status": "PASS",
+      "note": "旧 STEMI/NSTEMI/UA 独立 sigmoid 结果族已从当前分支删除。"
+    },
+    "scope_and_claims": {
+      "status": "WARN",
+      "training_seeds": [2026],
+      "note": "当前结论限于探索性工程选择，无统计显著性或独立确认性外部验证。"
+    }
+  },
+  "key_result_sha256": {
+    "ecg_lfm_baseline": "6106690BA200650BDAB5FF0336BF0262949AAAF4003F24287DB675E609811388",
+    "ecg_lfm_lora": "05B7275D43381A6144517A54D6DC35752D00D82FC1D1FEB0954E7D6CA2354BFB",
+    "ecg_lfm_dora": "1CD555E831E386072DCDC9E69252A005A701A6FF6C96E258039E45CBC5AD770B",
+    "e4": "BF13A5FE7C543F3DFA8E35CC4122B9D548E89293AE60F7D442016BBCDC94A697",
+    "traditional_models": "04169BD8B69F62F14D9E0C435C7DBD22EF13F36D31C5D635687B988F83200EE3",
+    "final_chinese_report": "05F1EDD3367563B138018C2D64AA56423BAE5BF1700FC613102C21507C53D202"
+  }
+}

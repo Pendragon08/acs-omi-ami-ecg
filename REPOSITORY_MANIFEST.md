@@ -1,49 +1,35 @@
-# Repository manifest
+# GitHub 归档清单
 
-This manifest defines what is synchronized to the GitHub research archive and
-what remains on the controlled execution environment.
+## 保留内容
 
-The canonical task is the corrected joint formulation: categorical
-`OTHER/STEMI/NSTEMI/UA` ACS subtype plus independent binary OMI/NOMI. The
-former four-independent-sigmoid artifacts remain only as legacy-invalid
-provenance.
-
-## Included
-
-| Category | GitHub location | Contents |
+| 类别 | 位置 | 内容 |
 |---|---|---|
-| Historical and current source | `experiments/`, `models/`, `scripts/`, `scripts/ecg_lfm/`, `preprocessing/`, `data_provider/`, `losses/`, `acs_utils/`, `nets/`, `baselines/` | Training, inference, evaluation, split, loss, and reporting code |
-| ECG-LFM upstream source | `third_party/ECG-LFM/` | Code-only snapshot used by the ECG-LFM experiments; no checkpoints or run output |
-| Configurations | `configs/`, `configs/ecg_lfm/` | YAML/JSON experiment settings and environment specifications |
-| Research plans | `docs/plans/` | ACS, HMoE/KAN, ECG-LFM, LoRA/DoRA, and ablation specifications |
-| Reports | `docs/reports/` | Final and historical experiment reports, tables, and machine-readable aggregate provenance |
-| Aggregate results | `results/` | Summary CSV/JSON/Markdown files and selected metric/curve figures only |
-| Traceability | `docs/logs/EXPERIMENT_LOG_INDEX.md` | Curated index of raw server logs, run families, seeds, GPUs, and report/result links |
+| 当前实验代码 | `experiments/`、`models/`、`nets/` | 联合任务训练、推理和模型适配 |
+| ECG-LFM 上游代码 | `third_party/ECG-LFM/` | 本实验使用的代码快照，不含权重 |
+| 配置 | `configs/` | 当前联合实验与有效消融配置 |
+| 报告 | `docs/reports/` | 中文总报告、审计和有效消融报告 |
+| 日志索引 | `docs/logs/` | 服务器原始日志与脱敏产物的映射 |
+| 聚合结果 | `results/corrected_*`、`results/loss_feature_ablation/` | 汇总指标、脱敏日志和图表 |
 
-## Excluded by design
+## 已清理内容
 
-- Raw or preprocessed ECG waveforms (`.med`, `.npy`, `.npz`) and controlled
-  `data/`/`med_data/` directories.
-- Train/test CSV files, patient-level tables, split-index files, and any row-
-  level OOF, validation, external-test, or submission predictions.
-- Checkpoints and downloaded pretrained weights (`.pt`, `.pth`, `.bin`).
-- Raw `screen`/training logs and fairseq JSONL event streams. The server keeps
-  them; the repository keeps the curated index and aggregate curves instead.
-- Temporary browser/SSH/archive files, caches, virtual environments, and
-  unrelated projects.
-- Credentials, passwords, access tokens, and private keys. Do not add them to
-  configuration files or commit messages.
+当前分支不再保留以下错误或重复资产：
 
-The enforced patterns are in [`.gitignore`](.gitignore). Before every push,
-inspect the staged file list and verify that no controlled data, checkpoint,
-credential, or row-level prediction has entered the index.
+- STEMI/NSTEMI/UA/OMI 四个独立 sigmoid 的训练、阈值和提交代码；
+- 旧 ECG-LFM 四独立输出、旧 HMoE 多标签和旧传统模型结果目录；
+- 已被当前流程替代的恢复脚本、重复配置、过程快照和中英文混杂报告；
+- 使用 MVMD 作为网络外部预处理的旧辅助脚本。
 
-## Provenance policy
+这些内容仍存在于 Git 历史中，但不能作为当前性能证据。
 
-Every report should identify the task definition, data/split contract, seed,
-configuration, model/loss variant, threshold-selection rule, metrics, and
-source result family. Absolute server paths may be retained when needed for
-internal reproducibility, but credentials and record-level identifiers must
-never be included. The corrected rerun registry is documented in
-`docs/reports/corrected_task_formulation_20260829.md`; the historical
-ECG-LFM LoRA/DoRA parameter-efficiency analysis is explicitly legacy-invalid.
+## 禁止提交
+
+原始 ECG、患者表格、split 索引、逐例预测、提交 CSV、checkpoint、下载权重、
+原始训练日志和任何凭据都禁止提交。每次推送前必须检查 staged 文件和
+`.gitignore`，确认没有受控数据或敏感信息。
+
+## 可追溯要求
+
+每个有效实验应记录任务定义、数据/划分、seed、模型与损失、阈值规则、主要
+指标、配置路径和结果目录。内部 pooled OOF 同时承担 checkpoint/阈值选择时，
+必须明确标注为描述性结果；外部平台未返回概率时不得虚构 AUROC/AUPRC。

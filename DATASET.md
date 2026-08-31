@@ -1,67 +1,49 @@
 # 数据集说明与发布边界
 
-> **任务定义更正（2026-08-29）**：STEMI/NSTEMI/UA 是互斥 ACS 亚型，不能用三个独立 sigmoid 作为最终 ACS 分类器。当前联合任务使用 `OTHER/STEMI/NSTEMI/UA` 四状态单标签 ACS 头（保留 `[0,0,0]` 为 OTHER），并使用独立 OMI/NOMI 二分类头。旧四独立输出实验仅作 legacy 审计，详见 `docs/plans/CORRECTED_TASK_FORMULATION.md`。
+## 标签定义
 
-## 1. 数据用途
+源标签包含 `STEMI`、`NSTEMI`、`UA`、`OMI`。前三者是互斥的 ACS 亚型，不能
+使用三个彼此独立的 sigmoid 作为最终 ACS 分类器。当前临床评价包含：
 
-本项目使用 12 导联 ECG 进行 ACS 相关分类研究。当前最终实验使用联合任务：ACS 四状态单标签分类（OTHER/STEMI/NSTEMI/UA）和独立的 OMI/NOMI 二分类。
+- ACS 阳性样本的 STEMI/NSTEMI/UA 单标签三分类；
+- 与 ACS 亚型独立的 OMI/NOMI 二分类。
 
-训练集审计结果为 17,960 条 ECG、17,018 位患者；当前实验使用的外部平台测试集为 1,995 条 ECG。
+源数据中 `[0,0,0]` 是明确的 non-ACS，而不是缺失标签。全队列一阶段模型因此
+保留 `OTHER` 状态，但报告不得把 OTHER 称为第四种 ACS 亚型。任何多个 ACS
+亚型同时为 1、标签非二值或记录标识重复冲突都应作为数据错误终止运行。
 
-## 2. 本地数据清单
+## 数据规模
 
-| 路径 | 文件数/大小 | 作用 |
-|---|---:|---|
-| med_data/ | 19,955 个 .med，约 228 MB | 原始 ECG 设备格式 |
-| ACS-Baseline-main/data/ACS/CSV/train.csv | 约 1.38 MB | 训练元数据、标签与记录关联 |
-| ACS-Baseline-main/data/ACS/CSV/test.csv | 约 0.07 MB | 测试元数据与记录关联 |
-| ACS-Baseline-main/data/ACS/preprocessed_100hz/ | 39,910 个 .npy，约 1.83 GB | 100 Hz 预处理 ECG |
-| data/arrays/（训练服务器） | 本地快照未含 | 最终 E4 使用的 P2 数组、元数据和 scaler |
+| 项目 | 数量 |
+|---|---:|
+| 训练 ECG | 17,960 |
+| 训练患者 | 17,018 |
+| non-ACS/OTHER | 9,070 |
+| STEMI | 1,442 |
+| NSTEMI | 1,235 |
+| UA | 6,213 |
+| OMI 阳性 | 1,151 |
+| 外部盲测 ECG | 1,995 |
 
-train.csv 的字段含 Patient_id、ecg_row_record、ecg_med_record、gender、age 及临床标签；即使 Patient_id 是伪标识符，也必须在数据治理方确认其可公开前视为受控数据。
+患者级五折使用 seed=2026。每位患者只能出现在一个验证折，五个验证折应精确
+覆盖全部训练记录。训练增强和 scaler 拟合仅发生在训练折；外部集不参与
+checkpoint、超参数或阈值选择。
 
-## 3. 当前 GitHub 发行策略
+## 输入管线
 
-默认仓库不提交以下内容：
+- E4 和传统网络使用既有 P2 预处理数组及训练折内 robust scaling；
+- ECG-LFM 使用官方 500 Hz、12 导联输入规范和预训练权重；
+- 每条 10 秒 ECG 划分为两个 5 秒 segment，记录级预测取两个 segment logit
+  的平均；
+- E4 的 Frequency Expert 使用端到端 WavelNet，不使用 MVMD 作为网络外部预处理。
 
-- 任何 .med、.npy、.npz 波形和 data/ 目录；
-- train.csv、test.csv 和逐例标签/记录关联；
-- OOF 概率、逐例预测、测试预测、提交 CSV、split 中的患者/记录标识；
-- checkpoint 权重和原始压缩包。
+## 不进入 GitHub 的内容
 
-此策略防止临床数据、可链接伪标识符或模型/预测中可能携带的个体信息被意外上传。
+- 原始或预处理 ECG 波形；
+- train/test CSV、患者级表格、fold 索引和逐例标识符；
+- OOF、验证或外部逐例概率/预测与提交 CSV；
+- checkpoint、预训练权重和原始 Fairseq/screen 日志；
+- 密码、访问令牌、SSH 私钥及其他凭据。
 
-## 4. 上传完整数据前必须满足的条件
-
-只有在以下三项均为“是”时，才能将原始或逐例数据推送至 GitHub：
-
-1. 数据拥有者、伦理审批和数据使用协议明确允许向 GitHub（包括 private repository）传输和再分发；
-2. 数据已完成可验证的去标识化，并经过负责方审查；仅将 P00001 形式的 ID 视为安全并不充分；
-3. 已确认 GitHub LFS 或受控发布资产的存储、带宽、访问权限和长期费用可承担。
-
-本地数据总量约 2.06 GB，且有约 6 万个波形文件。普通 Git 不适合此规模；如获批准，应优先使用 private GitHub repository + Git LFS，或将数据存放在机构受控对象存储中，GitHub 仅提供受控访问申请和校验和。
-
-## 5. 建议的数据交付方式
-
-首选：数据继续保存在机构服务器/获批的对象存储中，GitHub 仓库提供数据访问说明、版本号、样本清单与 SHA-256 校验。
-
-备选：若数据治理方书面批准 GitHub 托管，则在 private 仓库中用 Git LFS 追踪 .med、.npy、.npz 与 CSV；不要提交重复压缩包 ACS-Baseline-main.zip 或 med_data.zip。
-
-## 6. 最终联合任务训练所需目录
-
-    data/
-    ├── arrays/
-    │   ├── P2_train.npy
-    │   ├── P2_test.npy
-    │   ├── meta_train.npz
-    │   ├── meta_test.npz
-    │   └── scalers.json
-    └── CSV/
-        ├── train.csv
-        └── test.csv
-
-data/arrays 中的 meta 文件需提供 ECG record ID 与 patient ID，以支持患者级五折划分。源数据仍保留四列
-`[STEMI,NSTEMI,UA,OMI]` 供审计，但训练目标不是四个独立二分类：前三列先映射为互斥
-`OTHER/STEMI/NSTEMI/UA` 四分类，OMI 单独作为二分类头。训练脚本只剔除未知或非二值的源标签；
-STEMI/NSTEMI/UA=`[0,0,0]` 是明确的 `OTHER` 阴性状态，不能删除。`ACS=0, OMI=1` 也保留为
-`OTHER + OMI` 的有效联合样本。
+GitHub 只保存代码、配置、聚合指标、脱敏训练曲线、图表和报告。完整规则见
+[REPOSITORY_MANIFEST.md](REPOSITORY_MANIFEST.md) 与 `.gitignore`。
