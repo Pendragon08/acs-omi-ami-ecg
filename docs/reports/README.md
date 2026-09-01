@@ -4,8 +4,12 @@
 
 ## 当前主报告
 
-- [实验结果总报告_最终.md](实验结果总报告_最终.md)：任务、数据、模型对比、
-  ECG-LFM Baseline/LoRA/DoRA、外部平台、训练成本和限制；
+- [实验结果总报告_最终.md](实验结果总报告_最终.md)：2026-09-01 更新的正式总报告；包含
+  修正五折重评估、nested Fold0 W0–W6、W0 校准、单任务/联合学习、外部平台与训练成本；
+- [../ECG_LFM_adaptive_weighting_experiment_report.md](../ECG_LFM_adaptive_weighting_experiment_report.md)：
+  自适应类别重加权专项报告与 RDR NO-GO 依据；
+- [../ECG_LFM_corrected_evaluation_report.md](../ECG_LFM_corrected_evaluation_report.md)：
+  Baseline/LoRA/DoRA 15 个旧 checkpoint 的 record-ID 修正重评估；
 - [实验完整性审计_20260831.md](实验完整性审计_20260831.md)：代码与结果完整性复核、
   清理范围和剩余限制；
 - [../plans/CORRECTED_TASK_FORMULATION.md](../plans/CORRECTED_TASK_FORMULATION.md)：
@@ -22,7 +26,9 @@
 - ECG-LFM：`results/corrected_ecg_lfm_joint_bs64_v2/`；
 - E4：`results/corrected_joint_acs_omi_e4/`；
 - 传统模型：`results/corrected_joint_model_comparison/`；
+- nested W0–W6：`results/adaptive_weighting/`、`results/adaptive_weighting_evaluation/`；
+- 单任务与联合对照：`results/single_task_vs_joint_evaluation/`；
 - 脱敏日志索引：`docs/logs/EXPERIMENT_LOG_INDEX.md`。
 
-外部平台没有返回概率或联合三分类混淆矩阵，因此外部 AUROC/AUPRC 和严格的
-ACS 三分类总指标目前不可计算。
+外部平台没有返回概率或联合四状态混淆矩阵，因此外部 AUROC/AUPRC 和严格的
+ACS 四状态总指标目前不可计算。本轮 nested Fold0 结果尚未重新提交该平台。

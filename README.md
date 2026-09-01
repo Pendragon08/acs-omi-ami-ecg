@@ -1,5 +1,12 @@
 # ACS 四状态与 OMI 联合 ECG 分类
 
+> **最新版实验总报告（2026-09-01）：**
+> [docs/reports/实验结果总报告_最终.md](docs/reports/实验结果总报告_最终.md)
+>
+> 报告已合并修正五折重评估、严格 nested Fold0 W0–W6、W0 校准、
+> ACS-only / OMI-only / Joint 对照和外部平台历史结果。当前推荐方案为
+> **ECG-LFM LoRA Joint W0（未加权 CE + 未加权 BCE）**。
+
 本仓库保存 ACS/OMI ECG 研究中可公开版本化的代码、配置、聚合实验结果、脱敏训练曲线和中文报告。原始 ECG、患者级表格、逐记录预测、下载的预训练权重和训练 checkpoint 不进入 GitHub。
 
 ## 当前任务
