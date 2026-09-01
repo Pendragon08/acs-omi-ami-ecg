@@ -117,7 +117,7 @@ def write_csv(path: Path, rows: list[dict]) -> None:
         writer.writerows(rows)
 
 
-def save_plots(out: Path, rows: list[dict]) -> None:
+def save_plots(out: Path, rows: list[dict], diagnostics: list[dict]) -> None:
     try:
         import matplotlib.pyplot as plt
         methods = [r["method"] for r in rows]
@@ -140,6 +140,31 @@ def save_plots(out: Path, rows: list[dict]) -> None:
         ax.plot(methods, [r.get("effective_weight_acs_mean") or 0 for r in rows], marker="o", label="ACS")
         ax.plot(methods, [r.get("effective_weight_omi_mean") or 0 for r in rows], marker="o", label="OMI")
         ax.set_ylabel("effective task coefficient"); ax.legend(); ax.tick_params(axis="x", rotation=25); fig.tight_layout(); fig.savefig(out / "moo_effective_task_weights.png", dpi=160); plt.close(fig)
+        # Epoch-level dynamics are derived from Fairseq's JSONL aggregate
+        # entries.  Inner-update entries are retained in moo_diagnostics.csv
+        # for audit but are not mixed with epoch means in these curves.
+        epoch_rows = [r for r in diagnostics if r.get("phase") == "epoch"]
+        for field, ylabel, filename in (
+            ("gradient_conflict_rate", "gradient conflict rate", "moo_conflict_rate_dynamics.png"),
+            ("grad_cosine_acs_omi", "mean ACS–OMI gradient cosine", "moo_gradient_cosine_dynamics.png"),
+        ):
+            fig, ax = plt.subplots(figsize=(10, 4))
+            for method in methods:
+                selected = [r for r in epoch_rows if r["method"] == method and r.get(field) is not None]
+                ax.plot([r["epoch"] for r in selected], [r[field] for r in selected], marker="o", label=method)
+            ax.set_xlabel("epoch"); ax.set_ylabel(ylabel); ax.legend(); fig.tight_layout(); fig.savefig(out / filename, dpi=160); plt.close(fig)
+        fig, ax = plt.subplots(figsize=(10, 4))
+        for method in methods:
+            selected = [r for r in epoch_rows if r["method"] == method and r.get("grad_norm_acs_shared") is not None]
+            ax.plot([r["epoch"] for r in selected], [r["grad_norm_acs_shared"] for r in selected], marker="o", label=f"{method} ACS")
+            ax.plot([r["epoch"] for r in selected], [r["grad_norm_omi_shared"] for r in selected], linestyle="--", label=f"{method} OMI")
+        ax.set_xlabel("epoch"); ax.set_ylabel("shared gradient norm"); ax.legend(ncol=2, fontsize=8); fig.tight_layout(); fig.savefig(out / "moo_gradient_norms_dynamics.png", dpi=160); plt.close(fig)
+        fig, ax = plt.subplots(figsize=(10, 4))
+        for method in methods:
+            selected = [r for r in epoch_rows if r["method"] == method and r.get("effective_task_weight_acs") is not None]
+            ax.plot([r["epoch"] for r in selected], [r["effective_task_weight_acs"] for r in selected], marker="o", label=f"{method} ACS")
+            ax.plot([r["epoch"] for r in selected], [r["effective_task_weight_omi"] for r in selected], linestyle="--", label=f"{method} OMI")
+        ax.set_xlabel("epoch"); ax.set_ylabel("effective task coefficient"); ax.legend(ncol=2, fontsize=8); fig.tight_layout(); fig.savefig(out / "moo_effective_task_weights_dynamics.png", dpi=160); plt.close(fig)
     except Exception as exc:
         (out / "plot_error.txt").write_text(repr(exc), encoding="utf-8")
 
@@ -156,14 +181,49 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     w0 = get_metrics(root / args.w0_metrics)
     rows = []
+    diagnostics = []
+    curves = []
     for method in METHODS:
         metrics = get_metrics(root / args.eval_root / method / "fold0" / "inner_metrics.json")
         if metrics is None:
             continue
         train = training_summary(root / args.run_root / method / "fold0" / "fairseq_train.jsonl")
         rows.append(flatten_method(method, metrics, train, w0))
+        for item in read_json_lines(root / args.run_root / method / "fold0" / "fairseq_train.jsonl"):
+            if "train_loss" in item or "valid_loss" in item:
+                curves.append({
+                    "method": method,
+                    "phase": "train" if "train_loss" in item else "valid",
+                    "epoch": item.get("epoch"),
+                    "update": item.get("train_num_updates", item.get("valid_num_updates", item.get("num_updates"))),
+                    "loss": item.get("train_loss", item.get("valid_loss")),
+                    "acs_loss": item.get("train_acs_loss", item.get("valid_acs_loss")),
+                    "omi_loss": item.get("train_omi_loss", item.get("valid_omi_loss")),
+                    "acs_accuracy": item.get("train_acs_accuracy", item.get("valid_acs_accuracy")),
+                    "omi_accuracy": item.get("train_omi_accuracy", item.get("valid_omi_accuracy")),
+                    "learning_rate": item.get("train_lr", item.get("valid_lr")),
+                })
+            if "gradient_conflict_rate" not in item and "grad_cosine_acs_omi" not in item:
+                continue
+            phase = "epoch" if "train_loss" in item else "update"
+            diagnostics.append({
+                "method": method,
+                "phase": phase,
+                "epoch": item.get("epoch"),
+                "update": item.get("num_updates", item.get("update")),
+                "gradient_conflict_rate": float(item.get("train_gradient_conflict_rate", item.get("gradient_conflict_rate"))) if item.get("train_gradient_conflict_rate", item.get("gradient_conflict_rate")) is not None else None,
+                "grad_cosine_acs_omi": float(item.get("train_grad_cosine_acs_omi", item.get("grad_cosine_acs_omi"))) if item.get("train_grad_cosine_acs_omi", item.get("grad_cosine_acs_omi")) is not None else None,
+                "grad_cosine_acs_omi_median": float(item.get("train_grad_cosine_acs_omi_median", item.get("grad_cosine_acs_omi_median"))) if item.get("train_grad_cosine_acs_omi_median", item.get("grad_cosine_acs_omi_median")) is not None else None,
+                "grad_norm_acs_shared": float(item.get("train_grad_norm_acs_shared", item.get("grad_norm_acs_shared"))) if item.get("train_grad_norm_acs_shared", item.get("grad_norm_acs_shared")) is not None else None,
+                "grad_norm_omi_shared": float(item.get("train_grad_norm_omi_shared", item.get("grad_norm_omi_shared"))) if item.get("train_grad_norm_omi_shared", item.get("grad_norm_omi_shared")) is not None else None,
+                "grad_norm_joint": float(item.get("train_grad_norm_joint", item.get("grad_norm_joint"))) if item.get("train_grad_norm_joint", item.get("grad_norm_joint")) is not None else None,
+                "effective_task_weight_acs": float(item.get("train_effective_task_weight_acs", item.get("effective_task_weight_acs"))) if item.get("train_effective_task_weight_acs", item.get("effective_task_weight_acs")) is not None else None,
+                "effective_task_weight_omi": float(item.get("train_effective_task_weight_omi", item.get("effective_task_weight_omi"))) if item.get("train_effective_task_weight_omi", item.get("effective_task_weight_omi")) is not None else None,
+            })
     write_csv(out / "stage_a_metrics.csv", rows)
-    save_plots(out, rows)
+    write_csv(out / "moo_diagnostics.csv", diagnostics)
+    write_csv(out / "stage_a_training_curves.csv", curves)
+    save_plots(out, rows, diagnostics)
     (out / "stage_a_summary.json").write_text(json.dumps({"w0_reference": w0, "methods": rows}, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8")
     lines = ["# ECG-LFM 多目标优化 Stage A（Fold0 内部验证）", "", "> 本表只用于 inner-validation 工程筛选；没有读取 outer-test。", "", "| 方法 | ACS Macro AUPRC | OMI AUPRC | NSTEMI vs UA AUPRC | NSTEMI AUPRC | OMI MCC | 冲突率 | gate |", "|---|---:|---:|---:|---:|---:|---:|:---:|"]
     for row in rows:
@@ -175,4 +235,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

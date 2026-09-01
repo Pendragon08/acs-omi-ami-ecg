@@ -156,6 +156,11 @@ class ACSJointMOOCriterion(BaseCriterion):
             values = [float(item[key]) for item in logging_outputs if key in item]
             if values:
                 metrics.log_scalar(f"{prefix}{key}", sum(values) / len(values), len(values), round=6)
+                if key == "grad_cosine_acs_omi":
+                    ordered = sorted(values)
+                    middle = len(ordered) // 2
+                    median = ordered[middle] if len(ordered) % 2 else (ordered[middle - 1] + ordered[middle]) / 2.0
+                    metrics.log_scalar(f"{prefix}grad_cosine_acs_omi_median", median, len(values), round=6)
         values = [int(item["gradient_conflict"]) for item in logging_outputs if "gradient_conflict" in item]
         if values:
             metrics.log_scalar(f"{prefix}gradient_conflict_rate", sum(values) / len(values), len(values), round=6)
