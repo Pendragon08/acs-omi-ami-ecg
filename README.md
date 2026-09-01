@@ -72,6 +72,12 @@ W4/W5/W6 的最终 inner/outer predictions 完全一致：RDR 在 warmup 后确�
 
 完整分析见 [自适应权重实验报告](docs/ECG_LFM_adaptive_weighting_experiment_report.md)。
 
+## R1-v2 RL 稳定化研究
+
+R1-v2 在同一 W0 与 nested Fold0 上将 RL 改为 100-update budget，25 updates 验证一次，并加入 adaptive target-KL、hard KL stop 与 rollback。四组 Head-only（LR=1e-6/3e-6 × target-KL=0.005/0.01）均完成且 Safety PASS，但最高 clinical utility 1.039309 低于 W0 的 1.044860，ACS/OMI primary AUPRC 也未提升；因此本轮不进入 LoRA+Head low-LR，outer-test 未访问。
+
+详见 [R1-v2 稳定化报告](docs/ECG_LFM_R1_v2_stabilization_report.md) 与 [R1-v2 结果索引](results/ecg_lfm_rl_v2/README.md)。候选逐 update 日志和曲线保存在 `results/ecg_lfm_rl_v2/`；checkpoint 仍只保留在服务器。
+
 ## 校准与单任务对照
 
 当前最佳监督策略 W0 已完成严格校准。ACS Temperature Scaling 在 outer-test 将 Brier 从 0.517459 降至 0.516842、ECE 从 0.023840 降至 0.022333；OMI 的 Platt calibration 在三种候选中最佳，将 Brier 从 0.046773 降至 0.046358、ECE 从 0.016618 降至 0.010304。所有校准器只在 inner-validation 拟合。

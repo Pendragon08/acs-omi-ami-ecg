@@ -1,0 +1,58 @@
+metadata:
+  version: r1_v2_stabilization
+  source: direct_RL_post_training_from_W0
+  approved_by: null
+  interpretation: current_clinical_reward_unchanged; exploratory_RL_only
+run:
+  name: R1_v2_head_only
+  fold: 0
+  seed: 2026
+  checkpoint: results/adaptive_weighting/w0/fold0/checkpoint_best.pt
+  manifest_root: manifests/ecg_lfm_nested
+  output_root: results/ecg_lfm_rl_v2
+policy:
+  trainable: head_only
+  base_encoder: frozen
+  algorithm: clipped_contextual_policy_optimization
+  clip_epsilon: 0.2
+  update_epochs: 1
+  entropy_coefficient: 0.0
+optimization:
+  learning_rate: 0.000001
+  batch_size: 32
+  max_updates: 100
+  eval_interval_updates: 25
+  max_grad_norm: 1.0
+  fp16: true
+  max_wall_seconds: 7920
+kl:
+  enabled: true
+  max_inner_validation_mean: 0.05
+  initial_coefficient: 0.05
+  target_kl: 0.005
+  min_coefficient: 0.0001
+  max_coefficient: 1.0
+  high_ratio: 1.5
+  low_ratio: 0.6666666667
+  increase_factor: 2.0
+  decrease_factor: 0.5
+  hard_stop_multiplier: 4.0
+  hard_stop_patience: 2
+reward:
+  acs: {correct: 1.0, nstemi_correct_bonus: 0.5, nstemi_to_ua_penalty: -0.25, stemi_to_other_penalty: -0.25}
+  omi: {correct: 1.0, tp_bonus: 0.5, fn_penalty: -0.5}
+  nste_omi: {correct_positive_bonus: 0.5}
+  soft_f1: {enabled: true, acs_weight: 0.1, omi_weight: 0.1}
+safety:
+  baseline_source: fold0_inner_validation_w0_only
+  margin_source: patient_level_bootstrap_standard_error
+  bootstrap_replicates: 500
+  minimum_absolute_margin: 0.005
+  threshold_method: youden_j
+  require: [acs_macro_auprc, omi_auprc, omi_ppv, omi_specificity, stemi_f1, acs_brier, omi_brier]
+selection:
+  name: prespecified_inner_validation_clinical_utility_v1
+  terms: {nstemi_f1: 1.0, omi_f1: 1.0, nste_omi_auprc: 1.0}
+outer_test:
+  allowed_during_tuning: false
+  evaluate_once_after_freeze: true

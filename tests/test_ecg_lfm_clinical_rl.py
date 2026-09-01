@@ -29,6 +29,7 @@ from experiments.ecg_lfm.rl.reference_guard import (  # noqa: E402
     guard_metrics,
     patient_bootstrap_margins,
 )
+from experiments.ecg_lfm.train_rl_v2_head_only import update_kl_controller  # noqa: E402
 from fairseq_signals.modules.parameter_efficient import (  # noqa: E402
     LoRALinear,
     enable_head,
@@ -130,6 +131,17 @@ class ClinicalRewardTests(unittest.TestCase):
 
 
 class ClinicalSafetyAndFreezingTests(unittest.TestCase):
+    def test_v2_update_budget_head_only_config_and_controller(self):
+        config = yaml.safe_load((ROOT / "configs/ecg_lfm/rl/clinical_rl_v2_head_only.yaml").read_text())
+        self.assertEqual(config["policy"]["trainable"], "head_only")
+        self.assertEqual(config["optimization"]["max_updates"], 100)
+        self.assertEqual(config["optimization"]["eval_interval_updates"], 25)
+        self.assertEqual(update_kl_controller(0.05, 0.02, 0.005, config), 0.1)
+        self.assertEqual(update_kl_controller(0.05, 0.001, 0.005, config), 0.025)
+        source = (ROOT / "experiments/ecg_lfm/train_rl_v2_head_only.py").read_text()
+        self.assertNotIn('load_dataset("outer_test"', source)
+        self.assertNotIn("outer_test_segments.csv", source)
+
     @staticmethod
     def synthetic_rows():
         rows = []

@@ -12,7 +12,11 @@ def main() -> None:
     args = parser.parse_args()
     rows = [json.loads(line) for line in (args.run_dir / "train_log.jsonl").read_text().splitlines() if line]
     updates = [row for row in rows if row.get("event") == "update"]
-    epochs = [row for row in rows if row.get("event") == "epoch"]
+    # R1-v2 uses a fixed optimizer-update budget and emits
+    # ``inner_validation`` records instead of epoch records.  Keep the
+    # original epoch handling for R1 while treating both event types as
+    # validation checkpoints here.
+    validations = [row for row in rows if row.get("event") in {"epoch", "inner_validation"}]
     if not updates:
         raise RuntimeError("no RL updates found")
     import matplotlib.pyplot as plt
@@ -37,18 +41,18 @@ def main() -> None:
     for axis in axes.flat: axis.set_xlabel("optimizer update"); axis.grid(alpha=0.25)
     fig.tight_layout(); fig.savefig(args.run_dir / "rl_training_curves.png", dpi=180); plt.close(fig)
 
-    if epochs:
-        e = [row["epoch"] for row in epochs]
+    if validations:
+        e = [row.get("update", row.get("epoch")) for row in validations]
         fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
-        axes[0].plot(e, [row["metrics"]["acs"]["macro_auprc_ovr"] for row in epochs], marker="o", label="ACS Macro AUPRC")
-        axes[0].plot(e, [row["metrics"]["acs"]["per_class"]["NSTEMI"]["auprc"] for row in epochs], marker="o", label="NSTEMI AUPRC")
-        axes[1].plot(e, [row["metrics"]["omi"]["auprc"] for row in epochs], marker="o", label="OMI AUPRC")
-        axes[1].plot(e, [row["metrics"]["omi"]["f1"] for row in epochs], marker="o", label="OMI F1")
-        axes[2].plot(e, [row["metrics"]["kl"]["total"] for row in epochs], marker="o", label="Validation mean KL")
-        axes[2].plot(e, [row["clinical_utility"] for row in epochs], marker="o", label="Clinical utility")
-        for axis in axes: axis.set_xlabel("epoch"); axis.grid(alpha=0.25); axis.legend()
+        axes[0].plot(e, [row["metrics"]["acs"]["macro_auprc_ovr"] for row in validations], marker="o", label="ACS Macro AUPRC")
+        axes[0].plot(e, [row["metrics"]["acs"]["per_class"]["NSTEMI"]["auprc"] for row in validations], marker="o", label="NSTEMI AUPRC")
+        axes[1].plot(e, [row["metrics"]["omi"]["auprc"] for row in validations], marker="o", label="OMI AUPRC")
+        axes[1].plot(e, [row["metrics"]["omi"]["f1"] for row in validations], marker="o", label="OMI F1")
+        axes[2].plot(e, [row["metrics"]["kl"]["total"] for row in validations], marker="o", label="Validation mean KL")
+        axes[2].plot(e, [row["clinical_utility"] for row in validations], marker="o", label="Clinical utility")
+        for axis in axes: axis.set_xlabel("optimizer update"); axis.grid(alpha=0.25); axis.legend()
         fig.tight_layout(); fig.savefig(args.run_dir / "rl_inner_validation_curves.png", dpi=180); plt.close(fig)
-    print(json.dumps({"status": "pass", "updates": len(updates), "epochs": len(epochs)}))
+    print(json.dumps({"status": "pass", "updates": len(updates), "validations": len(validations)}))
 
 
 if __name__ == "__main__":
