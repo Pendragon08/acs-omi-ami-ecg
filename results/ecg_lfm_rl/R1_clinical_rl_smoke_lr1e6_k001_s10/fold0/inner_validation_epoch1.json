@@ -1,0 +1,1010 @@
+{
+  "event": "epoch",
+  "epoch": 1,
+  "updates": 2,
+  "clinical_utility": 1.062176923355889,
+  "clinical_utility_terms": {
+    "nstemi_f1": 0.32131147540983607,
+    "omi_f1": 0.42947903430749684,
+    "nste_omi_auprc": 0.3113864136385562
+  },
+  "safety": {
+    "pass": true,
+    "checks": {
+      "acs_macro_auprc_guard": true,
+      "omi_auprc_guard": true,
+      "omi_ppv_guard": true,
+      "omi_specificity_guard": true,
+      "stemi_f1_guard": true,
+      "acs_brier_guard": true,
+      "omi_brier_guard": true,
+      "kl_guard": true
+    },
+    "lower_bounds": {
+      "acs_macro_auprc": 0.5450843871901104,
+      "omi_auprc": 0.4299579706085514,
+      "omi_ppv": 0.24768079851448577,
+      "omi_specificity": 0.814314524286294,
+      "stemi_f1": 0.6514177743538443
+    },
+    "upper_bounds": {
+      "acs_brier": 0.5191998391457554,
+      "omi_brier": 0.05209813236744321
+    },
+    "max_kl": 0.05
+  },
+  "metrics": {
+    "acs": {
+      "n": 2861,
+      "accuracy": 0.5830129325410696,
+      "balanced_accuracy": 0.5170927642557517,
+      "macro_f1": 0.529321990238593,
+      "weighted_f1": 0.5704561798260814,
+      "macro_auroc_ovr": 0.7989369443000631,
+      "macro_auprc_ovr": 0.5585436128308598,
+      "confusion_matrix": [
+        [
+          1060,
+          30,
+          21,
+          319
+        ],
+        [
+          44,
+          162,
+          19,
+          19
+        ],
+        [
+          62,
+          25,
+          49,
+          47
+        ],
+        [
+          558,
+          16,
+          33,
+          397
+        ]
+      ],
+      "per_class": {
+        "OTHER": {
+          "auroc": 0.711585619132789,
+          "auprc": 0.6968567163934973,
+          "sensitivity": 0.7412587412587412,
+          "specificity": 0.5359888190076869,
+          "ppv": 0.6148491879350348,
+          "npv": 0.6745822339489885,
+          "f1": 0.6721623335447051,
+          "mcc": 0.2832739938324533,
+          "accuracy": 0.6385879063264592,
+          "balanced_accuracy": 0.6386237801332141,
+          "threshold": "argmax_ovr",
+          "tp": 1060,
+          "tn": 767,
+          "fp": 664,
+          "fn": 370,
+          "youden_j": 0.27724756026642816
+        },
+        "STEMI": {
+          "auroc": 0.9521555153253944,
+          "auprc": 0.7211240501677293,
+          "sensitivity": 0.6639344262295082,
+          "specificity": 0.972869698127627,
+          "ppv": 0.6952789699570815,
+          "npv": 0.9687975646879756,
+          "f1": 0.6792452830188679,
+          "mcc": 0.650297375168289,
+          "accuracy": 0.9465221950367004,
+          "balanced_accuracy": 0.8184020621785676,
+          "threshold": "argmax_ovr",
+          "tp": 162,
+          "tn": 2546,
+          "fp": 71,
+          "fn": 82,
+          "youden_j": 0.6368041243571352
+        },
+        "NSTEMI": {
+          "auroc": 0.8465068540669368,
+          "auprc": 0.314348398813028,
+          "sensitivity": 0.2677595628415301,
+          "specificity": 0.9727408513816281,
+          "ppv": 0.4016393442622951,
+          "npv": 0.9510770354143848,
+          "f1": 0.32131147540983607,
+          "mcc": 0.2912532152878904,
+          "accuracy": 0.9276476756378889,
+          "balanced_accuracy": 0.6202502071115791,
+          "threshold": "argmax_ovr",
+          "tp": 49,
+          "tn": 2605,
+          "fp": 73,
+          "fn": 134,
+          "youden_j": 0.24050041422315815
+        },
+        "UA": {
+          "auroc": 0.6854997886751325,
+          "auprc": 0.5018452859491849,
+          "sensitivity": 0.3954183266932271,
+          "specificity": 0.7926763597199784,
+          "ppv": 0.5076726342710998,
+          "npv": 0.708032708032708,
+          "f1": 0.44456886898096304,
+          "mcc": 0.20142747756522167,
+          "accuracy": 0.6532680880810905,
+          "balanced_accuracy": 0.5940473432066027,
+          "threshold": "argmax_ovr",
+          "tp": 397,
+          "tn": 1472,
+          "fp": 385,
+          "fn": 607,
+          "youden_j": 0.18809468641320537
+        }
+      },
+      "prediction_counts": {
+        "OTHER": 1724,
+        "STEMI": 233,
+        "NSTEMI": 122,
+        "UA": 782
+      }
+    },
+    "omi": {
+      "auroc": 0.9184209708617194,
+      "auprc": 0.4657151954527111,
+      "sensitivity": 0.8756476683937824,
+      "specificity": 0.8407046476761619,
+      "ppv": 0.2845117845117845,
+      "npv": 0.9894133215703573,
+      "f1": 0.42947903430749684,
+      "mcc": 0.44297503786516856,
+      "accuracy": 0.8430618664802516,
+      "balanced_accuracy": 0.8581761580349722,
+      "threshold": 0.05,
+      "tp": 169,
+      "tn": 2243,
+      "fp": 425,
+      "fn": 24,
+      "youden_j": 0.7163523160699443
+    },
+    "nstemi_vs_ua": {
+      "auroc": 0.8634206344022816,
+      "auprc": 0.5600984987076044,
+      "sensitivity": 0.4426229508196721,
+      "specificity": 0.9482071713147411,
+      "ppv": 0.6090225563909775,
+      "npv": 0.9032258064516129,
+      "f1": 0.5126582278481012,
+      "mcc": 0.44743948217934765,
+      "accuracy": 0.8702611625947767,
+      "balanced_accuracy": 0.6954150610672066,
+      "threshold": 0.5,
+      "tp": 81,
+      "tn": 952,
+      "fp": 52,
+      "fn": 102,
+      "youden_j": 0.39083012213441326,
+      "n": 1187,
+      "n_nstemi": 183,
+      "n_ua": 1004,
+      "positive_class": "NSTEMI",
+      "probability": "p_NSTEMI/(p_NSTEMI+p_UA)",
+      "confusion_matrix": [
+        [
+          952,
+          52
+        ],
+        [
+          102,
+          81
+        ]
+      ]
+    },
+    "omi_among_nste_acs": {
+      "auroc": 0.8774904063502076,
+      "auprc": 0.3113864136385562,
+      "sensitivity": 0.7794117647058824,
+      "specificity": 0.8445040214477212,
+      "ppv": 0.23348017621145375,
+      "npv": 0.984375,
+      "f1": 0.3593220338983051,
+      "mcc": 0.3686777502556955,
+      "accuracy": 0.8407750631844987,
+      "balanced_accuracy": 0.8119578930768018,
+      "threshold": 0.05,
+      "tp": 53,
+      "tn": 945,
+      "fp": 174,
+      "fn": 15,
+      "youden_j": 0.6239157861536035
+    },
+    "calibration": {
+      "acs": {
+        "n": 2861,
+        "n_bins": 15,
+        "multiclass_brier": 0.5122687220404767,
+        "top_label_ece": 0.025227536483479307,
+        "top_label_bins": [
+          {
+            "lower": 0.0,
+            "upper": 0.06666666666666667,
+            "n": 0,
+            "mean_probability": null,
+            "fraction_positive": null,
+            "ece_contribution": 0.0
+          },
+          {
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333,
+            "n": 0,
+            "mean_probability": null,
+            "fraction_positive": null,
+            "ece_contribution": 0.0
+          },
+          {
+            "lower": 0.13333333333333333,
+            "upper": 0.2,
+            "n": 0,
+            "mean_probability": null,
+            "fraction_positive": null,
+            "ece_contribution": 0.0
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.26666666666666666,
+            "n": 0,
+            "mean_probability": null,
+            "fraction_positive": null,
+            "ece_contribution": 0.0
+          },
+          {
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333,
+            "n": 23,
+            "mean_probability": 0.3115632469239442,
+            "fraction_positive": 0.30434782608695654,
+            "ece_contribution": 5.800582986742974e-05
+          },
+          {
+            "lower": 0.3333333333333333,
+            "upper": 0.4,
+            "n": 101,
+            "mean_probability": 0.3668567358267189,
+            "fraction_positive": 0.297029702970297,
+            "ece_contribution": 0.0024650577834668336
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.4666666666666667,
+            "n": 186,
+            "mean_probability": 0.438000377307656,
+            "fraction_positive": 0.43010752688172044,
+            "ece_contribution": 0.0005131318347514911
+          },
+          {
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333,
+            "n": 577,
+            "mean_probability": 0.5055213002956099,
+            "fraction_positive": 0.511265164644714,
+            "ece_contribution": 0.0011584095524058296
+          },
+          {
+            "lower": 0.5333333333333333,
+            "upper": 0.6,
+            "n": 701,
+            "mean_probability": 0.5657850031165695,
+            "fraction_positive": 0.514978601997147,
+            "ece_contribution": 0.012448544978928777
+          },
+          {
+            "lower": 0.6,
+            "upper": 0.6666666666666666,
+            "n": 489,
+            "mean_probability": 0.6310723314256025,
+            "fraction_positive": 0.6257668711656442,
+            "ece_contribution": 0.0009068053362878677
+          },
+          {
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333,
+            "n": 298,
+            "mean_probability": 0.6981611047815156,
+            "fraction_positive": 0.7046979865771812,
+            "ece_contribution": 0.0006808775865460832
+          },
+          {
+            "lower": 0.7333333333333333,
+            "upper": 0.8,
+            "n": 223,
+            "mean_probability": 0.762031251539564,
+            "fraction_positive": 0.7354260089686099,
+            "ece_contribution": 0.0020737396341568553
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.8666666666666667,
+            "n": 144,
+            "mean_probability": 0.8317827276057668,
+            "fraction_positive": 0.7638888888888888,
+            "ece_contribution": 0.00341723620245733
+          },
+          {
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333,
+            "n": 88,
+            "mean_probability": 0.8971543935212222,
+            "fraction_positive": 0.8522727272727273,
+            "ece_contribution": 0.0013804916567170741
+          },
+          {
+            "lower": 0.9333333333333333,
+            "upper": 1.0,
+            "n": 31,
+            "mean_probability": 0.9561838565334198,
+            "fraction_positive": 0.967741935483871,
+            "ece_contribution": 0.00012523608789373947
+          }
+        ],
+        "classwise": {
+          "OTHER": {
+            "ece": 0.03136185239850746,
+            "bins": [
+              {
+                "lower": 0.0,
+                "upper": 0.06666666666666667,
+                "n": 114,
+                "mean_probability": 0.03448711907523766,
+                "fraction_positive": 0.05263157894736842,
+                "ece_contribution": 0.0007229879152124804
+              },
+              {
+                "lower": 0.06666666666666667,
+                "upper": 0.13333333333333333,
+                "n": 76,
+                "mean_probability": 0.10113541291732538,
+                "fraction_positive": 0.11842105263157894,
+                "ece_contribution": 0.00045917812592914046
+              },
+              {
+                "lower": 0.13333333333333333,
+                "upper": 0.2,
+                "n": 77,
+                "mean_probability": 0.16845192731200875,
+                "fraction_positive": 0.22077922077922077,
+                "ece_contribution": 0.001408319327848768
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.26666666666666666,
+                "n": 121,
+                "mean_probability": 0.23736360164220668,
+                "fraction_positive": 0.23140495867768596,
+                "ece_contribution": 0.00025200831831772387
+              },
+              {
+                "lower": 0.26666666666666666,
+                "upper": 0.3333333333333333,
+                "n": 161,
+                "mean_probability": 0.305291434807807,
+                "fraction_positive": 0.35403726708074534,
+                "ece_contribution": 0.0027431244305987663
+              },
+              {
+                "lower": 0.3333333333333333,
+                "upper": 0.4,
+                "n": 264,
+                "mean_probability": 0.3687897270376032,
+                "fraction_positive": 0.38257575757575757,
+                "ece_contribution": 0.0012721118707000178
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.4666666666666667,
+                "n": 352,
+                "mean_probability": 0.43394202036275104,
+                "fraction_positive": 0.45170454545454547,
+                "ece_contribution": 0.002185392811014205
+              },
+              {
+                "lower": 0.4666666666666667,
+                "upper": 0.5333333333333333,
+                "n": 379,
+                "mean_probability": 0.5000059336502508,
+                "fraction_positive": 0.49076517150395776,
+                "ece_contribution": 0.0012241345171076772
+              },
+              {
+                "lower": 0.5333333333333333,
+                "upper": 0.6,
+                "n": 377,
+                "mean_probability": 0.5670130556394947,
+                "fraction_positive": 0.5092838196286472,
+                "ece_contribution": 0.007607103102443023
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.6666666666666666,
+                "n": 333,
+                "mean_probability": 0.6326363421417214,
+                "fraction_positive": 0.6756756756756757,
+                "ece_contribution": 0.005009471536807681
+              },
+              {
+                "lower": 0.6666666666666666,
+                "upper": 0.7333333333333333,
+                "n": 241,
+                "mean_probability": 0.6982469692269796,
+                "fraction_positive": 0.7178423236514523,
+                "ece_contribution": 0.0016506397819985733
+              },
+              {
+                "lower": 0.7333333333333333,
+                "upper": 0.8,
+                "n": 197,
+                "mean_probability": 0.7622165552855749,
+                "fraction_positive": 0.7208121827411168,
+                "ece_contribution": 0.002850982660348912
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.8666666666666667,
+                "n": 117,
+                "mean_probability": 0.831728603085901,
+                "fraction_positive": 0.7435897435897436,
+                "ece_contribution": 0.003604420328923599
+              },
+              {
+                "lower": 0.8666666666666667,
+                "upper": 0.9333333333333333,
+                "n": 43,
+                "mean_probability": 0.8939170463140621,
+                "fraction_positive": 0.9069767441860465,
+                "ece_contribution": 0.0001962834702884751
+              },
+              {
+                "lower": 0.9333333333333333,
+                "upper": 1.0,
+                "n": 9,
+                "mean_probability": 0.9441487656699287,
+                "fraction_positive": 1.0,
+                "ece_contribution": 0.00017569420096841734
+              }
+            ]
+          },
+          "STEMI": {
+            "ece": 0.014839262050505658,
+            "bins": [
+              {
+                "lower": 0.0,
+                "upper": 0.06666666666666667,
+                "n": 2408,
+                "mean_probability": 0.006596452226664537,
+                "fraction_positive": 0.01287375415282392,
+                "ece_contribution": 0.005283377503737082
+              },
+              {
+                "lower": 0.06666666666666667,
+                "upper": 0.13333333333333333,
+                "n": 95,
+                "mean_probability": 0.09723581138410066,
+                "fraction_positive": 0.16842105263157894,
+                "ece_contribution": 0.002363718251838671
+              },
+              {
+                "lower": 0.13333333333333333,
+                "upper": 0.2,
+                "n": 59,
+                "mean_probability": 0.16852522881354315,
+                "fraction_positive": 0.23728813559322035,
+                "ece_contribution": 0.0014180396714438847
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.26666666666666666,
+                "n": 38,
+                "mean_probability": 0.23004429238407234,
+                "fraction_positive": 0.34210526315789475,
+                "ece_contribution": 0.001488401569173454
+              },
+              {
+                "lower": 0.26666666666666666,
+                "upper": 0.3333333333333333,
+                "n": 23,
+                "mean_probability": 0.30169128205465234,
+                "fraction_positive": 0.34782608695652173,
+                "ece_contribution": 0.00037088448540475213
+              },
+              {
+                "lower": 0.3333333333333333,
+                "upper": 0.4,
+                "n": 25,
+                "mean_probability": 0.3653289484977722,
+                "fraction_positive": 0.32,
+                "ece_contribution": 0.0003960935730319136
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.4666666666666667,
+                "n": 19,
+                "mean_probability": 0.4352815935486241,
+                "fraction_positive": 0.47368421052631576,
+                "ece_contribution": 0.00025503310820557194
+              },
+              {
+                "lower": 0.4666666666666667,
+                "upper": 0.5333333333333333,
+                "n": 21,
+                "mean_probability": 0.49549601191566106,
+                "fraction_positive": 0.47619047619047616,
+                "ece_contribution": 0.00014170438665812054
+              },
+              {
+                "lower": 0.5333333333333333,
+                "upper": 0.6,
+                "n": 27,
+                "mean_probability": 0.563516049473374,
+                "fraction_positive": 0.5925925925925926,
+                "ece_contribution": 0.0002744028885770367
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.6666666666666666,
+                "n": 18,
+                "mean_probability": 0.6393370628356934,
+                "fraction_positive": 0.6666666666666666,
+                "ece_contribution": 0.0001719443792231803
+              },
+              {
+                "lower": 0.6666666666666666,
+                "upper": 0.7333333333333333,
+                "n": 17,
+                "mean_probability": 0.7029621916658738,
+                "fraction_positive": 0.7647058823529411,
+                "ece_contribution": 0.0003668796720308089
+              },
+              {
+                "lower": 0.7333333333333333,
+                "upper": 0.8,
+                "n": 19,
+                "mean_probability": 0.7638293379231503,
+                "fraction_positive": 0.7894736842105263,
+                "ece_contribution": 0.00017030499107310168
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.8666666666666667,
+                "n": 26,
+                "mean_probability": 0.8320747315883636,
+                "fraction_positive": 0.8846153846153846,
+                "ece_contribution": 0.00047747535082228045
+              },
+              {
+                "lower": 0.8666666666666667,
+                "upper": 0.9333333333333333,
+                "n": 44,
+                "mean_probability": 0.9001765156334097,
+                "fraction_positive": 0.7954545454545454,
+                "ece_contribution": 0.0016105441062111254
+              },
+              {
+                "lower": 0.9333333333333333,
+                "upper": 1.0,
+                "n": 22,
+                "mean_probability": 0.961107302795757,
+                "fraction_positive": 0.9545454545454546,
+                "ece_contribution": 5.0458113074677446e-05
+              }
+            ]
+          },
+          "NSTEMI": {
+            "ece": 0.013639468462081908,
+            "bins": [
+              {
+                "lower": 0.0,
+                "upper": 0.06666666666666667,
+                "n": 2011,
+                "mean_probability": 0.020647865247282637,
+                "fraction_positive": 0.0174042764793635,
+                "ece_contribution": 0.0022799220595195327
+              },
+              {
+                "lower": 0.06666666666666667,
+                "upper": 0.13333333333333333,
+                "n": 380,
+                "mean_probability": 0.09355224682704398,
+                "fraction_positive": 0.09473684210526316,
+                "ece_contribution": 0.00015733876467084536
+              },
+              {
+                "lower": 0.13333333333333333,
+                "upper": 0.2,
+                "n": 161,
+                "mean_probability": 0.1647557361710886,
+                "fraction_positive": 0.12422360248447205,
+                "ece_contribution": 0.0022809065094530814
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.26666666666666666,
+                "n": 115,
+                "mean_probability": 0.2294055691231852,
+                "fraction_positive": 0.16521739130434782,
+                "ece_contribution": 0.0025800910343118833
+              },
+              {
+                "lower": 0.26666666666666666,
+                "upper": 0.3333333333333333,
+                "n": 60,
+                "mean_probability": 0.29999856402476627,
+                "fraction_positive": 0.35,
+                "ece_contribution": 0.0010486145258699834
+              },
+              {
+                "lower": 0.3333333333333333,
+                "upper": 0.4,
+                "n": 38,
+                "mean_probability": 0.3648456366438615,
+                "fraction_positive": 0.2631578947368421,
+                "ece_contribution": 0.0013506236254689748
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.4666666666666667,
+                "n": 30,
+                "mean_probability": 0.43595892588297525,
+                "fraction_positive": 0.4,
+                "ece_contribution": 0.00037705969118813587
+              },
+              {
+                "lower": 0.4666666666666667,
+                "upper": 0.5333333333333333,
+                "n": 21,
+                "mean_probability": 0.5037778573376792,
+                "fraction_positive": 0.42857142857142855,
+                "ece_contribution": 0.0005520220217026439
+              },
+              {
+                "lower": 0.5333333333333333,
+                "upper": 0.6,
+                "n": 23,
+                "mean_probability": 0.5694031067516493,
+                "fraction_positive": 0.391304347826087,
+                "ece_contribution": 0.0014317621304746357
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.6666666666666666,
+                "n": 14,
+                "mean_probability": 0.6285565538065774,
+                "fraction_positive": 0.5,
+                "ece_contribution": 0.0006290778585431959
+              },
+              {
+                "lower": 0.6666666666666666,
+                "upper": 0.7333333333333333,
+                "n": 3,
+                "mean_probability": 0.6880836884180704,
+                "fraction_positive": 0.3333333333333333,
+                "ece_contribution": 0.00037198569215456535
+              },
+              {
+                "lower": 0.7333333333333333,
+                "upper": 0.8,
+                "n": 3,
+                "mean_probability": 0.7558571894963583,
+                "fraction_positive": 1.0,
+                "ece_contribution": 0.00025600434516285397
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.8666666666666667,
+                "n": 1,
+                "mean_probability": 0.8305231928825378,
+                "fraction_positive": 0.0,
+                "ece_contribution": 0.0002902912243560076
+              },
+              {
+                "lower": 0.8666666666666667,
+                "upper": 0.9333333333333333,
+                "n": 1,
+                "mean_probability": 0.9033869504928589,
+                "fraction_positive": 1.0,
+                "ece_contribution": 3.3768979205571865e-05
+              },
+              {
+                "lower": 0.9333333333333333,
+                "upper": 1.0,
+                "n": 0,
+                "mean_probability": null,
+                "fraction_positive": null,
+                "ece_contribution": 0.0
+              }
+            ]
+          },
+          "UA": {
+            "ece": 0.02872127151668166,
+            "bins": [
+              {
+                "lower": 0.0,
+                "upper": 0.06666666666666667,
+                "n": 179,
+                "mean_probability": 0.027760439021668953,
+                "fraction_positive": 0.05027932960893855,
+                "ece_contribution": 0.0014089064715558399
+              },
+              {
+                "lower": 0.06666666666666667,
+                "upper": 0.13333333333333333,
+                "n": 168,
+                "mean_probability": 0.10262082809848445,
+                "fraction_positive": 0.13095238095238096,
+                "ece_contribution": 0.0016636493811445694
+              },
+              {
+                "lower": 0.13333333333333333,
+                "upper": 0.2,
+                "n": 246,
+                "mean_probability": 0.16716905586360917,
+                "fraction_positive": 0.1951219512195122,
+                "ece_contribution": 0.0024034995657295165
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.26666666666666666,
+                "n": 303,
+                "mean_probability": 0.234037518648818,
+                "fraction_positive": 0.26732673267326734,
+                "ece_contribution": 0.003525561639080095
+              },
+              {
+                "lower": 0.26666666666666666,
+                "upper": 0.3333333333333333,
+                "n": 344,
+                "mean_probability": 0.3002296336168467,
+                "fraction_positive": 0.26453488372093026,
+                "ece_contribution": 0.00429185388472396
+              },
+              {
+                "lower": 0.3333333333333333,
+                "upper": 0.4,
+                "n": 433,
+                "mean_probability": 0.367689631690054,
+                "fraction_positive": 0.3695150115473441,
+                "ece_contribution": 0.00027626336183384555
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.4666666666666667,
+                "n": 409,
+                "mean_probability": 0.433521571325498,
+                "fraction_positive": 0.44254278728606355,
+                "ece_contribution": 0.001289646042597451
+              },
+              {
+                "lower": 0.4666666666666667,
+                "upper": 0.5333333333333333,
+                "n": 340,
+                "mean_probability": 0.49783471068915197,
+                "fraction_positive": 0.5264705882352941,
+                "ece_contribution": 0.003403075276367821
+              },
+              {
+                "lower": 0.5333333333333333,
+                "upper": 0.6,
+                "n": 274,
+                "mean_probability": 0.5640151840056816,
+                "fraction_positive": 0.5255474452554745,
+                "ece_contribution": 0.0036840826345881715
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.6666666666666666,
+                "n": 124,
+                "mean_probability": 0.6259565262063858,
+                "fraction_positive": 0.5,
+                "ece_contribution": 0.005459143393775545
+              },
+              {
+                "lower": 0.6666666666666666,
+                "upper": 0.7333333333333333,
+                "n": 37,
+                "mean_probability": 0.696213008584203,
+                "fraction_positive": 0.6216216216216216,
+                "ece_contribution": 0.0009646561753287352
+              },
+              {
+                "lower": 0.7333333333333333,
+                "upper": 0.8,
+                "n": 4,
+                "mean_probability": 0.7489946782588959,
+                "fraction_positive": 1.0,
+                "ece_contribution": 0.000350933689956105
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.8666666666666667,
+                "n": 0,
+                "mean_probability": null,
+                "fraction_positive": null,
+                "ece_contribution": 0.0
+              },
+              {
+                "lower": 0.8666666666666667,
+                "upper": 0.9333333333333333,
+                "n": 0,
+                "mean_probability": null,
+                "fraction_positive": null,
+                "ece_contribution": 0.0
+              },
+              {
+                "lower": 0.9333333333333333,
+                "upper": 1.0,
+                "n": 0,
+                "mean_probability": null,
+                "fraction_positive": null,
+                "ece_contribution": 0.0
+              }
+            ]
+          }
+        }
+      },
+      "omi": {
+        "n": 2861,
+        "n_bins": 15,
+        "brier": 0.04704123626202017,
+        "ece": 0.015451177912541369,
+        "calibration_intercept": -0.11317624334695457,
+        "calibration_slope": 0.8549091736440212,
+        "bins": [
+          {
+            "lower": 0.0,
+            "upper": 0.06666666666666667,
+            "n": 2336,
+            "mean_probability": 0.010425389317523608,
+            "fraction_positive": 0.012842465753424657,
+            "ece_contribution": 0.0019735374184777525
+          },
+          {
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333,
+            "n": 175,
+            "mean_probability": 0.09490241834095546,
+            "fraction_positive": 0.18857142857142858,
+            "ece_contribution": 0.00572949206233233
+          },
+          {
+            "lower": 0.13333333333333333,
+            "upper": 0.2,
+            "n": 62,
+            "mean_probability": 0.16759525503843062,
+            "fraction_positive": 0.1774193548387097,
+            "ece_contribution": 0.0002128955566645586
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.26666666666666666,
+            "n": 61,
+            "mean_probability": 0.23298882925119557,
+            "fraction_positive": 0.3114754098360656,
+            "ece_contribution": 0.0016734293658430864
+          },
+          {
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333,
+            "n": 43,
+            "mean_probability": 0.3014368754486705,
+            "fraction_positive": 0.3023255813953488,
+            "ece_contribution": 1.3356992557556264e-05
+          },
+          {
+            "lower": 0.3333333333333333,
+            "upper": 0.4,
+            "n": 30,
+            "mean_probability": 0.3636009216308594,
+            "fraction_positive": 0.36666666666666664,
+            "ece_contribution": 3.2146924527863555e-05
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.4666666666666667,
+            "n": 39,
+            "mean_probability": 0.43460712142479724,
+            "fraction_positive": 0.38461538461538464,
+            "ece_contribution": 0.0006814672266924472
+          },
+          {
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333,
+            "n": 19,
+            "mean_probability": 0.49488445175321477,
+            "fraction_positive": 0.5263157894736842,
+            "ece_contribution": 0.00020873660142919218
+          },
+          {
+            "lower": 0.5333333333333333,
+            "upper": 0.6,
+            "n": 33,
+            "mean_probability": 0.566907115054853,
+            "fraction_positive": 0.5151515151515151,
+            "ece_contribution": 0.0005969712676721952
+          },
+          {
+            "lower": 0.6,
+            "upper": 0.6666666666666666,
+            "n": 13,
+            "mean_probability": 0.6373388996491065,
+            "fraction_positive": 0.23076923076923078,
+            "ece_contribution": 0.001847398006095206
+          },
+          {
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333,
+            "n": 24,
+            "mean_probability": 0.695478710035483,
+            "fraction_positive": 0.5,
+            "ece_contribution": 0.0016398074242752858
+          },
+          {
+            "lower": 0.7333333333333333,
+            "upper": 0.8,
+            "n": 17,
+            "mean_probability": 0.7623604536056519,
+            "fraction_positive": 0.6470588235294118,
+            "ece_contribution": 0.0006851197872408532
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.8666666666666667,
+            "n": 6,
+            "mean_probability": 0.8171480496724447,
+            "fraction_positive": 0.8333333333333334,
+            "ece_contribution": 3.3943272270301306e-05
+          },
+          {
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333,
+            "n": 3,
+            "mean_probability": 0.8828172485033671,
+            "fraction_positive": 1.0,
+            "ece_contribution": 0.00012287600646273988
+          },
+          {
+            "lower": 0.9333333333333333,
+            "upper": 1.0,
+            "n": 0,
+            "mean_probability": null,
+            "fraction_positive": null,
+            "ece_contribution": 0.0
+          }
+        ]
+      }
+    },
+    "omi_threshold": 0.05,
+    "omi_threshold_detail": {
+      "auroc": 0.9184209708617194,
+      "auprc": 0.4657151954527111,
+      "sensitivity": 0.8756476683937824,
+      "specificity": 0.8407046476761619,
+      "ppv": 0.2845117845117845,
+      "npv": 0.9894133215703573,
+      "f1": 0.42947903430749684,
+      "mcc": 0.44297503786516856,
+      "accuracy": 0.8430618664802516,
+      "balanced_accuracy": 0.8581761580349722,
+      "threshold": 0.05,
+      "tp": 169,
+      "tn": 2243,
+      "fp": 425,
+      "fn": 24,
+      "youden_j": 0.7163523160699443
+    },
+    "kl": {
+      "acs": 0.00021777907386422157,
+      "omi": 0.00010364993795519695,
+      "total": 0.0003214290481992066
+    }
+  },
+  "elapsed_seconds": 299.4644718170166,
+  "peak_gpu_memory_bytes": 17617172992
+}

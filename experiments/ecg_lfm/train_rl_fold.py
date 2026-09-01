@@ -259,6 +259,7 @@ def main() -> None:
     max_epochs = 1 if args.smoke else int(cfg["optimization"]["max_epochs"])
     log_path = output / "train_log.jsonl"
     best = None; updates = 0; stale = 0; budget_exhausted = False
+    critical_safety_failure = False
     max_wall_seconds = float(cfg["optimization"].get("max_wall_seconds", 7920))
     torch.cuda.reset_peak_memory_stats(device)
 
@@ -336,16 +337,25 @@ def main() -> None:
         with log_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(epoch_result, ensure_ascii=False, allow_nan=False) + "\n")
         _write(output / f"inner_validation_epoch{epoch}.json", epoch_result)
+        failed_checks = {name for name, passed in safety["checks"].items() if not passed}
+        critical_safety_failure = {
+            "acs_brier_guard", "omi_brier_guard", "kl_guard"
+        }.issubset(failed_checks)
         if safety["pass"] and (best is None or utility > best["utility"]):
             best = {"epoch": epoch, "utility": utility, "metrics": bundle, "safety": safety,
                     "state": {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}}
             stale = 0
         else: stale += 1
         if max_updates is not None and updates >= max_updates: break
+        if critical_safety_failure: break
         if budget_exhausted: break
         if stale >= int(cfg["optimization"]["patience"]): break
 
-    status = "smoke_pass" if args.smoke else ("safety_pass" if best is not None else "no_safe_checkpoint")
+    status = "smoke_pass" if args.smoke else (
+        "safety_pass" if best is not None else (
+            "critical_safety_gate_stop" if critical_safety_failure else "no_safe_checkpoint"
+        )
+    )
     final = {
         "status": status, "updates": updates, "epochs": epoch,
         "elapsed_seconds": float(time.time()-started),
@@ -354,6 +364,7 @@ def main() -> None:
         "best": None if best is None else {key: value for key, value in best.items() if key != "state"},
         "outer_test_loaded": False, "budget_exhausted": budget_exhausted,
         "max_wall_seconds": max_wall_seconds,
+        "critical_safety_failure": critical_safety_failure,
     }
     _write(output / "training_summary.json", final)
     if not args.smoke and best is not None:

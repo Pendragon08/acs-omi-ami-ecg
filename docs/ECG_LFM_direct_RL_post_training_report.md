@@ -1,6 +1,6 @@
 # ECG-LFM Direct RL Post-training 实验报告
 
-> 状态：实施中。本文只记录可由配置、日志、checkpoint 与指标文件复核的结果；尚未完成的项目不填推测值。
+> 状态：Fold0 已完成并触发预注册 NO-GO；未访问 outer-test。本文只记录可由配置、日志与指标文件复核的结果。
 
 ## 1. 任务与监督起点
 
@@ -66,7 +66,29 @@ W0 在同一 runner 重新计算的参考值：ACS Macro AUPRC 0.55838、NSTEMI 
 
 ## 7. Fold0 冻结 Outer-test 结果
 
-只有 inner-validation 规则选出并冻结 checkpoint 后，本节才允许写入一次 outer-test 结果与 calibration 结果。
+没有冻结 checkpoint，也没有执行 outer-test。完整 Epoch 1 的 inner-validation safety gate 未通过，因此 `evaluate_rl_outer_once.py` 没有被调用；结果目录中不存在 `frozen_config.json`、`checkpoint_best.pt` 或 outer prediction。
+
+完整 Epoch 1 与 W0 的 inner-validation 对比如下。RL 行只用于 gate 判断，不是可部署结果：
+
+| 指标 | W0 | RL Epoch 1 | Delta |
+|---|---:|---:|---:|
+| ACS Macro AUPRC | 0.55838 | 0.54619 | -0.01219 |
+| NSTEMI AUPRC | 0.31389 | 0.30264 | -0.01124 |
+| NSTEMI F1 | 0.32450 | 0.34174 | +0.01723 |
+| NSTEMI Sensitivity | 0.26776 | 0.33333 | +0.06557 |
+| OMI AUPRC | 0.46641 | 0.45859 | -0.00782 |
+| OMI F1 | 0.40952 | 0.42821 | +0.01869 |
+| OMI Sensitivity | 0.89119 | 0.88083 | -0.01036 |
+| OMI Specificity | 0.82196 | 0.83846 | +0.01649 |
+| OMI PPV | 0.26584 | 0.28286 | +0.01702 |
+| NSTE-ACS 中 OMI AUPRC | 0.31083 | 0.31355 | +0.00272 |
+| ACS multiclass Brier | 0.51220 | 0.57732 | +0.06512（恶化） |
+| OMI Brier | 0.04710 | 0.06766 | +0.02056（恶化） |
+| Reference mean KL | 0 | 0.16844 | +0.16844 |
+
+失败的预注册门控为 `acs_brier_guard`、`omi_brier_guard` 和 `kl_guard`。虽然 NSTEMI Sensitivity/F1、OMI F1/PPV/Specificity 有所增加，但 ACS/OMI primary AUPRC 同时下降，并伴随显著校准恶化和策略漂移，符合 NO-GO 条件。
+
+Epoch 1 共 719 个 update。门控计算期间 runner 已进入 Epoch 2，人工根据明确的 critical gate failure 停止；额外 62 个 partial update（总日志 781）不参与 checkpoint 选择和任何指标结论。没有保存这些参数。
 
 ## 8. 消融实验
 
@@ -74,8 +96,21 @@ W0 在同一 runner 重新计算的参考值：ACS Macro AUPRC 0.55838、NSTEMI 
 - R2：去掉 KL；
 - R3：去掉 NSTEMI/NSTE-OMI hard-case reward。
 
-消融是否启动取决于 R1 Fold0 safety gate。若 R1 明确 NO-GO，不启动完整五折。
+R1 在 Fold0 critical safety gate 明确失败，故未启动 R2/R3。尤其 R2 去掉 KL 在当前已发生过度漂移的证据下缺乏安全依据。按照预注册停止规则，也未启动 Fold1–4、多 seed、paired bootstrap 或外部测试。
 
 ## 9. 最终判定
 
-实施中，尚不能声明 RL 有效。Fold0 若不能在保持 ACS/OMI primary performance、PPV/Specificity 与 calibration 的同时改善目标困难病例，则结论为 RL NO-GO，并停止 full 5-fold。
+**Direct RL Post-training：NO-GO。**
+
+本轮证明该实现可运行，但没有证明 RL 优于 W0。2-update 网格给出的短程 utility 改善没有延续为安全的整 Epoch 改善；相反，完整 Epoch 1 表现出明显 Reference drift 和 calibration degradation。不能把 NSTEMI Sensitivity/F1 或 OMI F1 的单项增加写成有效提升，更不能作为论文正向 contribution。
+
+证据文件：
+
+- `results/ecg_lfm_rl/inner_grid_v1/candidates.csv`
+- `results/ecg_lfm_rl/inner_grid_v1/selection.json`
+- `results/ecg_lfm_rl/R1_clinical_rl/fold0/gate_decision.json`
+- `results/ecg_lfm_rl/R1_clinical_rl/fold0/train_log.jsonl`
+- `results/ecg_lfm_rl/R1_clinical_rl/fold0/rl_training_curves.png`
+- `results/ecg_lfm_rl/R1_clinical_rl/fold0/rl_inner_validation_curves.png`
+
+后续若重新研究 RL，应先重新设计长程 KL/control 机制和短程网格的预测有效性，并作为新的预注册实验，而不是继续利用当前 outer-test 调参。当前最合理的模型仍是监督 W0。
