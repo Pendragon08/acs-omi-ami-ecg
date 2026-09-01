@@ -86,7 +86,7 @@ def report(root: Path, stage_a_root: Path, eval_root: Path, report_path: Path) -
             f"- NSTEMI AUPRC={fmt(wi.get('conditional_acs', {}).get('per_class', {}).get('NSTEMI', {}).get('auprc'))}，NSTEMI-vs-UA AUPRC={fmt(wi.get('nstemi_vs_ua', {}).get('auprc'))}。",
             f"- OMI AUROC={fmt(wo.get('auroc'))}，AUPRC={fmt(wo.get('auprc'))}，F1={fmt(wo.get('f1'))}，Sensitivity={fmt(wo.get('sensitivity'))}，Specificity={fmt(wo.get('specificity'))}，MCC={fmt(wo.get('mcc'))}，Youden threshold={fmt(w0.get('thresholds', {}).get('youden_j'))}。",
             "",
-            "证据：`results/multi_objective_evaluation/w0/inner_metrics.json`（若该文件缺失，则以 `results/adaptive_weighting_evaluation/w0/fold0/metrics.json` 的 inner_validation 部分为参考）。",
+            "证据：`results/multi_objective_evaluation/w0/fold0/inner_metrics.json`（若该文件缺失，则以 `results/adaptive_weighting_evaluation/w0/fold0/metrics.json` 的 inner_validation 部分为参考）。",
             "",
         ]
     else:
@@ -197,4 +197,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

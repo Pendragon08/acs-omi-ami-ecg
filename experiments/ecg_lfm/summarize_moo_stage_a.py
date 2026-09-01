@@ -174,7 +174,10 @@ def main() -> None:
     parser.add_argument("--run_root", default="results/multi_objective")
     parser.add_argument("--eval_root", default="results/multi_objective_evaluation")
     parser.add_argument("--output_root", default="results/multi_objective_stage_a")
-    parser.add_argument("--w0_metrics", default="results/multi_objective_evaluation/w0/inner_metrics.json")
+    # Evaluators write one directory per outer fold, including the W0
+    # reference.  Keep the default aligned with the actual nested Fold0
+    # artifact so screening deltas and gates are not silently omitted.
+    parser.add_argument("--w0_metrics", default="results/multi_objective_evaluation/w0/fold0/inner_metrics.json")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     out = root / args.output_root
