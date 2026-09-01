@@ -1,6 +1,6 @@
 # 实验日志索引与 GitHub 归档策略
 
-**更新时间：** 2026-08-31
+**更新时间：** 2026-09-01
 
 ## GitHub 保存内容
 
@@ -20,9 +20,13 @@
 | E4 HMoE/WavelNet/KAN 联合任务 | GPU1，已完成 | `logs/corrected/acs_joint_e4_gpu1.log` | `results/corrected_joint_acs_omi_e4/` |
 | 传统架构对比 | GPU1，已完成 | `logs/corrected_joint_model_comparison/all_gpu1.log` | `results/corrected_joint_model_comparison/` |
 | ECG-LFM Baseline/LoRA/DoRA | 已完成；恢复运行均绑定单卡 | `logs/corrected_ecg_lfm_joint_bs64_v2/` 下的 master/折日志 | `results/corrected_ecg_lfm_joint_bs64_v2/` |
+| ECG-LFM W0–W6 nested Fold0 | 已完成；RDR gate NO-GO | `results/adaptive_weighting/*/fold0/fairseq_train.jsonl` | `results/adaptive_weighting/`、`results/adaptive_weighting_evaluation/` |
+| ACS-only / OMI-only vs Joint W0 | 已完成；GPU0/GPU1 各一组 | `results/single_task_vs_joint/logs/` | `results/single_task_vs_joint/`、`results/single_task_vs_joint_evaluation/` |
 | 历史 OMI/AMI 损失与特征消融 | 已完成 | `logs/loss_feature_ablation/` | `results/loss_feature_ablation/` |
 
-统一结果解释见 `docs/reports/实验结果总报告_最终.md`，完整性审计见
+当前 nested loss 与 single-task/joint 结果解释见
+`docs/ECG_LFM_adaptive_weighting_experiment_report.md`；历史统一结果解释见
+`docs/reports/实验结果总报告_最终.md`，完整性审计见
 `docs/reports/实验完整性审计_20260831.md`。
 
 ## 结果目录中的过程文件
@@ -33,6 +37,10 @@
   `official_platform_metrics.json`；
 - ECG-LFM：Baseline/LoRA/DoRA 各保存五折汇总、脱敏日志、损失/LR、ROC/PR、
   混淆矩阵和平台聚合 JSON；
+- W0–W6：保存 Fold0 runtime、聚合指标、校准、ROC/PR、混淆矩阵、训练曲线与 RDR
+  动态权重；逐记录 nested predictions 只留服务器；
+- 单任务对照：`sanitized_logs/` 保存脱敏 epoch 日志，evaluation 目录保存聚合指标、
+  对齐审计、ROC/PR、混淆矩阵和训练/验证 loss-LR 曲线；
 - 历史消融：五种子汇总、阈值策略、bootstrap、脱敏日志与曲线。
 
 生成脱敏训练日志的脚本为 `scripts/export_sanitized_training_logs.py`。

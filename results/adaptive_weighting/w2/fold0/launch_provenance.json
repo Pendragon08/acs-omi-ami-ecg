@@ -1,0 +1,85 @@
+{
+  "started_at": "2026-08-31T16:53:38.064924+00:00",
+  "task": "ACS categorical OTHER/STEMI/NSTEMI/UA + OMI binary",
+  "fold": 0,
+  "adaptation": "corrected_joint_lora",
+  "run_name": "w2",
+  "seed": 2026,
+  "weighting": "w2",
+  "loss": {
+    "acs": "unweighted_ce",
+    "omi": "static_pos_weight_bce",
+    "omi_task_weight": 1.0,
+    "acs_weight": null,
+    "omi_pos_weight": 14.808803301237964,
+    "weight_source": "inner-train unique records only",
+    "checkpoint_selection_objective": "unweighted inner-validation CE + BCE for every W0-W6 method",
+    "rdr": null
+  },
+  "command": [
+    "fairseq-hydra-train",
+    "task.data=/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/fold0",
+    "task.label_file=/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/y_joint_5.npy",
+    "model.model_path=/data/code/ouyanghao/oyh/ACS-OMI-AMI/checkpoints/ecg_lfm/pretrain.pt",
+    "checkpoint.save_dir=/data/code/ouyanghao/oyh/ACS-OMI-AMI/results/adaptive_weighting/w2/fold0",
+    "common.log_file=/data/code/ouyanghao/oyh/ACS-OMI-AMI/results/adaptive_weighting/w2/fold0/fairseq_train.jsonl",
+    "common.seed=2026",
+    "criterion.omi_pos_weight=14.8088033012",
+    "--config-dir",
+    "/data/code/ouyanghao/oyh/ACS-OMI-AMI/configs/ecg_lfm",
+    "--config-name",
+    "corrected_joint_lora"
+  ],
+  "training_balance": {
+    "n_unique_training_records": 11493,
+    "positive": {
+      "STEMI": 910,
+      "NSTEMI": 807,
+      "UA": 3960,
+      "OMI": 727
+    },
+    "negative": {
+      "STEMI": 10583,
+      "NSTEMI": 10686,
+      "UA": 7533,
+      "OMI": 10766
+    },
+    "acs_class_counts": {
+      "OTHER": 5816,
+      "STEMI": 910,
+      "NSTEMI": 807,
+      "UA": 3960
+    },
+    "acs_static_weight_if_requested": [
+      0.24896004811418915,
+      1.5911556481671694,
+      1.7942399502256807,
+      0.36564435349296065
+    ],
+    "omi_pos_weight_if_requested": 14.808803301237964,
+    "source": "training-fold unique record indices only"
+  },
+  "config": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/configs/ecg_lfm/corrected_joint_lora.yaml",
+  "config_sha256": "20d6304f0c8611013e101ac404aa1850bddf497383c386cfa4221b77887b5fa7",
+  "criterion_source": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/third_party/ECG-LFM/fairseq_signals/criterions/acs_joint.py",
+  "criterion_source_sha256": "b7b9bc02e3ba2119b4593defa95ba233738ca8c3c8c76e9ff862fa17cee539d6",
+  "model_source": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/third_party/ECG-LFM/fairseq_signals/models/classification/ecg_transformer_classifier.py",
+  "model_source_sha256": "09c02251f5902e4dd93cef2db25a5475a2a77f39658dad22fdd61c85e2fef3dc",
+  "rdr_source_sha256": null,
+  "runner_source_sha256": "db3099a91670dfbff6c77401cb3700b811098d290565c4b25d9eeae0e4bc0281",
+  "source_label_file": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/y_all.npy",
+  "source_label_file_sha256": "57749bc5d6d848cb44b6ee8092e868d1422708538567c43c447927ae662f1058",
+  "label_file": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/y_joint_5.npy",
+  "label_file_sha256": "23f82a10396e6d405318c703539b68b658f8dd5431744ff34dd716ee44665f9e",
+  "train_segments_sha256": "21f7446ab5380e8e0277b53e782e0bdfe627354fabd5709929781af6aa26262f",
+  "valid_segments_sha256": "1566463ffbdc06a9d7a65b059d086e52216cf04e72138b545b89daf7531ef5de",
+  "split_provenance": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/fold0/split_provenance.json",
+  "split_provenance_sha256": "4ef0b33713fabcb8b08d426220dbe3ba9905710b21f5a5cfed092bf37305be10",
+  "pretrained_checkpoint": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/checkpoints/ecg_lfm/pretrain.pt",
+  "pretrained_sha256": "e647de170cefeaab665e72a2267be8e5877e04b808684c1715011d4c1747bfb3",
+  "official_repository": "https://github.com/biomed-AI/ECG-LFM",
+  "cuda_visible_devices": "1",
+  "dry_run": false,
+  "finished_at": "2026-08-31T18:20:19.673645+00:00",
+  "returncode": 0
+}

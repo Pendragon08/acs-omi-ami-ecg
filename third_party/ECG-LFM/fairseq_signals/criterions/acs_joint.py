@@ -66,12 +66,25 @@ class ACSJointCriterion(BaseCriterion):
         acs_target, omi_target = self._targets(model.get_targets(sample, net_output))
         if logits.ndim != 2 or logits.shape[-1] != 5:
             raise ValueError(f"ACS-joint model must emit [B,5] logits, got {tuple(logits.shape)}")
-        weight = self.acs_weight.to(logits.device) if self.acs_weight is not None else None
+        # Weighting is an optimization intervention. Checkpoint selection must
+        # remain identical across W0--W6, so validation reports the common
+        # unweighted CE+BCE objective. This also matches official RDR, where
+        # sample reweighting occurs in train() only.
+        training = bool(model.training)
+        weight = (
+            self.acs_weight.to(logits.device)
+            if training and self.acs_weight is not None
+            else None
+        )
         # Fairseq divides accumulated gradients by ``sample_size`` after
         # ``criterion.forward``.  Return summed per-record losses here so a
         # batch-size change does not silently scale the gradients twice.
         acs_loss = F.cross_entropy(logits[:, :4], acs_target.to(logits.device), weight=weight, reduction="sum")
-        pos_weight = None if self.omi_pos_weight is None else torch.tensor(float(self.omi_pos_weight), device=logits.device)
+        pos_weight = (
+            torch.tensor(float(self.omi_pos_weight), device=logits.device)
+            if training and self.omi_pos_weight is not None
+            else None
+        )
         omi_loss = F.binary_cross_entropy_with_logits(logits[:, 4], omi_target.to(logits.device), pos_weight=pos_weight, reduction="sum")
         loss = acs_loss + self.omi_loss_weight * omi_loss
         if save_outputs:

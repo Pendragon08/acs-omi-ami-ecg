@@ -1,0 +1,100 @@
+{
+  "started_at": "2026-08-31T22:32:16.703317+00:00",
+  "task": "ACS categorical OTHER/STEMI/NSTEMI/UA + OMI binary",
+  "fold": 0,
+  "adaptation": "corrected_joint_lora_rdr",
+  "run_name": "w6",
+  "seed": 2026,
+  "weighting": "w6",
+  "loss": {
+    "acs": "rdr_weighted_ce",
+    "omi": "rdr_weighted_bce",
+    "omi_task_weight": 1.0,
+    "acs_weight": null,
+    "omi_pos_weight": null,
+    "weight_source": "inner-train unique records only",
+    "checkpoint_selection_objective": "unweighted inner-validation CE + BCE for every W0-W6 method",
+    "rdr": {
+      "upstream_repository": "https://github.com/GoodMorningPeter/RDR",
+      "upstream_commit": "bb55ea9f906f00a2d8938a97543fc232b5d26645",
+      "license": "MIT",
+      "canonical_feature_dim": 1024,
+      "momentum": 0.9,
+      "temperature": 1.0,
+      "warmup_updates": 363,
+      "warmup_note": "official code defaults to 160/200 epochs; this nested early-stopping protocol freezes a convergence-horizon-matched warmup selected from inner-validation only",
+      "acs_enabled": true,
+      "omi_enabled": true
+    }
+  },
+  "command": [
+    "fairseq-hydra-train",
+    "task.data=/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/fold0",
+    "task.label_file=/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/y_joint_5.npy",
+    "model.model_path=/data/code/ouyanghao/oyh/ACS-OMI-AMI/checkpoints/ecg_lfm/pretrain.pt",
+    "checkpoint.save_dir=/data/code/ouyanghao/oyh/ACS-OMI-AMI/results/adaptive_weighting/w6/fold0",
+    "common.log_file=/data/code/ouyanghao/oyh/ACS-OMI-AMI/results/adaptive_weighting/w6/fold0/fairseq_train.jsonl",
+    "common.seed=2026",
+    "criterion.rdr_acs=true",
+    "criterion.rdr_omi=true",
+    "criterion.rdr_acs_class_counts=[5816,910,807,3960]",
+    "criterion.rdr_omi_class_counts=[10766,727]",
+    "criterion.rdr_warmup_updates=363",
+    "--config-dir",
+    "/data/code/ouyanghao/oyh/ACS-OMI-AMI/configs/ecg_lfm",
+    "--config-name",
+    "corrected_joint_lora_rdr"
+  ],
+  "training_balance": {
+    "n_unique_training_records": 11493,
+    "positive": {
+      "STEMI": 910,
+      "NSTEMI": 807,
+      "UA": 3960,
+      "OMI": 727
+    },
+    "negative": {
+      "STEMI": 10583,
+      "NSTEMI": 10686,
+      "UA": 7533,
+      "OMI": 10766
+    },
+    "acs_class_counts": {
+      "OTHER": 5816,
+      "STEMI": 910,
+      "NSTEMI": 807,
+      "UA": 3960
+    },
+    "acs_static_weight_if_requested": [
+      0.24896004811418915,
+      1.5911556481671694,
+      1.7942399502256807,
+      0.36564435349296065
+    ],
+    "omi_pos_weight_if_requested": 14.808803301237964,
+    "source": "training-fold unique record indices only"
+  },
+  "config": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/configs/ecg_lfm/corrected_joint_lora_rdr.yaml",
+  "config_sha256": "90531aeb169a8e0a3774a8d4c51fdfa3234fd0b13130d6407e70f2f514a54b02",
+  "criterion_source": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/third_party/ECG-LFM/fairseq_signals/criterions/acs_joint_rdr.py",
+  "criterion_source_sha256": "6f83932fce8149e463369bd3b06e033f94572bd297c07d06eeea161c19d15271",
+  "model_source": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/third_party/ECG-LFM/fairseq_signals/models/classification/ecg_transformer_classifier.py",
+  "model_source_sha256": "09c02251f5902e4dd93cef2db25a5475a2a77f39658dad22fdd61c85e2fef3dc",
+  "rdr_source_sha256": "f342ec49fd4905442dd754a5a44baeeae0e0fcf0b7516e2c8be8ba53ec3be4bd",
+  "runner_source_sha256": "db3099a91670dfbff6c77401cb3700b811098d290565c4b25d9eeae0e4bc0281",
+  "source_label_file": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/y_all.npy",
+  "source_label_file_sha256": "57749bc5d6d848cb44b6ee8092e868d1422708538567c43c447927ae662f1058",
+  "label_file": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/y_joint_5.npy",
+  "label_file_sha256": "23f82a10396e6d405318c703539b68b658f8dd5431744ff34dd716ee44665f9e",
+  "train_segments_sha256": "21f7446ab5380e8e0277b53e782e0bdfe627354fabd5709929781af6aa26262f",
+  "valid_segments_sha256": "1566463ffbdc06a9d7a65b059d086e52216cf04e72138b545b89daf7531ef5de",
+  "split_provenance": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/manifests/ecg_lfm_nested/fold0/split_provenance.json",
+  "split_provenance_sha256": "4ef0b33713fabcb8b08d426220dbe3ba9905710b21f5a5cfed092bf37305be10",
+  "pretrained_checkpoint": "/data/code/ouyanghao/oyh/ACS-OMI-AMI/checkpoints/ecg_lfm/pretrain.pt",
+  "pretrained_sha256": "e647de170cefeaab665e72a2267be8e5877e04b808684c1715011d4c1747bfb3",
+  "official_repository": "https://github.com/biomed-AI/ECG-LFM",
+  "cuda_visible_devices": "1",
+  "dry_run": false,
+  "finished_at": "2026-08-31T23:51:05.713101+00:00",
+  "returncode": 0
+}

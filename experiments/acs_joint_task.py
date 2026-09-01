@@ -25,6 +25,8 @@ from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
+    balanced_accuracy_score,
+    brier_score_loss,
     confusion_matrix,
     f1_score,
     matthews_corrcoef,
@@ -271,6 +273,7 @@ def binary_metrics(y: np.ndarray, prob: np.ndarray, threshold: float = 0.5) -> d
         "f1": float(f1_score(y, pred, zero_division=0)),
         "mcc": _safe_mcc(y, pred),
         "accuracy": float(accuracy_score(y, pred)),
+        "balanced_accuracy": float(balanced_accuracy_score(y, pred)),
         "threshold": float(threshold),
         "tp": int(tp), "tn": int(tn), "fp": int(fp), "fn": int(fn),
         "youden_j": float(sens + spec - 1.0),
@@ -290,7 +293,7 @@ def acs_metrics(y_class: np.ndarray, probs: np.ndarray, prefix: str = "acs") -> 
         # For categorical prediction, hard one-vs-rest values are the clinically
         # interpretable sensitivity/specificity/PPV/NPV/F1/MCC values.
         hard = binary_metrics(y, (pred == k).astype(float), 0.5)
-        for metric in ("sensitivity", "specificity", "ppv", "npv", "f1", "mcc", "accuracy", "tp", "tn", "fp", "fn"):
+        for metric in ("sensitivity", "specificity", "ppv", "npv", "f1", "mcc", "accuracy", "balanced_accuracy", "tp", "tn", "fp", "fn"):
             per_class[name][metric] = hard[metric]
         per_class[name]["threshold"] = "argmax_ovr"
         per_class[name]["youden_j"] = float(hard["sensitivity"] + hard["specificity"] - 1.0)
@@ -299,6 +302,7 @@ def acs_metrics(y_class: np.ndarray, probs: np.ndarray, prefix: str = "acs") -> 
     return {
         "n": int(len(y_class)),
         "accuracy": float(accuracy_score(y_class, pred)),
+        "balanced_accuracy": float(balanced_accuracy_score(y_class, pred)),
         "macro_f1": float(f1_score(y_class, pred, average="macro", zero_division=0)),
         "weighted_f1": float(f1_score(y_class, pred, average="weighted", zero_division=0)),
         "macro_auroc_ovr": float(np.mean(valid_auc)) if valid_auc else float("nan"),
@@ -329,7 +333,7 @@ def acs_subtype_metrics(y_class: np.ndarray, probs: np.ndarray) -> dict:
         target = (y == k).astype(np.int64)
         metrics = binary_metrics(target, p[:, k], 0.5)
         hard = binary_metrics(target, (pred == k).astype(float), 0.5)
-        for metric in ("sensitivity", "specificity", "ppv", "npv", "f1", "mcc", "accuracy", "tp", "tn", "fp", "fn"):
+        for metric in ("sensitivity", "specificity", "ppv", "npv", "f1", "mcc", "accuracy", "balanced_accuracy", "tp", "tn", "fp", "fn"):
             metrics[metric] = hard[metric]
         metrics["threshold"] = "argmax_ovr"
         metrics["youden_j"] = float(hard["sensitivity"] + hard["specificity"] - 1.0)
@@ -339,6 +343,7 @@ def acs_subtype_metrics(y_class: np.ndarray, probs: np.ndarray) -> dict:
     return {
         "n_acs": int(mask.sum()),
         "accuracy": float(accuracy_score(y, pred)),
+        "balanced_accuracy": float(balanced_accuracy_score(y, pred)),
         "macro_f1": float(f1_score(y, pred, average="macro", zero_division=0)),
         "weighted_f1": float(f1_score(y, pred, average="weighted", zero_division=0)),
         "multiclass_mcc": _safe_mcc(y, pred),
@@ -347,6 +352,162 @@ def acs_subtype_metrics(y_class: np.ndarray, probs: np.ndarray) -> dict:
         "confusion_matrix": cm.astype(int).tolist(),
         "per_class": per_class,
     }
+
+
+def nstemi_vs_ua_metrics(y_class: np.ndarray, probs: np.ndarray) -> dict:
+    """Evaluate NSTEMI as the positive class among true NSTEMI/UA records."""
+    y_class = np.asarray(y_class, dtype=np.int64)
+    probs = np.asarray(probs, dtype=np.float64)
+    mask = np.isin(y_class, (2, 3))
+    if not mask.any():
+        return {"n": 0, "error": "no NSTEMI/UA records"}
+    y = (y_class[mask] == 2).astype(np.int64)
+    pair = probs[mask][:, (2, 3)]
+    denom = pair.sum(axis=1)
+    if np.any(denom <= 0) or not np.isfinite(pair).all():
+        raise ValueError("invalid NSTEMI/UA probabilities")
+    score = pair[:, 0] / denom
+    result = binary_metrics(y, score, 0.5)
+    result.update(
+        {
+            "n": int(mask.sum()),
+            "n_nstemi": int(y.sum()),
+            "n_ua": int((1 - y).sum()),
+            "positive_class": "NSTEMI",
+            "probability": "p_NSTEMI/(p_NSTEMI+p_UA)",
+            "confusion_matrix": confusion_matrix(
+                y, (score >= 0.5).astype(np.int64), labels=[0, 1]
+            ).astype(int).tolist(),
+        }
+    )
+    return result
+
+
+def _binary_ece(y: np.ndarray, prob: np.ndarray, n_bins: int = 15) -> tuple[float, list[dict]]:
+    """Equal-width expected calibration error with auditable bin statistics."""
+    y = np.asarray(y, dtype=np.float64)
+    prob = np.asarray(prob, dtype=np.float64)
+    if y.shape != prob.shape or not np.isfinite(prob).all():
+        raise ValueError("binary calibration inputs are invalid")
+    edges = np.linspace(0.0, 1.0, n_bins + 1)
+    bins: list[dict] = []
+    ece = 0.0
+    for index in range(n_bins):
+        lower, upper = float(edges[index]), float(edges[index + 1])
+        selected = (prob >= lower) & (prob < upper if index < n_bins - 1 else prob <= upper)
+        count = int(selected.sum())
+        if count:
+            mean_prob = float(prob[selected].mean())
+            fraction_positive = float(y[selected].mean())
+            contribution = count / len(y) * abs(mean_prob - fraction_positive)
+            ece += contribution
+        else:
+            mean_prob = None
+            fraction_positive = None
+            contribution = 0.0
+        bins.append(
+            {
+                "lower": lower,
+                "upper": upper,
+                "n": count,
+                "mean_probability": mean_prob,
+                "fraction_positive": fraction_positive,
+                "ece_contribution": float(contribution),
+            }
+        )
+    return float(ece), bins
+
+
+def binary_calibration_metrics(y: np.ndarray, prob: np.ndarray, n_bins: int = 15) -> dict:
+    """Brier/ECE and weakly regularized logistic calibration slope/intercept."""
+    from sklearn.linear_model import LogisticRegression
+
+    y = np.asarray(y, dtype=np.int64)
+    prob = np.asarray(prob, dtype=np.float64)
+    clipped = np.clip(prob, 1e-6, 1 - 1e-6)
+    ece, bins = _binary_ece(y, clipped, n_bins=n_bins)
+    logit = np.log(clipped / (1.0 - clipped)).reshape(-1, 1)
+    if np.unique(y).size < 2:
+        intercept = slope = float("nan")
+    else:
+        calibration = LogisticRegression(C=1e6, solver="lbfgs", max_iter=1000)
+        calibration.fit(logit, y)
+        intercept = float(calibration.intercept_[0])
+        slope = float(calibration.coef_[0, 0])
+    return {
+        "n": int(len(y)),
+        "n_bins": int(n_bins),
+        "brier": float(brier_score_loss(y, clipped)),
+        "ece": ece,
+        "calibration_intercept": intercept,
+        "calibration_slope": slope,
+        "bins": bins,
+    }
+
+
+def multiclass_calibration_metrics(y_class: np.ndarray, probs: np.ndarray, n_bins: int = 15) -> dict:
+    """Multiclass Brier, top-label ECE and one-vs-rest class-wise ECE."""
+    y_class = np.asarray(y_class, dtype=np.int64)
+    probs = np.asarray(probs, dtype=np.float64)
+    if probs.ndim != 2 or probs.shape[1] != 4 or len(y_class) != len(probs):
+        raise ValueError("expected ACS labels [N] and probabilities [N,4]")
+    if not np.isfinite(probs).all() or not np.allclose(probs.sum(axis=1), 1.0, atol=1e-5):
+        raise ValueError("ACS probabilities must be finite and sum to one")
+    one_hot = np.eye(4, dtype=np.float64)[y_class]
+    pred = probs.argmax(axis=1)
+    confidence = probs[np.arange(len(probs)), pred]
+    correct = (pred == y_class).astype(np.int64)
+    top_ece, top_bins = _binary_ece(correct, confidence, n_bins=n_bins)
+    classwise = {}
+    for index, name in enumerate(ACS_CLASSES):
+        target = (y_class == index).astype(np.int64)
+        ece, bins = _binary_ece(target, probs[:, index], n_bins=n_bins)
+        classwise[name] = {"ece": ece, "bins": bins}
+    return {
+        "n": int(len(y_class)),
+        "n_bins": int(n_bins),
+        "multiclass_brier": float(np.mean(np.sum((probs - one_hot) ** 2, axis=1))),
+        "top_label_ece": top_ece,
+        "top_label_bins": top_bins,
+        "classwise": classwise,
+    }
+
+
+def save_reliability_figures(
+    out_dir: Path,
+    acs_calibration: dict,
+    omi_calibration: dict,
+) -> None:
+    """Persist reliability diagrams without fitting a calibration model."""
+    try:
+        import matplotlib.pyplot as plt
+
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+        acs_bins = [item for item in acs_calibration["top_label_bins"] if item["n"]]
+        omi_bins = [item for item in omi_calibration["bins"] if item["n"]]
+        axes[0].plot(
+            [item["mean_probability"] for item in acs_bins],
+            [item["fraction_positive"] for item in acs_bins],
+            marker="o",
+            label="ACS top-label",
+        )
+        axes[1].plot(
+            [item["mean_probability"] for item in omi_bins],
+            [item["fraction_positive"] for item in omi_bins],
+            marker="o",
+            label="OMI",
+        )
+        for ax in axes:
+            ax.plot([0, 1], [0, 1], "k:", label="ideal")
+            ax.set(xlim=(0, 1), ylim=(0, 1), xlabel="mean predicted probability", ylabel="observed frequency")
+            ax.legend()
+        axes[0].set_title("ACS top-label reliability")
+        axes[1].set_title("OMI reliability")
+        fig.tight_layout()
+        fig.savefig(out_dir / "reliability_diagrams.png", dpi=160)
+        plt.close(fig)
+    except Exception as exc:
+        (out_dir / "reliability_plot_error.txt").write_text(repr(exc), encoding="utf-8")
 
 
 def select_omi_threshold(y: np.ndarray, prob: np.ndarray, method: str) -> tuple[float | None, dict]:
@@ -374,6 +535,22 @@ def select_omi_threshold(y: np.ndarray, prob: np.ndarray, method: str) -> tuple[
             status="feasible",
             target_sensitivity=target,
             sensitivity_constraint_satisfied=True,
+        ))
+    elif method == "spec90":
+        target = 0.90
+        feasible = [item for item in candidates if item[1]["specificity"] >= target]
+        if not feasible:
+            return None, {
+                "status": "infeasible",
+                "target_specificity": target,
+                "specificity_constraint_satisfied": False,
+            }
+        chosen = max(feasible, key=lambda item: (item[1]["sensitivity"], item[1]["f1"], -item[0]))
+        best = (chosen[0], dict(
+            chosen[1],
+            status="feasible",
+            target_specificity=target,
+            specificity_constraint_satisfied=True,
         ))
     else:
         raise ValueError(method)

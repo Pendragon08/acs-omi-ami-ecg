@@ -12,7 +12,6 @@ from fairseq_signals.models.ecg_transformer import (
     ECGTransformerFinetuningConfig
 )
 
-from fairseq_signals.utils import utils
 from fairseq_signals.modules.parameter_efficient import (
     enable_head,
     inject_linear_adapters,
@@ -32,6 +31,10 @@ class ECGTransformerClassificationConfig(ECGTransformerFinetuningConfig):
     adapter_rank: int = field(default=8, metadata={"help": "LoRA/DoRA rank"})
     adapter_alpha: float = field(default=16.0, metadata={"help": "LoRA/DoRA scaling alpha"})
     adapter_dropout: float = field(default=0.05, metadata={"help": "adapter input dropout"})
+    output_semantics: str = field(
+        default="joint",
+        metadata={"help": "joint (4-class ACS + OMI), acs (4-class), or omi (binary)"},
+    )
 
 @register_model("ecg_transformer_classifier", dataclass=ECGTransformerClassificationConfig)
 class ECGTransformerClassificationModel(ECGTransformerFinetuningModel):
@@ -41,6 +44,15 @@ class ECGTransformerClassificationModel(ECGTransformerFinetuningModel):
         self.proj = nn.Linear(cfg.encoder_embed_dim, cfg.num_labels)
         nn.init.xavier_uniform_(self.proj.weight)
         nn.init.constant_(self.proj.bias, 0.0)
+        self.output_semantics = str(getattr(cfg, "output_semantics", "joint")).lower()
+        expected_outputs = {"joint": 5, "acs": 4, "omi": 1}
+        if self.output_semantics not in expected_outputs:
+            raise ValueError(f"unsupported output_semantics: {self.output_semantics}")
+        if int(cfg.num_labels) != expected_outputs[self.output_semantics]:
+            raise ValueError(
+                f"output_semantics={self.output_semantics} requires "
+                f"num_labels={expected_outputs[self.output_semantics]}, got {cfg.num_labels}"
+            )
 
         self.adapter_summary = None
         method = str(getattr(cfg, "adapter_method", "none")).lower()
@@ -58,10 +70,26 @@ class ECGTransformerClassificationModel(ECGTransformerFinetuningModel):
 
     def get_logits(self, net_output, normalize=False, **kwargs):
         logits = net_output["out"]
-        
+
         if normalize:
-            logits = utils.log_softmax(logits.float(), dim=-1)
-        
+            logits = logits.float()
+            semantics = str(getattr(self, "output_semantics", "joint")).lower()
+            if semantics == "joint":
+                # OMI is independent of the four mutually exclusive ACS states.
+                logits = torch.cat(
+                    (
+                        torch.softmax(logits[:, :4], dim=-1),
+                        torch.sigmoid(logits[:, 4:5]),
+                    ),
+                    dim=-1,
+                )
+            elif semantics == "acs":
+                logits = torch.softmax(logits, dim=-1)
+            elif semantics == "omi":
+                logits = torch.sigmoid(logits)
+            else:  # guarded during construction; retained for checkpoint safety.
+                raise ValueError(f"unsupported output_semantics: {semantics}")
+
         return logits
 
     # def get_targets(self, sample, net_output, **kwargs):
@@ -86,11 +114,16 @@ class ECGTransformerClassificationModel(ECGTransformerFinetuningModel):
 
         x = torch.div(x.sum(dim=1), (x != 0).sum(dim=1))
 
-        x = self.proj(x)
+        pooled_features = x
+        x = self.proj(pooled_features)
 
         return {
             "encoder_out": res["x"].detach(),
             "padding_mask": padding_mask,
+            # RDR consumes the exact feature presented to the linear head.
+            # Keeping this separate from encoder_out avoids reconstructing a
+            # pooled representation inside the loss and does not change logits.
+            "pooled_features": pooled_features,
             "out": x,
         }
 
