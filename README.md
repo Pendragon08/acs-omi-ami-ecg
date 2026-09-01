@@ -126,3 +126,9 @@ Fold0 中两个任务方向一致地支持 joint positive transfer，尤其 OMI 
 - 外部测试提交文件。
 
 数据边界见 [DATASET.md](DATASET.md)，仓库清单见 [REPOSITORY_MANIFEST.md](REPOSITORY_MANIFEST.md)。
+
+## Cross-task Clinical RL v2
+
+本轮按 `ECG_LFM_CrossTask_NSTE_OMI_RL_v2_Codex_Report.md` 完成了 NSTE-ACS/OMI 交叉临床奖励的 v2A Head-only Fold0 探索。两个 `target_KL=0.01` 候选通过安全门，唯一候选已冻结并完成一次 outer Fold0 评估；结果仍属于条件性探索，尚未完成五折和多 seed 确认。
+
+详见 [Cross-task RL v2 中文实验报告](docs/ECG_LFM_CrossTask_RL_v2_report.md)、[执行日志索引](docs/logs/ECG_LFM_CrossTask_RL_v2_execution.md) 和 [结果目录](results/ecg_lfm_cross_task_rl_v2/README.md)。

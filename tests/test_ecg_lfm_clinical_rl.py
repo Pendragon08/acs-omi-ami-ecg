@@ -24,7 +24,15 @@ from experiments.ecg_lfm.rl.clinical_reward import (  # noqa: E402
     hard_reward,
     soft_f1_shaping,
 )
+from experiments.ecg_lfm.rl.adaptive_kl_controller import (  # noqa: E402
+    update_kl_controller as adaptive_update_kl_controller,
+)
+from experiments.ecg_lfm.rl.cross_task_reward import (  # noqa: E402
+    CrossTaskRewardConfig,
+    cross_task_reward,
+)
 from experiments.ecg_lfm.rl.kl_regularization import factorized_kl  # noqa: E402
+from experiments.ecg_lfm.rl.ranking_preservation import pairwise_ranking_losses  # noqa: E402
 from experiments.ecg_lfm.rl.reference_guard import (  # noqa: E402
     guard_metrics,
     patient_bootstrap_margins,
@@ -129,6 +137,50 @@ class ClinicalRewardTests(unittest.TestCase):
         self.assertTrue(bool(torch.isfinite(logits.grad).all()))
         self.assertEqual(set(parts), {"acs_soft_f1", "omi_soft_f1"})
 
+    def test_cross_task_reward_is_restricted_to_true_nstemi_or_ua_omi(self):
+        config = CrossTaskRewardConfig(
+            enabled=True, scale=1.0,
+            nstemi_exact=1.0, nstemi_omi_only=0.5, nstemi_phenotype_only=0.0, nstemi_both_wrong=-0.5,
+            ua_exact=0.5, ua_nstemi_omi=0.25, ua_phenotype_only=0.0, ua_both_wrong=-0.25,
+        )
+        acs_action = torch.tensor([2, 0, 2, 3, 1])
+        omi_action = torch.tensor([1, 1, 1, 1, 1])
+        acs_target = torch.tensor([2, 0, 3, 3, 1])
+        omi_target = torch.tensor([1, 1, 1, 1, 0])
+        total, parts = cross_task_reward(acs_action, omi_action, acs_target, omi_target, config)
+        self.assertEqual(parts["cross_nstemi_omi"].tolist(), [1.0, 0.0, 0.0, 0.0, 0.0])
+        self.assertEqual(parts["cross_ua_omi"].tolist(), [0.0, 0.0, 0.25, 0.5, 0.0])
+        self.assertEqual(total.tolist(), [1.0, 0.0, 0.25, 0.5, 0.0])
+
+    def test_cross_task_reward_ordering_for_nstemi_omi(self):
+        config = CrossTaskRewardConfig(
+            enabled=True, scale=1.0,
+            nstemi_exact=1.0, nstemi_omi_only=0.5, nstemi_phenotype_only=0.0, nstemi_both_wrong=-0.5,
+            ua_exact=0.5, ua_nstemi_omi=0.25, ua_phenotype_only=0.0, ua_both_wrong=-0.25,
+        )
+        target_acs = torch.tensor([2, 2, 2, 2])
+        target_omi = torch.ones(4, dtype=torch.long)
+        action_acs = torch.tensor([2, 0, 2, 0])
+        action_omi = torch.tensor([1, 1, 0, 0])
+        total, _ = cross_task_reward(action_acs, action_omi, target_acs, target_omi, config)
+        self.assertEqual(total.tolist(), [1.0, 0.5, 0.0, -0.5])
+
+    def test_pairwise_ranking_is_sampled_finite_and_differentiable(self):
+        logits = torch.randn(16, 5, requires_grad=True)
+        acs_target = torch.tensor([0, 1, 2, 3] * 4)
+        omi_target = torch.tensor([0, 1] * 8)
+        generator = torch.Generator().manual_seed(2026)
+        result = pairwise_ranking_losses(
+            logits, acs_target, omi_target,
+            {"max_negatives_per_positive": 2}, generator=generator,
+        )
+        result["rank_loss"].backward()
+        self.assertTrue(bool(torch.isfinite(result["rank_loss"])))
+        self.assertTrue(bool(torch.isfinite(logits.grad).all()))
+        self.assertGreater(int(result["pair_count"]), 0)
+        self.assertLessEqual(int(result["pair_count"]), 16 * 4 * 2 + 16 * 2)
+        self.assertIn("nstemi_rank_loss", result)
+
 
 class ClinicalSafetyAndFreezingTests(unittest.TestCase):
     def test_v2_update_budget_head_only_config_and_controller(self):
@@ -139,6 +191,19 @@ class ClinicalSafetyAndFreezingTests(unittest.TestCase):
         self.assertEqual(update_kl_controller(0.05, 0.02, 0.005, config), 0.1)
         self.assertEqual(update_kl_controller(0.05, 0.001, 0.005, config), 0.025)
         source = (ROOT / "experiments/ecg_lfm/train_rl_v2_head_only.py").read_text()
+        self.assertNotIn('load_dataset("outer_test"', source)
+        self.assertNotIn("outer_test_segments.csv", source)
+
+    def test_v2a_cross_task_config_and_adaptive_controller(self):
+        config = yaml.safe_load((ROOT / "configs/ecg_lfm/rl/v2a_head_cross_task_targetkl.yaml").read_text())
+        self.assertEqual(config["policy"]["trainable"], "head_only")
+        self.assertTrue(config["reward"]["cross_task"]["enabled"])
+        self.assertTrue(config["ranking"]["omi_pairwise"])
+        self.assertEqual(config["optimization"]["max_updates"], 100)
+        self.assertEqual(config["optimization"]["eval_interval_updates"], 25)
+        self.assertEqual(adaptive_update_kl_controller(0.05, 0.02, 0.005, config["kl"]), 0.1)
+        self.assertEqual(adaptive_update_kl_controller(0.05, 0.001, 0.005, config["kl"]), 0.025)
+        source = (ROOT / "experiments/ecg_lfm/train_rl_v2_cross_task.py").read_text()
         self.assertNotIn('load_dataset("outer_test"', source)
         self.assertNotIn("outer_test_segments.csv", source)
 

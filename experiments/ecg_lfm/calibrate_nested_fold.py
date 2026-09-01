@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,14 @@ from scipy.optimize import minimize_scalar
 from scipy.special import expit, logsumexp
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression
+
+# Allow direct execution from the experiments/ecg_lfm directory as well as
+# ``python -m`` execution.  The outer-evaluation wrapper invokes this file by
+# absolute path, so the repository root is not otherwise guaranteed to be on
+# sys.path.
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from experiments.acs_joint_task import (
     ACS_CLASSES,
