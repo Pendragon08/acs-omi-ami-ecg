@@ -5,7 +5,8 @@
 ## 当前主报告
 
 - [实验结果总报告_最终.md](实验结果总报告_最终.md)：2026-09-01 更新的正式总报告；包含
-  修正五折重评估、nested Fold0 W0–W6、W0 校准、单任务/联合学习、外部平台与训练成本；
+  E4/传统模型/ECG-LFM 内部指标对比、修正五折重评估、nested Fold0 W0–W6
+  完整指标、W0 校准、单任务/联合学习、外部平台与训练成本；
 - [../ECG_LFM_adaptive_weighting_experiment_report.md](../ECG_LFM_adaptive_weighting_experiment_report.md)：
   自适应类别重加权专项报告与 RDR NO-GO 依据；
 - [../ECG_LFM_corrected_evaluation_report.md](../ECG_LFM_corrected_evaluation_report.md)：
