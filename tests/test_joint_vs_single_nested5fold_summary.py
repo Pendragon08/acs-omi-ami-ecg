@@ -5,14 +5,38 @@ from pathlib import Path
 import numpy as np
 
 from experiments.ecg_lfm.summarize_joint_vs_single_nested5fold import (
+    acs_fold,
     aligned,
     format_ms,
     hard_binary,
+    omi_fold,
     write_report,
 )
 
 
 class JointVsSingleSummaryTests(unittest.TestCase):
+    def test_fold_metric_parser_uses_nested_nste_metrics(self):
+        metrics = {
+            "outer_test": {
+                "acs": {
+                    "macro_auroc_ovr": 0.8, "macro_auprc_ovr": 0.5,
+                    "macro_f1": 0.4, "balanced_accuracy": 0.45, "accuracy": 0.6,
+                    "per_class": {
+                        "NSTEMI": {"auprc": 0.2, "f1": 0.1, "sensitivity": 0.15}
+                    },
+                },
+                "nstemi_vs_ua": {"auprc": 0.3},
+                "omi": {"youden_j": {
+                    "auroc": 0.9, "auprc": 0.4, "f1": 0.3, "sensitivity": 0.8,
+                    "specificity": 0.7, "ppv": 0.2, "npv": 0.98, "mcc": 0.3,
+                    "accuracy": 0.71, "threshold": 0.04,
+                }},
+                "omi_among_nste_acs": {"n": 100, "metrics": {"auprc": 0.25}},
+            }
+        }
+        self.assertEqual(acs_fold(metrics)["nstemi_vs_ua_auprc"], 0.3)
+        self.assertEqual(omi_fold(metrics)["nste_auprc"], 0.25)
+
     def test_hard_binary_confusion_and_metrics(self):
         result = hard_binary(np.asarray([0, 0, 1, 1]), np.asarray([0, 1, 0, 1]))
         self.assertEqual((result["tn"], result["fp"], result["fn"], result["tp"]), (1, 1, 1, 1))

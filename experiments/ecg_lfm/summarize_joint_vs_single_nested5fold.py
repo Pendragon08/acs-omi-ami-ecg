@@ -77,7 +77,7 @@ def omi_fold(metrics: dict) -> dict[str, float]:
         "specificity": float(omi["specificity"]), "ppv": float(omi["ppv"]),
         "npv": float(omi["npv"]), "mcc": float(omi["mcc"]),
         "accuracy": float(omi["accuracy"]), "threshold": float(omi["threshold"]),
-        "nste_auprc": float(outer["omi_among_nste_acs"]["auprc"]),
+        "nste_auprc": float(outer["omi_among_nste_acs"]["metrics"]["auprc"]),
     }
 
 
