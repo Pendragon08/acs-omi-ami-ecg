@@ -336,7 +336,17 @@ class Task(object):
             loss *= 0
 
         with torch.autograd.profiler.record_function("backward"):
-            optimizer.backward(loss)
+            # The corrected ECG-LFM MOO criterion computes per-task gradients
+            # and writes the aggregated gradient into the model parameters.
+            # Fairseq's trainer still owns accumulation, all-reduce, loss-scale
+            # unscaling, clipping, and optimizer stepping.  All other criteria
+            # retain the historical optimizer.backward(loss) path unchanged.
+            if hasattr(criterion, "backward_multi_objective"):
+                criterion.backward_multi_objective(
+                    model=model, optimizer=optimizer, ignore_grad=ignore_grad
+                )
+            else:
+                optimizer.backward(loss)
 
         # for name, param in model.named_parameters():
         #     if param.grad is not None:
