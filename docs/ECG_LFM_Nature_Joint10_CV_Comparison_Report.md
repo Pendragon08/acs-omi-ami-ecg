@@ -12,6 +12,8 @@
 
 > 本报告以当前仓库、服务器端真实标签 CSV、冻结的 nested patient-level folds、配置、checkpoint 和结果文件为证据。新执行报告明确要求：若 OMI 病例不能获得可靠且唯一的 LM/LAD、LCX 或 RCA 责任血管标签，必须停止，不得猜测、删除病例或改变 folds。真实审计发现 1,151 条 OMI 中有 235 条无法唯一归组，因此执行在模型实现和训练之前终止。
 
+> **后续执行状态（2026-09-04）：** 用户进一步要求补跑五折后，已在 GPU1 启动不依赖责任血管标签的 W0 Baseline-Rerun（nested Fold0–4 顺序执行）。该操作只补充 baseline reproduction，不解除 Joint-10 的标签门；Joint-10 及其正式配对比较仍保持阻断，直到获得 235 条未解析 OMI 的可靠单一责任血管标签。启动证据见 `baseline_rerun_launch_receipt.json`。
+
 ## 1. Repository Audit
 
 | 模块 | 真实路径 | 关键实现 | 当前真实行为 | 本轮处理 |
