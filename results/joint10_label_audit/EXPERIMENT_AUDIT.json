@@ -1,0 +1,41 @@
+{
+  "audit_skill": "experiment-audit",
+  "verdict": "WARN",
+  "reason_code": "canonical_culprit_ground_truth_unavailable",
+  "summary": "No fabricated metrics or historical/new-result conflation was found. Joint-10 is correctly not run; the remaining limitation is unavailable uniquely adjudicated culprit-vessel ground truth.",
+  "audited_input_hashes": {
+    "docs/ECG_LFM_Nature_Joint10_CV_Comparison_Report.md": "sha256:3d1f94e429086673b0efaac19189b2bdee6c556c040a9e56a6ad4fc6c0036230",
+    "experiments/ecg_lfm/audit_joint10_labels.py": "sha256:2462492e9ba8193b8eb7e09a79f0e49565c953c8c086b5c5b5deefde5b40d115",
+    "results/joint10_label_audit/audit_summary.json": "sha256:01c4a6d95cb529fab4106bdd12b8afdfe2e5374872b033267bc85d384e9f0d53",
+    "results/joint10_label_audit/run_manifest.json": "sha256:8c73cd9c01dd4ebb958dfeaf94b018b2cfaf040f284529ceca8cc47f046f94e9",
+    "results/joint10_label_audit/audit_execution_receipt.json": "sha256:a491db67257f50dab3fa9c764f243000d92a5f39074139b51eb46e8c8f445834"
+  },
+  "trace_path": ".aris/traces/experiment-audit/2026-09-04_run01/",
+  "agent_id": "/root/joint10_integrity_audit",
+  "verdict_id": "/root/joint10_integrity_audit",
+  "executor_model": "codex-gpt-5.6-sol",
+  "executor_family": "openai",
+  "reviewer_model": "gpt-5.6-sol",
+  "reviewer_family": "openai",
+  "reviewer_reasoning": "ultra",
+  "review_independence": "same-family",
+  "acceptance_status": "provisional",
+  "generated_at": "2026-09-04T01:20:00+08:00",
+  "date": "2026-09-04",
+  "auditor": "gpt-5.6-sol-ultra",
+  "overall_verdict": "warn",
+  "integrity_status": "warn",
+  "checks": {
+    "gt_provenance": {"status": "warn", "details": "Real GT and strengthened provenance checks pass; canonical unique culprit GT is unavailable for 235 OMI ECGs."},
+    "score_normalization": {"status": "pass", "details": "No self-normalization or fabricated score transformation found."},
+    "result_existence": {"status": "warn", "details": "Core claims and values match artifacts; operational inventory gaps identified by the reviewer were subsequently documented."},
+    "dead_code": {"status": "warn", "details": "No Joint-10 trainer exists because the pre-training gate failed; any future runner must consume the gate."},
+    "scope": {"status": "warn", "details": "Nature-style is a project-specific taxonomy borrowing the joint-outcome idea, not exact paper-label reproduction."},
+    "eval_type": "real_gt_label_feasibility_audit; joint10_not_run"
+  },
+  "claims": [
+    {"id": "C1", "claim": "Joint-10 is blocked by label audit", "impact": "supported"},
+    {"id": "C2", "claim": "No Joint-10 or Baseline-Rerun metrics were generated", "impact": "supported"},
+    {"id": "C3", "claim": "Joint-10 improves performance", "impact": "unsupported_and_not_claimed"}
+  ]
+}

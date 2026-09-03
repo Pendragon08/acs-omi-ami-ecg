@@ -1,0 +1,47 @@
+{
+  "status": "audited_not_activated",
+  "joint10_class_order": {
+    "0": "OTHER",
+    "1": "UA",
+    "2": "STEMI+nOMI",
+    "3": "NSTEMI+nOMI",
+    "4": "STEMI+OMI+LM_LAD",
+    "5": "STEMI+OMI+LCX",
+    "6": "STEMI+OMI+RCA",
+    "7": "NSTEMI+OMI+LM_LAD",
+    "8": "NSTEMI+OMI+LCX",
+    "9": "NSTEMI+OMI+RCA"
+  },
+  "coronary_groups": {
+    "LM_LAD": [
+      "LM",
+      "PLAD",
+      "MLAD",
+      "DLAD",
+      "DB"
+    ],
+    "LCX": [
+      "PLCX",
+      "MLCX",
+      "DLCX",
+      "OM"
+    ],
+    "RCA": [
+      "PRCA",
+      "MRCA",
+      "DRCA"
+    ]
+  },
+  "acute_evidence": "coronary segment field == 1 only",
+  "cto_evidence": "coronary segment field == 2; never used as acute evidence",
+  "within_group_multisegment": "allowed",
+  "between_group_multilesion": "MULTI_GROUP_UNRESOLVED; never guessed",
+  "no_acute_group": "NO_GROUP; never guessed",
+  "ua_omi_guard": "UA+OMI > 0 invalidates the Joint-10 label space",
+  "other_omi_policy": "preserve raw OMI; candidate maps to OTHER with explicit exception",
+  "sources": {
+    "dataset_dictionary": "https://www.nature.com/articles/s41597-026-07278-0",
+    "nature_method": "https://www.nature.com/articles/s41467-026-73023-1",
+    "official_code": "https://github.com/stefan-gustafsson-work/omi"
+  }
+}

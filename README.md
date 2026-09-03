@@ -7,6 +7,12 @@
 > ACS-only / OMI-only / Joint 对照和外部平台历史结果。当前推荐方案为
 > **ECG-LFM LoRA Joint W0（未加权 CE + 未加权 BCE）**。
 
+> **Joint-10 更新（2026-09-04）：** Nature-style Joint-10 在训练前标签审计中被
+> `BLOCKED_BY_LABEL_AUDIT`：1,151 条 OMI 中有 235 条无法从公开字段唯一恢复
+> LM/LAD、LCX 或 RCA 责任血管。按新执行报告的强制规则未猜标签、未删病例、未改 folds、未启动
+> Joint-10 或 Baseline-Rerun。详见
+> [Joint-10 标签可行性与 NO-GO 报告](docs/ECG_LFM_Nature_Joint10_CV_Comparison_Report.md)。
+
 本仓库保存 ACS/OMI ECG 研究中可公开版本化的代码、配置、聚合实验结果、脱敏训练曲线和中文报告。原始 ECG、患者级表格、逐记录预测、下载的预训练权重和训练 checkpoint 不进入 GitHub。
 
 ## 当前任务

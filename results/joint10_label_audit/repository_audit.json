@@ -1,0 +1,32 @@
+{
+  "audit_date": "2026-09-04",
+  "local_git_commit_before_joint10_audit": "9bc80f21effee887a33c2f2fe9920e4f818c337d",
+  "remote_code_mode": "SFTP mirror; not a Git checkout",
+  "authoritative_baseline": {
+    "config": "configs/ecg_lfm/corrected_joint_lora.yaml",
+    "config_sha256": "a8a5b847f9a4eb21af91ee7103be7c52455d1103d64a2aa17c0f29368177c000",
+    "runner": "experiments/ecg_lfm/run_joint_fold.py",
+    "runner_sha256": "db3099a91670dfbff6c77401cb3700b811098d290565c4b25d9eeae0e4bc0281",
+    "criterion": "third_party/ECG-LFM/fairseq_signals/criterions/acs_joint.py",
+    "criterion_sha256": "b7b9bc02e3ba2119b4593defa95ba233738ca8c3c8c76e9ff862fa17cee539d6",
+    "model": "third_party/ECG-LFM/fairseq_signals/models/classification/ecg_transformer_classifier.py",
+    "model_sha256": "34803fcbdc617c9c6d3f507dd0c1efd8b1bae412f86b9d505452a31f7723752f",
+    "task": "third_party/ECG-LFM/fairseq_signals/tasks/ecg_classification.py",
+    "task_sha256": "b7530fdac2d02714d9fb0298d36dc9d194b3c17c695391f10351d9cf6ff97ab2"
+  },
+  "cross_validation": {
+    "builder": "experiments/ecg_lfm/build_nested_manifests.py",
+    "builder_sha256": "83b35cb6de2316f8e3278d57af750d985d0554cd067cca198d82fda08e593141",
+    "evaluator": "experiments/ecg_lfm/evaluate_nested_fold.py",
+    "evaluator_sha256": "317c5a7dd6b604f0d1f849ab47ae0223821f1084abf00ce490610c46215d5f0d",
+    "protocol": "frozen outer patient-level 5-fold with patient-level inner validation",
+    "seed": 2026,
+    "patient_overlap": 0
+  },
+  "joint10": {
+    "implementation_status": "not_implemented",
+    "training_status": "not_run",
+    "gate_status": "BLOCKED_BY_LABEL_AUDIT",
+    "unresolved_omi_ecg": 235
+  }
+}

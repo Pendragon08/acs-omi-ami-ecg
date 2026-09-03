@@ -1,0 +1,42 @@
+2026-09-04 controlled server verification
+
+Command 1:
+PYTHONPATH=. /data/code/ouyanghao/miniconda3/envs/ecg-lfm/bin/python tests/test_ecg_lfm_joint10_label_audit.py
+Exit code: 0
+Output: 8 tests passed (direct assertion runner)
+Covered: class order, candidate mapping, UA+OMI guard, OTHER+OMI exception,
+CTO exclusion, same-group multisegment merge, multigroup unresolved behavior,
+canonical assignment hash order invariance.
+
+Command 2:
+PYTHONPATH=.:third_party/ECG-LFM /data/code/ouyanghao/miniconda3/envs/ecg-lfm/bin/python tests/test_ecg_lfm_corrected_evaluation.py
+Exit code: 0
+Result:
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.088s
+
+OK
+
+Command 3:
+/data/code/ouyanghao/miniconda3/envs/ecg-lfm/bin/python -m py_compile experiments/ecg_lfm/audit_joint10_labels.py experiments/ecg_lfm/render_joint10_label_audit.py experiments/ecg_lfm/run_joint10_label_audit.py tests/test_ecg_lfm_joint10_label_audit.py
+Exit code: 0
+Files:
+- experiments/ecg_lfm/audit_joint10_labels.py
+- experiments/ecg_lfm/render_joint10_label_audit.py
+- experiments/ecg_lfm/run_joint10_label_audit.py
+- tests/test_ecg_lfm_joint10_label_audit.py
+Result: COMPILE_OK
+
+Command 4:
+PYTHONPATH=. /data/code/ouyanghao/miniconda3/envs/ecg-lfm/bin/python experiments/ecg_lfm/run_joint10_label_audit.py
+Observed audit subprocess exit code: 2
+Audit status: BLOCKED_BY_LABEL_AUDIT
+Gate consistency: true
+Receipt: results/joint10_label_audit/audit_execution_receipt.json
+Interpretation: exit code 2 is the intentional fail-closed label-feasibility gate,
+not a runtime failure. No training was started.
+
+Environment note: pytest is not installed in the controlled ecg-lfm Conda
+environment. The new pure-assertion tests include a direct runner; the existing
+W0 suite uses unittest. No dependency was installed or environment changed.
