@@ -15,6 +15,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ECGClassificationConfig(ECGPretrainingConfig):
+    formulation: str = field(
+        default="factorized_two_head",
+        metadata={
+            "help": "factorized_two_head (ACS CE + OMI BCE) or joint_acs_omi (7-class CE)"
+        },
+    )
     path_dataset: bool = field(
         default=False,
         metadata={

@@ -33,7 +33,10 @@ class ECGTransformerClassificationConfig(ECGTransformerFinetuningConfig):
     adapter_dropout: float = field(default=0.05, metadata={"help": "adapter input dropout"})
     output_semantics: str = field(
         default="joint",
-        metadata={"help": "joint (4-class ACS + OMI), acs (4-class), or omi (binary)"},
+        metadata={
+            "help": "joint (legacy factorized 4-class ACS + OMI), "
+            "joint_acs_omi (7-class categorical), acs (4-class), or omi (binary)"
+        },
     )
 
 @register_model("ecg_transformer_classifier", dataclass=ECGTransformerClassificationConfig)
@@ -41,11 +44,18 @@ class ECGTransformerClassificationModel(ECGTransformerFinetuningModel):
     def __init__(self, cfg, encoder):
         super().__init__(cfg, encoder)
 
-        self.proj = nn.Linear(cfg.encoder_embed_dim, cfg.num_labels)
+        self.output_semantics = str(getattr(cfg, "output_semantics", "joint")).lower()
+        # The historical W0 constructs and Xavier-initializes a five-row head
+        # before it initializes LoRA.  Joint-7 consumes the same RNG sequence
+        # up to LoRA initialization by using a temporary compatibility head;
+        # its real seven-row head is created only after LoRA injection.  This
+        # preserves W0 checkpoint keys while making the adapter initialization
+        # protocol genuinely comparable across formulations.
+        initial_outputs = 5 if self.output_semantics == "joint_acs_omi" else cfg.num_labels
+        self.proj = nn.Linear(cfg.encoder_embed_dim, initial_outputs)
         nn.init.xavier_uniform_(self.proj.weight)
         nn.init.constant_(self.proj.bias, 0.0)
-        self.output_semantics = str(getattr(cfg, "output_semantics", "joint")).lower()
-        expected_outputs = {"joint": 5, "acs": 4, "omi": 1}
+        expected_outputs = {"joint": 5, "joint_acs_omi": 7, "acs": 4, "omi": 1}
         if self.output_semantics not in expected_outputs:
             raise ValueError(f"unsupported output_semantics: {self.output_semantics}")
         if int(cfg.num_labels) != expected_outputs[self.output_semantics]:
@@ -64,7 +74,12 @@ class ECGTransformerClassificationModel(ECGTransformerFinetuningModel):
                 alpha=float(getattr(cfg, "adapter_alpha", 16.0)),
                 dropout=float(getattr(cfg, "adapter_dropout", 0.05)),
             )
-            # Keep the joint classification head fully trainable while every pretrained
+        if self.output_semantics == "joint_acs_omi":
+            self.proj = nn.Linear(cfg.encoder_embed_dim, cfg.num_labels)
+            nn.init.xavier_uniform_(self.proj.weight)
+            nn.init.constant_(self.proj.bias, 0.0)
+        if method != "none":
+            # Keep the classification head fully trainable while every pretrained
             # encoder/convolution parameter remains frozen.
             enable_head(self)
 
@@ -83,6 +98,8 @@ class ECGTransformerClassificationModel(ECGTransformerFinetuningModel):
                     ),
                     dim=-1,
                 )
+            elif semantics == "joint_acs_omi":
+                logits = torch.softmax(logits, dim=-1)
             elif semantics == "acs":
                 logits = torch.softmax(logits, dim=-1)
             elif semantics == "omi":
