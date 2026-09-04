@@ -1,5 +1,7 @@
 # ACS 四状态与 OMI 联合 ECG 分类
 
+> **Joint-6 当前执行（2026-09-04）：** 因 Joint-10 缺少 235 条可可靠恢复的责任血管标签，当前方案已按用户决定回退到数据真实支持的 observed Joint-6：`OTHER / STEMI+nOMI / STEMI+OMI / NSTEMI+nOMI / NSTEMI+OMI / UA`。Joint-6 使用单一 6-way Softmax + CrossEntropyLoss；`OTHER+OMI` singleton 不删除且原始 OMI 标签保留用于 OMI 评价，`UA+OMI=0` 为硬审计条件。完整 patient-level nested 5-fold 正在比较 ECG-LFM LoRA、ECG-LFM 部分参数微调、InceptionTime、ResNet1D_Wang、LSTM、Transformer1D 与 ViT。结果完成后统一写入 `docs/ECG_LFM_Joint6_CV_Comparison_Report.md`。
+
 > **最新版实验总报告（2026-09-01）：**
 > [docs/reports/实验结果总报告_最终.md](docs/reports/实验结果总报告_最终.md)
 >

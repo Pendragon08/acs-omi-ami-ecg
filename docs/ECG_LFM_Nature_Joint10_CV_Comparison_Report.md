@@ -1,5 +1,7 @@
 # ECG-LFM Nature-style Joint-10 交叉验证比较报告
 
+> **方案变更（2026-09-04）：** 本报告保留为 Joint-10 标签可行性审计记录。用户随后决定不等待责任血管标签补充，改回当前标签完整支持的 observed Joint-6，并要求重跑完整 patient-level nested 5-fold 以及 ECG-LFM LoRA、部分参数微调和传统模型对比。因此，本报告中“Joint-6 已撤销”等表述只描述当时审计节点，不代表当前执行状态；当前进度与最终指标以 `docs/ECG_LFM_Joint6_CV_Comparison_Report.md` 为准。Joint-10 仍保持 `BLOCKED_BY_LABEL_AUDIT`。
+
 **审计日期：** 2026-09-04
 
 **执行状态：** `BLOCKED_BY_LABEL_AUDIT`
