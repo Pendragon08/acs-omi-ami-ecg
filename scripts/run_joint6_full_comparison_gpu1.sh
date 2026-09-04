@@ -49,8 +49,10 @@ echo "[$(date -Is)] smoke gate passed; full comparison starts"
 
 for method in lora partial; do
   for fold in 0 1 2 3 4; do
-    metric="$ROOT/results/joint6_cv/evaluation/$method/fold$fold/metrics.json"
-    if [[ -f "$metric" ]]; then
+    result_dir="$ROOT/results/joint6_cv/evaluation/$method/fold$fold"
+    if "$ENV_DIR/bin/python" experiments/ecg_lfm/summarize_joint6_cv.py \
+      --validate_dir "$result_dir" --validate_kind ecg_lfm \
+      --expected_method "$method" --expected_fold "$fold" >/dev/null 2>&1; then
       echo "[$(date -Is)] skip completed ECG-LFM $method fold$fold"
       continue
     fi
@@ -73,8 +75,10 @@ done
 
 for model in InceptionTime ResNet1D_Wang LSTM Transformer1D ViT; do
   for fold in 0 1 2 3 4; do
-    metric="$ROOT/results/joint6_cv/traditional/$model/fold$fold/metrics.json"
-    if [[ -f "$metric" ]]; then
+    result_dir="$ROOT/results/joint6_cv/traditional/$model/fold$fold"
+    if "$ENV_DIR/bin/python" experiments/ecg_lfm/summarize_joint6_cv.py \
+      --validate_dir "$result_dir" --validate_kind traditional \
+      --expected_method "$model" --expected_fold "$fold" >/dev/null 2>&1; then
       echo "[$(date -Is)] skip completed $model fold$fold"
       continue
     fi
@@ -90,6 +94,7 @@ done
 
 "$ENV_DIR/bin/python" experiments/ecg_lfm/summarize_joint6_cv.py \
   --root results/joint6_cv \
-  --report docs/ECG_LFM_Joint6_CV_Comparison_Report.md
+  --report docs/ECG_LFM_Joint6_CV_Comparison_Report.md \
+  --require_complete
 touch "$ROOT/results/joint6_cv/FULL_COMPARISON_COMPLETE"
 echo "[$(date -Is)] Joint-6 full comparison complete"

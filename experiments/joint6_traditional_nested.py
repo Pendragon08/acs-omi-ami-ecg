@@ -21,8 +21,14 @@ from experiments.acs_joint_task import (
     save_reliability_figures,
     save_roc_pr_curves,
     select_omi_threshold,
+    sha256,
 )
-from experiments.ecg_lfm.evaluate_joint6_fold import metric_bundle, save_joint6_confusion
+from experiments.ecg_lfm.evaluate_joint6_fold import (
+    metric_bundle,
+    save_joint6_confusion,
+    write_completion_receipt,
+    write_metric_artifacts,
+)
 from experiments.ecg_lfm.joint6 import JOINT6_CLASSES, encode_source_labels, marginalize_joint6_probabilities
 from experiments.ecg_lfm.evaluate_joint import _read_csv
 from nets.traditional import InceptionTime, LSTM, ResNet1D_Wang, ViT
@@ -134,11 +140,16 @@ def assignment_indices(
     patient_ids: np.ndarray,
     acs: np.ndarray,
     omi: np.ndarray,
+    expected_fold: int,
 ) -> dict[str, np.ndarray]:
     rows = _read_csv(assignment_path)
     output: dict[str, list[int]] = {"inner_train": [], "inner_validation": [], "outer_test": []}
     seen = set()
     for row in rows:
+        if row["subset"] not in output:
+            raise ValueError(f"unknown assignment subset: {row['subset']}")
+        if int(row["fold"]) != expected_fold:
+            raise ValueError(f"assignment fold mismatch: expected {expected_fold}, got {row['fold']}")
         record_id = str(row["record_id"]).zfill(5)
         index = record_to_index.get(record_id)
         if index is None:
@@ -183,6 +194,8 @@ def prediction_rows(
             "subset": subset,
             "raw_acs_true": int(acs[index]),
             "raw_omi_true": int(omi[index]),
+            "joint_true": int(joint[index]),
+            "joint_pred": int(q[position].argmax()),
             "joint6_true": int(joint[index]),
             "joint6_pred": int(q[position].argmax()),
             "joint_label_exception": bool(exception[index]),
@@ -224,6 +237,10 @@ def main() -> None:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--max_train_batches", type=int, default=0, help="smoke-only cap; 0 uses every batch")
     args = parser.parse_args()
+    runtime_evaluator_sha = sha256(Path(__import__(
+        "experiments.ecg_lfm.evaluate_joint6_fold", fromlist=["__file__"]
+    ).__file__))
+    runtime_runner_sha = sha256(Path(__file__))
 
     visible = __import__("os").environ.get("CUDA_VISIBLE_DEVICES", "").strip()
     if not visible or "," in visible or " " in visible:
@@ -246,7 +263,9 @@ def main() -> None:
         raise ValueError("duplicate P2 record IDs")
     manifest_root = ROOT / args.manifest_root
     fold_dir = manifest_root / f"fold{args.fold}"
-    subsets = assignment_indices(fold_dir / "patient_assignments.csv", record_to_index, patients, acs, omi)
+    subsets = assignment_indices(
+        fold_dir / "patient_assignments.csv", record_to_index, patients, acs, omi, args.fold
+    )
 
     scaler = fit_robust_scaler(x_raw[subsets["inner_train"]])
     arrays = {
@@ -335,11 +354,12 @@ def main() -> None:
         thresholds[method], details[method] = select_omi_threshold(y_inner_omi, p_inner_omi, method)
     metrics = {
         "task": "observed six-class ACS subtype x OMI joint softmax",
-        "protocol": "patient-level nested five-fold",
+        "protocol": "patient-disjoint nested five-fold; record-level evaluation",
         "model": args.model,
         "fold": args.fold,
         "seed": args.seed + args.fold,
         "checkpoint_criterion": "minimum inner-validation Joint-6 CE",
+        "threshold_source": "inner-validation only; frozen for outer-test",
         "thresholds": thresholds,
         "threshold_details_inner_validation": details,
         "model_stats": {
@@ -355,9 +375,6 @@ def main() -> None:
         "inner_validation": metric_bundle(inner_rows, thresholds),
         "outer_test": metric_bundle(outer_rows, thresholds),
     }
-    (output / "metrics.json").write_text(
-        json.dumps(metrics, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8"
-    )
     bundle = metrics["outer_test"]
     youden = bundle["omi"]["youden_j"]
     save_confusion_figures(
@@ -376,8 +393,24 @@ def main() -> None:
         "patient_overlap": 0,
         "outer_test_used_for_selection": False,
         "external_test_accessed": False,
+        "evaluator_sha256": runtime_evaluator_sha,
+        "runner_sha256": runtime_runner_sha,
     }
+    write_metric_artifacts(output, metrics)
+    (output / "metrics.json").write_text(
+        json.dumps(metrics, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8"
+    )
+    # Provenance is the validated completion marker and must be written last.
     (output / "provenance.json").write_text(json.dumps(provenance, indent=2), encoding="utf-8")
+    write_completion_receipt(output, {
+        "method": args.model,
+        "fold": args.fold,
+        "evaluator_sha256": runtime_evaluator_sha,
+        "runner_sha256": runtime_runner_sha,
+        "checkpoint_sha256": sha256(output / "best_model.pt"),
+        "assignment_sha256": sha256(fold_dir / "patient_assignments.csv"),
+        "provenance_sha256": sha256(output / "provenance.json"),
+    })
     print(json.dumps({"status": "pass", "metrics": str(output / "metrics.json")}), flush=True)
 
 

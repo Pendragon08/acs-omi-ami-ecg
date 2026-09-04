@@ -10,6 +10,7 @@ import torch
 from torch import nn
 
 from experiments.ecg_lfm.joint6 import encode_source_labels, marginalize_joint6_probabilities
+from experiments.ecg_lfm.evaluate_joint6_fold import build_rows, joint6_metrics
 from fairseq_signals.criterions.acs_joint6 import ACSJoint6Criterion
 from fairseq_signals.models.classification.ecg_transformer_classifier import ECGTransformerClassificationModel
 from fairseq_signals.modules.parameter_efficient import LoRALinear
@@ -121,6 +122,57 @@ class Joint6Tests(unittest.TestCase):
             restored.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
             for key, value in restored.state_dict().items():
                 self.assertTrue(torch.equal(value, expected[key]), key)
+
+    def test_joint6_complete_per_class_metrics(self):
+        y = np.arange(6, dtype=np.int64)
+        q = np.eye(6, dtype=np.float64) * .9 + np.ones((6, 6), dtype=np.float64) * .02
+        q /= q.sum(axis=1, keepdims=True)
+        result = joint6_metrics(y, q)
+        self.assertEqual(set(result["per_class"]), {
+            "OTHER", "STEMI+nOMI", "STEMI+OMI", "NSTEMI+nOMI", "NSTEMI+OMI", "UA",
+        })
+        for values in result["per_class"].values():
+            self.assertIn("precision", values)
+            self.assertIn("recall", values)
+            self.assertEqual(values["support"], 1)
+
+    def test_absent_joint6_class_is_na_not_zero(self):
+        y = np.asarray([0, 1, 2, 3, 4], dtype=np.int64)
+        q = np.full((5, 6), .01, dtype=np.float64)
+        q[np.arange(5), y] = .95
+        q /= q.sum(axis=1, keepdims=True)
+        result = joint6_metrics(y, q)
+        ua = result["per_class"]["UA"]
+        self.assertEqual(ua["support"], 0)
+        for name in ("auroc", "auprc", "f1", "precision", "ppv", "sensitivity", "recall", "specificity"):
+            self.assertIsNone(ua[name], name)
+        self.assertIsNone(result["macro_auprc_ovr"])
+        self.assertIsNotNone(result["supported_macro_auprc_ovr"])
+
+    def test_prediction_export_has_required_aliases(self):
+        records = [{"master_idx": 0, "record_id": "00001", "patient_id": "p1"}]
+        assignments = [{
+            "idx": "0", "record_id": "00001", "patient_id": "p1", "fold": "0",
+            "subset": "outer_test", "acs": "OTHER", "omi": "0",
+        }]
+        rows = build_rows(records, np.zeros((1, 6)), assignments, np.asarray([[0, 0, 0, 0]]))
+        self.assertEqual(rows[0]["joint_true"], rows[0]["joint6_true"])
+        self.assertEqual(rows[0]["joint_pred"], rows[0]["joint6_pred"])
+        for field in (
+            "patient_id", "record_id", "fold", "p_other", "p_stemi_nomi", "p_stemi_omi",
+            "p_nstemi_nomi", "p_nstemi_omi", "p_ua", "p_stemi", "p_nstemi", "p_omi",
+            "raw_acs_true", "raw_omi_true",
+        ):
+            self.assertIn(field, rows[0])
+
+    def test_prediction_join_rejects_master_index_mismatch(self):
+        records = [{"master_idx": 1, "record_id": "00001", "patient_id": "p1"}]
+        assignments = [{
+            "idx": "0", "record_id": "00001", "patient_id": "p1", "fold": "0",
+            "subset": "outer_test", "acs": "OTHER", "omi": "0",
+        }]
+        with self.assertRaisesRegex(ValueError, "master index mismatch"):
+            build_rows(records, np.zeros((1, 6)), assignments, np.asarray([[0, 0, 0, 0]]))
 
 
 if __name__ == "__main__":
