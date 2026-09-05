@@ -189,7 +189,7 @@ def main() -> None:
         )
     metrics = {
         "task": "ACS categorical OTHER/STEMI/NSTEMI/UA + independent OMI binary",
-        "protocol": "patient-level nested validation",
+        "protocol": "patient-disjoint nested validation; record-level metrics",
         "run_name": args.run_name,
         "outer_fold": args.fold,
         "threshold_source": "inner-validation only; frozen before outer-test evaluation",

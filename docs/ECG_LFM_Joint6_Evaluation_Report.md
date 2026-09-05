@@ -245,7 +245,7 @@ Baseline 来源为 `results/revalidated/lora/metrics.json`，其协议标记为 
 7. **NSTEMI vs UA 是否改善**：否，描述性 Δ=-0.0108。
 8. **OMI among NSTE-ACS 是否改善**：否，描述性 Δ=-0.0290。
 9. **改善是否跨 Fold 稳定**：现有 factorized baseline 缺少同协议逐折 nested 结果，不能合法计算逐折配对改善率；Joint-6 自身的五折波动已完整列出。
-10. **是否值得作为最终主模型**：当前不建议仅凭现有结果把 Joint-6 定为最终主模型：其 ACS 排序性能略升，但 OMI/NSTE 子组未显示一致优势；还应等待全部对比方法完成，并用同一 nested 协议重算 factorized baseline 后再冻结主模型。
+10. **是否值得作为最终主模型**：七种 Joint-6 对比方法已全部完成五折，ECG-LFM LoRA 是当前 Joint-6 内部 nested-CV 的最佳工程模型；但 Joint-6 相对 factorized two-head 的优势尚未在同一 nested 协议下验证，且没有当前任务的独立外部测试，因此不能进一步声称 Joint-6 是已完成外部确认的最终任务形式。
 
 ## 9. 可追溯输出
 

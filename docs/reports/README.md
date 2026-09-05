@@ -1,35 +1,33 @@
 # 实验报告索引
 
-所有当前报告优先使用中文。旧独立 sigmoid 任务的报告已从当前分支删除。
+**更新时间：** 2026-09-05
 
-## 当前主报告
+## 当前总报告
 
-- [实验结果总报告_最终.md](实验结果总报告_最终.md)：2026-09-01 更新的正式总报告；包含
-  E4/传统模型/ECG-LFM 内部指标对比、修正五折重评估、nested Fold0 W0–W6
-  完整指标、W0 校准、单任务/联合学习、外部平台与训练成本；
-- [../ECG_LFM_adaptive_weighting_experiment_report.md](../ECG_LFM_adaptive_weighting_experiment_report.md)：
-  自适应类别重加权专项报告与 RDR NO-GO 依据；
-- [../ECG_LFM_corrected_evaluation_report.md](../ECG_LFM_corrected_evaluation_report.md)：
-  Baseline/LoRA/DoRA 15 个旧 checkpoint 的 record-ID 修正重评估；
-- [实验完整性审计_20260831.md](实验完整性审计_20260831.md)：代码与结果完整性复核、
-  清理范围和剩余限制；
-- [../plans/CORRECTED_TASK_FORMULATION.md](../plans/CORRECTED_TASK_FORMULATION.md)：
-  当前唯一任务规范。
+- [实验结果总报告_最终.md](实验结果总报告_最终.md)：当前任务、35/35 folds Joint-6 对比、逐类指标、训练成本、历史消融、MOO/RL 结论、外部测试边界与下一步。
+- [../ECG_LFM_Joint6_CV_Comparison_Report.md](../ECG_LFM_Joint6_CV_Comparison_Report.md)：Joint-6 七种模型完整五折报告。
+- [../ECG_LFM_Joint6_Evaluation_Report.md](../ECG_LFM_Joint6_Evaluation_Report.md)：Joint-6 evaluator、概率恢复与逐类评价说明。
+- [实验完整性审计_20260905.md](实验完整性审计_20260905.md)：35/35 folds、结果文件、声明边界与 GitHub 安全归档复核。
 
-## 有效历史消融
+## 专项实验报告
 
-`loss_feature_ablation/` 保存 OMI/AMI 二分类阶段完成的损失和输入特征消融，
-包括 CB-Focal、年龄、性别、中位数 ECG 等实验。它们使用不同端点，只能作为
-历史方法学记录，不能替代当前 ACS 亚型 + OMI 联合结果。
+- [../ECG_LFM_corrected_evaluation_report.md](../ECG_LFM_corrected_evaluation_report.md)：旧 factorized Baseline/LoRA/DoRA 15 个 checkpoint 的 record-ID 修正重评估；
+- [../ECG_LFM_adaptive_weighting_experiment_report.md](../ECG_LFM_adaptive_weighting_experiment_report.md)：W0–W6 静态权重与 RDR；
+- [../ECG_LFM_multi_objective_optimization_report.md](../ECG_LFM_multi_objective_optimization_report.md)：多目标优化 Stage-A；
+- [../ECG_LFM_direct_RL_post_training_report.md](../ECG_LFM_direct_RL_post_training_report.md)：Direct RL；
+- [../ECG_LFM_R1_v2_stabilization_report.md](../ECG_LFM_R1_v2_stabilization_report.md)：R1-v2 稳定化；
+- [../ECG_LFM_CrossTask_RL_v2_report.md](../ECG_LFM_CrossTask_RL_v2_report.md)：Cross-task RL v2；
+- [../ECG_LFM_joint7_label_audit_no_go_report.md](../ECG_LFM_joint7_label_audit_no_go_report.md)：Joint-7 标签硬门控；
+- [../ECG_LFM_Nature_Joint10_CV_Comparison_Report.md](../ECG_LFM_Nature_Joint10_CV_Comparison_Report.md)：Joint-10 标签硬门控；
+- [loss_feature_ablation/](loss_feature_ablation/)：旧 OMI/AMI 二分类损失和特征消融，仅作历史方法记录。
 
-## 结果证据
+## 证据目录
 
-- ECG-LFM：`results/corrected_ecg_lfm_joint_bs64_v2/`；
-- E4：`results/corrected_joint_acs_omi_e4/`；
-- 传统模型：`results/corrected_joint_model_comparison/`；
-- nested W0–W6：`results/adaptive_weighting/`、`results/adaptive_weighting_evaluation/`；
-- 单任务与联合对照：`results/single_task_vs_joint_evaluation/`；
-- 脱敏日志索引：`docs/logs/EXPERIMENT_LOG_INDEX.md`。
+- 当前 Joint-6：`results/joint6_cv/`；
+- 修正旧双 Head：`results/revalidated/`；
+- W0–W6：`results/adaptive_weighting/`、`results/adaptive_weighting_evaluation/`；
+- 单任务对照：`results/single_task_vs_joint_evaluation/`；
+- MOO/RL：`results/ecg_lfm_moo/`、`results/ecg_lfm_direct_rl/`、`results/ecg_lfm_rl_v2/`、`results/ecg_lfm_cross_task_rl_v2/`；
+- 脱敏日志说明：[../logs/EXPERIMENT_LOG_INDEX.md](../logs/EXPERIMENT_LOG_INDEX.md)。
 
-外部平台没有返回概率或联合四状态混淆矩阵，因此外部 AUROC/AUPRC 和严格的
-ACS 四状态总指标目前不可计算。本轮 nested Fold0 结果尚未重新提交该平台。
+当前 Joint-6 尚无独立外部测试。旧 external/platform 结果使用不同端点或模型选择流程，只能作为历史工程证据。

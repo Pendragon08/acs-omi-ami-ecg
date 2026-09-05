@@ -1,43 +1,58 @@
 {
-  "audit_date": "2026-08-31",
+  "audit_date": "2026-09-05",
   "overall_status": "WARN",
+  "public_archive_status": "PASS",
   "review_independence": "same-family",
   "acceptance_status": "provisional",
-  "post_cleanup": true,
+  "current_task": "Joint-6 six-class softmax with recovered ACS and OMI endpoints",
+  "evaluation_scope": "internal patient-disjoint nested 5-fold; record-level metrics",
   "checks": {
-    "ground_truth_provenance": {
-      "status": "WARN",
-      "evaluation_type": "real_gt",
-      "note": "哈希、患者隔离和 OOF 覆盖检查通过；仍需 record-ID 标签 join。"
-    },
-    "score_normalization": {
+    "completion": {
       "status": "PASS",
-      "note": "使用原始 softmax/sigmoid 连续概率，未发现自归一化。"
+      "completed_folds": 35,
+      "expected_folds": 35,
+      "missing": [],
+      "rejected_results": {}
     },
-    "selection_independence": {
-      "status": "WARN",
-      "note": "checkpoint 与 OMI 阈值选择非嵌套，外部平台已参与选型。"
-    },
-    "result_existence": {
+    "ground_truth_and_split_provenance": {
       "status": "PASS",
-      "json_files_checked": 66
+      "records": 17960,
+      "patients": 17018,
+      "patient_overlap": 0,
+      "note": "Joint-6 evaluator uses explicit record_id joins and fail-closed duplicate/missing/coverage checks."
     },
-    "dead_or_invalid_task_code": {
+    "probability_and_threshold_semantics": {
       "status": "PASS",
-      "note": "旧 STEMI/NSTEMI/UA 独立 sigmoid 结果族已从当前分支删除。"
+      "note": "ACS is marginalized and argmaxed; OMI=q2+q4; Youden threshold is selected on inner-validation and frozen on outer-test."
     },
-    "scope_and_claims": {
+    "result_parse_and_media": {
+      "status": "PASS",
+      "new_json_files_parsed": 35,
+      "new_png_files_checked": 50,
+      "training_curve_csv_files": 10
+    },
+    "public_archive_safety": {
+      "status": "PASS",
+      "note": "No checkpoint, raw ECG, patient table, record-level prediction, SSH credential or raw fairseq log is staged."
+    },
+    "claims_and_external_validity": {
       "status": "WARN",
       "training_seeds": [2026],
-      "note": "当前结论限于探索性工程选择，无统计显著性或独立确认性外部验证。"
+      "note": "Joint-6 has no current independent external test, no multi-seed confirmation, and no same-protocol factorized baseline comparison. Fold t intervals are not patient-level bootstrap intervals."
+    },
+    "known_modeling_exception": {
+      "status": "WARN",
+      "note": "The singleton OTHER+OMI record is mapped to OTHER for Joint-6 training; raw OMI remains in primary OMI evaluation, but p_omi=q2+q4 cannot explicitly represent OTHER+OMI."
+    },
+    "fine_tuning_provenance": {
+      "status": "WARN",
+      "note": "The run labeled Partial FT reports 100% trainable parameters and must not be described as parameter-efficient partial tuning."
     }
   },
   "key_result_sha256": {
-    "ecg_lfm_baseline": "6106690BA200650BDAB5FF0336BF0262949AAAF4003F24287DB675E609811388",
-    "ecg_lfm_lora": "05B7275D43381A6144517A54D6DC35752D00D82FC1D1FEB0954E7D6CA2354BFB",
-    "ecg_lfm_dora": "1CD555E831E386072DCDC9E69252A005A701A6FF6C96E258039E45CBC5AD770B",
-    "e4": "BF13A5FE7C543F3DFA8E35CC4122B9D548E89293AE60F7D442016BBCDC94A697",
-    "traditional_models": "04169BD8B69F62F14D9E0C435C7DBD22EF13F36D31C5D635687B988F83200EE3",
-    "final_chinese_report": "05F1EDD3367563B138018C2D64AA56423BAE5BF1700FC613102C21507C53D202"
+    "completion_status": "E4FC3006C808B5F043F9A399C8F4985CC7DFF0568E977616FCB1C9E72BBC5CB2",
+    "summary_metrics": "52C3C43D06E65125B5AF0EE82D7649B0786CFCC4DB1685C58E997C5464BF2A8D",
+    "per_class_summary": "FFFAC2BDF56D1648F10E0387CF2B0FC550BE47D570271A7FEB62D39C7766B2BB",
+    "training_cost": "A4C9EC397468DC77462B27BA53E0D856F1E189F92D1ECF622F485E92081CDA3C"
   }
 }
