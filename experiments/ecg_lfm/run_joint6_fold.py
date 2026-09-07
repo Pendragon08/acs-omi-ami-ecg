@@ -42,6 +42,8 @@ def main() -> None:
     parser.add_argument("--output_root", default="results/joint6_cv/ecg_lfm")
     parser.add_argument("--audit_output", default="results/joint6_cv/label_audit")
     parser.add_argument("--dry_run", action="store_true")
+    parser.add_argument("--reuse_label_audit", action="store_true", help="Read an existing passed audit; never rewrite shared labels")
+    parser.add_argument("--profile_training", action="store_true", help="Record train/validation timing and allocator peaks without changing updates")
     parser.add_argument("overrides", nargs="*")
     args = parser.parse_args()
 
@@ -72,9 +74,10 @@ def main() -> None:
         "--manifest_root", args.manifest_root,
         "--output", args.audit_output,
     ]
-    process = subprocess.run(audit_command, cwd=root)
-    if process.returncode:
-        raise RuntimeError(f"Joint-6 label audit failed with code {process.returncode}")
+    if not args.reuse_label_audit:
+        process = subprocess.run(audit_command, cwd=root)
+        if process.returncode:
+            raise RuntimeError(f"Joint-6 label audit failed with code {process.returncode}")
     audit_path = audit_dir / "audit_summary.json"
     audit = json.loads(audit_path.read_text(encoding="utf-8"))
     if audit.get("status") != "pass" or audit.get("other_omi_exception_count") != 1 or audit.get("ua_omi_count") != 0:
@@ -93,8 +96,11 @@ def main() -> None:
     labels = np.load(label_file, mmap_mode="r")[train_idx]
     counts = labels.sum(axis=0).astype(int).tolist()
 
+    entrypoint = ["fairseq-hydra-train"]
+    if args.profile_training:
+        entrypoint = [os.sys.executable, "-m", "experiments.ecg_lfm.profiled_hydra_train"]
     command = [
-        "fairseq-hydra-train",
+        *entrypoint,
         f"task.data={manifest_dir}",
         f"task.label_file={label_file}",
         f"model.model_path={pretrained}",
@@ -141,13 +147,18 @@ def main() -> None:
             "then independently Xavier-initialize the six-row head"
         ),
         "dry_run": bool(args.dry_run),
+        "reuse_label_audit": bool(args.reuse_label_audit),
+        "profile_training": bool(args.profile_training),
     }
     provenance_path = out / "launch_provenance.json"
     provenance_path.write_text(json.dumps(provenance, indent=2, ensure_ascii=False), encoding="utf-8")
     if args.dry_run:
         print(json.dumps({"status": "dry_run", "command": command}, ensure_ascii=False))
         return
-    process = subprocess.run(command, cwd=official)
+    environment = os.environ.copy()
+    if args.profile_training:
+        environment["JOINT6_TELEMETRY_PATH"] = str(out / "training_telemetry.json")
+    process = subprocess.run(command, cwd=official, env=environment)
     provenance.update({
         "finished_at": datetime.now(timezone.utc).isoformat(),
         "returncode": process.returncode,

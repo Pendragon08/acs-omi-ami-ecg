@@ -1,15 +1,17 @@
 # 聚合实验产物
 
-**更新时间：** 2026-09-05
+_更新时间：2026-09-07 · 只归档安全聚合结果_
+
+---
 
 本目录只保存可公开复核的聚合结果、脱敏逐 epoch 曲线、可视化图和 provenance 摘要。原始 ECG、患者级表格、checkpoint、逐记录预测、外部提交文件和原始服务器日志不进入 GitHub。
 
-## 当前主结果：Joint-6
+## 📊 当前主结果：Joint-6
 
 `joint6_cv/` 已完成 7 个模型的 patient-level nested 5-fold（35/35 folds）：
 
 - ECG-LFM LoRA；
-- ECG-LFM Partial FT（运行 provenance 实际为 100% trainable）；
+- ECG-LFM Partial FT（修正后有效参与更新参数占 99.936%，不能仅凭 `requires_grad=100%` 称为全参微调）；
 - InceptionTime；
 - ResNet1D_Wang；
 - LSTM；
@@ -23,9 +25,15 @@
 - `summary/`：fold-wise、mean/std、pooled OOF 聚合结果、逐类指标和训练成本；
 - `traditional/`：传统模型训练过程聚合产物。
 
+10 个 ECG-LFM 折的曲线和有效参数统计于 2026-09-07 修正；旧指标/预测不变，旧曲线仅保存在 `legacy_reporting_v1/` 供审计。入口：[Joint-6 目录说明](joint6_cv/README.md)。
+
 当前最佳 ECG-LFM LoRA：Joint-6 Macro AUPRC 0.3843 ± 0.0056、ACS Macro AUPRC 0.5445 ± 0.0067、OMI AUPRC 0.4299 ± 0.0258。
 
-## 其他有效实验目录
+## 🔄 在研优化
+
+[joint6_optimization_20260907/](joint6_optimization_20260907/README.md) 保存当前分阶段优化的发布快照。报告修复已完成；两个新 LR 的 Fold0 候选在本次核验时仍处于训练。基线 `inner_metrics.json` 仅是 inner-validation 筛选结果，不可与上述五折 outer 指标混用。
+
+## 📚 历史实验目录
 
 - `revalidated/`：旧 factorized Baseline/LoRA/DoRA 的修正 pooled OOF；
 - `nested_validation/`：patient-level nested split 的安全聚合 provenance；

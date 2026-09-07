@@ -48,6 +48,20 @@ def result_dir(root: Path, kind: str, key: str, fold: int) -> Path:
     return root / "traditional" / key / f"fold{fold}"
 
 
+def compatible_reporting_evaluator(recorded_hash: str | None, current_hash: str) -> bool:
+    if recorded_hash == current_hash:
+        return True
+    registry = ROOT / "configs/ecg_lfm/joint6_reporting_compatibility.json"
+    if not registry.exists():
+        return False
+    entry = json.loads(registry.read_text(encoding="utf-8"))
+    if (recorded_hash != entry.get("historical_evaluator_sha256") or
+            current_hash != entry.get("current_evaluator_sha256")):
+        return False
+    sources = entry.get("required_current_sources", {})
+    return bool(sources) and all((ROOT / p).exists() and sha256(ROOT / p) == h for p, h in sources.items())
+
+
 def validated_provenance(
     directory: Path,
     kind: str,
@@ -61,7 +75,7 @@ def validated_provenance(
     if payload.get("status") != "pass":
         return False, "provenance status is not pass"
     expected_hash = sha256(ROOT / "experiments/ecg_lfm/evaluate_joint6_fold.py")
-    if payload.get("evaluator_sha256") != expected_hash:
+    if not compatible_reporting_evaluator(payload.get("evaluator_sha256"), expected_hash):
         return False, "evaluator hash mismatch"
     if kind == "ecg_lfm":
         if payload.get("missing_predictions") != 0 or payload.get("duplicate_predictions") != 0:
@@ -72,7 +86,7 @@ def validated_provenance(
     if not receipt_path.exists():
         return False, "missing hash-bound completion receipt"
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-    if receipt.get("status") != "pass" or receipt.get("evaluator_sha256") != expected_hash:
+    if receipt.get("status") != "pass" or receipt.get("evaluator_sha256") != payload.get("evaluator_sha256"):
         return False, "invalid completion receipt"
     if expected_method is not None and str(receipt.get("method")) != expected_method:
         return False, "receipt method mismatch"
@@ -380,6 +394,12 @@ def main() -> None:
                         "support": support,
                     })
             stats = metrics.get("model_stats", {})
+            corrections = directory / "reporting_corrections.json"
+            if corrections.exists():
+                correction = json.loads(corrections.read_text(encoding="utf-8"))
+                if correction["source_metrics_sha256"] != sha256(metrics_path):
+                    raise ValueError(f"stale reporting correction: {directory}")
+                stats = {**stats, **correction["model_stats"]}
             training_seconds = stats.get("training_seconds")
             peak_memory = stats.get("peak_gpu_memory_mib")
             if kind == "ecg_lfm":
@@ -393,6 +413,11 @@ def main() -> None:
                 "peak_gpu_memory_mib": peak_memory,
                 "training_seconds": training_seconds,
                 "best_epoch": stats.get("best_epoch"),
+                "requires_grad_parameters": stats.get("requires_grad_parameters", stats.get("trainable_parameters")),
+                "effective_trainable_parameters_at_checkpoint": stats.get("effective_trainable_parameters_at_checkpoint"),
+                "train_compute_seconds": stats.get("train_compute_seconds"),
+                "memory_measurement": "nvidia_smi_whole_board_sampled_30s" if kind == "ecg_lfm" else "torch_max_memory_allocated",
+                "time_measurement": "launcher_wall_including_setup" if kind == "ecg_lfm" else "training_loop_plus_evaluation_and_save",
             })
         completion[method] = present_folds
         if not metrics_by_fold:
@@ -422,6 +447,9 @@ def main() -> None:
                 aggregate[f"{metric}_{suffix}"] = value
         class_summary_rows.append(aggregate)
 
+    missing = [f"{method}/fold{fold}" for method, folds in completion.items() for fold in range(5) if fold not in folds]
+    if args.require_complete and (missing or rejected_results):
+        raise RuntimeError(f"incomplete or invalid provenance; existing summaries preserved: {rejected_results or missing}")
     write_csv(output / "fold_metrics.csv", fold_rows)
     write_csv(output / "summary_metrics.csv", summary_rows)
     write_csv(output / "per_class_metrics.csv", per_class_rows)
@@ -546,9 +574,9 @@ def main() -> None:
     }
     recommendation = (
         "当前不建议仅凭现有结果把 Joint-6 定为最终主模型：其 ACS 排序性能略升，但 OMI/NSTE 子组未显示一致优势；"
-        "还应等待全部对比方法完成，并用同一 nested 协议重算 factorized baseline 后再冻结主模型。"
+        "应以同一 nested 协议重算 factorized baseline 后再冻结主模型；历史 factorized 指标不可作严格优劣判定。"
         if lora_pooled and deltas.get("omi_auprc", 0.0) <= 0 else
-        "Joint-6 可作为候选主模型，但仍需等待全部对比方法与严格同协议 baseline 后确认。"
+        "Joint-6 可作为候选主模型，但仍需严格同协议 baseline 和多 seed 验证后确认。"
     )
 
     report = f"""# ECG-LFM ACS–OMI Joint-6 评估报告
@@ -666,6 +694,9 @@ Baseline 来源为 `{args.baseline}`，其协议标记为 `{baseline_protocol}`�
 - 当前结果采用患者互斥的 nested CV 划分，但 `_aggregate` 后按 ECG record 一票计算 outer-test/pooled OOF 指标；它不是 patient-level 聚合性能，也不是 external test。
 - baseline 对比协议并不完全一致，因此未计算配对差异或显著性，也不把描述性差异写成稳定提升。
 - 传统模型使用项目既有 P2 输入，ECG-LFM 使用原生预处理；完整对比反映工程方案差异，不是单一网络结构消融。
+- 2026-09-07 reporting 修复：每折曲线只保留本折去重的 epoch-end 记录，并读取 train_lr；旧曲线在各折 legacy_reporting_v1 下保留，预测和 metrics.json 不变。
+- Partial FT 的 requires_grad 数量不等于实际更新数量：feature_grad_mult=0 使卷积前端在 no_grad 下执行，成本表以 reporting_corrections.json 修正有效参数量。
+- 历史 ECG-LFM 显存为每 30 秒采样的整卡占用；传统模型为 PyTorch allocated 峰值。历史耗时统计范围亦不同，禁止把这些列直接当作统一口径的效率提升证据；新实验单独记录训练/验证耗时及 allocated/reserved 显存。
 """
 
     requested_report = ROOT / args.report

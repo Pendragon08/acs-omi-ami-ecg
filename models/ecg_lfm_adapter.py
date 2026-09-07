@@ -1,8 +1,8 @@
 """官方 ECG-LFM 模型的轻量加载与参数统计工具。
 
-当前联合训练使用五个 logit：全队列状态头为
-``OTHER/STEMI/NSTEMI/UA``，另有一个独立 OMI logit。旧四个独立 sigmoid
-推理辅助函数已删除，避免被误用于当前任务。
+同时支持历史 ACS 四分类 + 独立 OMI 的五-logit checkpoint，以及当前
+Joint-6 六分类 checkpoint；具体语义读取 checkpoint 配置，不能根据 logit
+数量以外的历史描述猜测。参数统计区分 requires_grad 与 forward 中有效更新量。
 """
 from __future__ import annotations
 

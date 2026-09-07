@@ -570,15 +570,25 @@ def save_curves(out_dir: Path, histories: list[list[dict]], title: str) -> None:
     try:
         import matplotlib.pyplot as plt
         fig, axes = plt.subplots(3, 1, figsize=(10, 12), sharex=True)
+        has_auroc = any(
+            any(x.get(key) is not None and np.isfinite(x[key]) for key in ("val_acs_macro_auroc", "val_omi_auroc"))
+            for history in histories for x in history
+        )
         for fold, history in enumerate(histories):
+            if not history:
+                continue
             e = [x["epoch"] for x in history]
             axes[0].plot(e, [x.get("train_total_loss", np.nan) for x in history], alpha=0.55, label=f"fold {fold} train")
             axes[0].plot(e, [x.get("val_total_loss", np.nan) for x in history], alpha=0.8, label=f"fold {fold} val")
-            axes[1].plot(e, [x.get("val_acs_macro_auroc", np.nan) for x in history], label=f"fold {fold} ACS")
-            axes[1].plot(e, [x.get("val_omi_auroc", np.nan) for x in history], linestyle="--", label=f"fold {fold} OMI")
+            if has_auroc:
+                axes[1].plot(e, [x.get("val_acs_macro_auroc", np.nan) for x in history], label=f"fold {fold} ACS")
+                axes[1].plot(e, [x.get("val_omi_auroc", np.nan) for x in history], linestyle="--", label=f"fold {fold} OMI")
+            else:
+                axes[1].plot(e, [x.get("train_joint_accuracy", np.nan) for x in history], label=f"fold {fold} train")
+                axes[1].plot(e, [x.get("val_joint_accuracy", np.nan) for x in history], linestyle="--", label=f"fold {fold} val")
             axes[2].plot(e, [x.get("learning_rate", np.nan) for x in history], label=f"fold {fold}")
         axes[0].set_ylabel("loss"); axes[0].legend(ncol=2, fontsize=8)
-        axes[1].set_ylabel("AUROC"); axes[1].legend(ncol=2, fontsize=8)
+        axes[1].set_ylabel("AUROC" if has_auroc else "Joint accuracy (logged)"); axes[1].legend(ncol=2, fontsize=8)
         axes[2].set_ylabel("learning rate"); axes[2].set_xlabel("epoch"); axes[2].set_yscale("log")
         fig.suptitle(title); fig.tight_layout()
         fig.savefig(out_dir / "training_validation_loss_lr.png", dpi=160)

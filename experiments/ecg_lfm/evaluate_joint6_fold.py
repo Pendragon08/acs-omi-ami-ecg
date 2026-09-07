@@ -40,7 +40,7 @@ from experiments.ecg_lfm.joint6 import (
     encode_source_labels,
     marginalize_joint6_probabilities,
 )
-from models.ecg_lfm_adapter import load_finetuned_model
+from models.ecg_lfm_adapter import load_finetuned_model, parameter_summary
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,10 +64,9 @@ def infer_joint6(
     model, cfg, task = load_finetuned_model(checkpoint, manifest_dir)
     if str(getattr(model, "output_semantics", "")) != "joint6_observed_outcome":
         raise ValueError("checkpoint is not a joint6_observed_outcome model")
-    stats = {
-        "total_parameters": int(sum(parameter.numel() for parameter in model.parameters())),
-        "trainable_parameters": int(sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)),
-    }
+    stats = parameter_summary(model)
+    stats["trainable_parameters"] = stats["effective_trainable_parameters_at_checkpoint"]
+    stats["trainable_parameter_definition"] = "effective after forward-time no_grad guards, not requires_grad alone"
     stats["trainable_percent"] = 100.0 * stats["trainable_parameters"] / stats["total_parameters"]
     model.eval().to(device)
     task.load_dataset(split, combine=False, epoch=1, task_cfg=cfg.task, label=False, shuffle=False)
@@ -487,7 +486,7 @@ def main() -> None:
         bundle["calibration_uncalibrated"]["acs"],
         bundle["calibration_uncalibrated"]["omi"],
     )
-    histories = read_history(ROOT / args.run_root, args.method)
+    histories = read_history(ROOT / args.run_root, args.method, fold=args.fold)
     from experiments.acs_joint_task import save_curves
     save_curves(output, histories, f"Joint-6 ECG-LFM {args.method} fold {args.fold}")
 

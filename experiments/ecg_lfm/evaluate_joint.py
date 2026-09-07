@@ -242,28 +242,16 @@ def infer_split(
     return records, p_acs, p_omi
 
 
-def read_history(run_root: Path, run_name: str) -> list[list[dict]]:
-    histories = []
-    for fold in range(5):
-        path = run_root / run_name / f"fold{fold}" / "fairseq_train.jsonl"
-        rows = []
-        if path.exists():
-            for line in path.read_text(errors="ignore").splitlines():
-                try:
-                    item = json.loads(line)
-                    if "epoch" in item:
-                        rows.append(
-                            {
-                                "epoch": item.get("epoch"),
-                                "train_total_loss": item.get("loss", item.get("train_loss", np.nan)),
-                                "val_total_loss": item.get("valid_loss", item.get("val_loss", np.nan)),
-                                "learning_rate": item.get("lr", item.get("learning_rate", np.nan)),
-                            }
-                        )
-                except Exception:
-                    pass
-        histories.append(rows)
-    return histories
+def read_history(run_root: Path, run_name: str, fold: int | None = None) -> list[list[dict]]:
+    from experiments.ecg_lfm.training_reporting import read_fold_history
+
+    if fold is not None and fold not in range(5):
+        raise ValueError("fold must be in 0..4")
+    return [
+        read_fold_history(run_root / run_name / f"fold{k}" / "fairseq_train.jsonl", k)
+        if fold is None or k == fold else []
+        for k in range(5)
+    ]
 
 
 def _write_oof(path: Path, rows: list[dict]) -> None:

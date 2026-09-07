@@ -245,7 +245,7 @@ Baseline 来源为 `results/revalidated/lora/metrics.json`，其协议标记为 
 7. **NSTEMI vs UA 是否改善**：否，描述性 Δ=-0.0108。
 8. **OMI among NSTE-ACS 是否改善**：否，描述性 Δ=-0.0290。
 9. **改善是否跨 Fold 稳定**：现有 factorized baseline 缺少同协议逐折 nested 结果，不能合法计算逐折配对改善率；Joint-6 自身的五折波动已完整列出。
-10. **是否值得作为最终主模型**：七种 Joint-6 对比方法已全部完成五折，ECG-LFM LoRA 是当前 Joint-6 内部 nested-CV 的最佳工程模型；但 Joint-6 相对 factorized two-head 的优势尚未在同一 nested 协议下验证，且没有当前任务的独立外部测试，因此不能进一步声称 Joint-6 是已完成外部确认的最终任务形式。
+10. **是否值得作为最终主模型**：当前不建议仅凭现有结果把 Joint-6 定为最终主模型：其 ACS 排序性能略升，但 OMI/NSTE 子组未显示一致优势；应以同一 nested 协议重算 factorized baseline 后再冻结主模型；历史 factorized 指标不可作严格优劣判定。
 
 ## 9. 可追溯输出
 
@@ -263,3 +263,6 @@ Baseline 来源为 `results/revalidated/lora/metrics.json`，其协议标记为 
 - 当前结果采用患者互斥的 nested CV 划分，但 `_aggregate` 后按 ECG record 一票计算 outer-test/pooled OOF 指标；它不是 patient-level 聚合性能，也不是 external test。
 - baseline 对比协议并不完全一致，因此未计算配对差异或显著性，也不把描述性差异写成稳定提升。
 - 传统模型使用项目既有 P2 输入，ECG-LFM 使用原生预处理；完整对比反映工程方案差异，不是单一网络结构消融。
+- 2026-09-07 reporting 修复：每折曲线只保留本折去重的 epoch-end 记录，并读取 train_lr；旧曲线在各折 legacy_reporting_v1 下保留，预测和 metrics.json 不变。
+- Partial FT 的 requires_grad 数量不等于实际更新数量：feature_grad_mult=0 使卷积前端在 no_grad 下执行，成本表以 reporting_corrections.json 修正有效参数量。
+- 历史 ECG-LFM 显存为每 30 秒采样的整卡占用；传统模型为 PyTorch allocated 峰值。历史耗时统计范围亦不同，禁止把这些列直接当作统一口径的效率提升证据；新实验单独记录训练/验证耗时及 allocated/reserved 显存。
