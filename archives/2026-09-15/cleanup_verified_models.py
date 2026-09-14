@@ -25,7 +25,7 @@ def digest(path):
 def main():
     token=json.load(sys.stdin)['token']
     def api(path):
-        req=urllib.request.Request('https://api.github.com/repos/'+REPO+'/'+path,
+        req=urllib.request.Request('https://api.github.com/repos/'+REPO+('/'+path if path else ''),
             headers={'Authorization':'Bearer '+token,'User-Agent':'verified-archive-cleanup','Accept':'application/vnd.github+json'})
         with urllib.request.urlopen(req,timeout=90) as r:return json.load(r)
     if not api('')['private']:raise RuntimeError('Repository privacy changed')
