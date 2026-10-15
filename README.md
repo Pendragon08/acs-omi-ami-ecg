@@ -1,100 +1,142 @@
-# ACS–OMI Joint-6 ECG 分类
+# ACS–OMI Joint-6: ECG Classification
 
-_中文研究归档 · 更新于 2026-09-07 · 已完成主结果与在研优化分开记录_
+<div align="center">
 
----
+**基于 ECG-LFM 的 ACS–OMI 联合六分类研究**
 
-本仓库保存 ACS–OMI ECG 研究中可公开版本化的代码、配置、聚合实验结果、脱敏训练曲线、可视化图和中文报告。原始 ECG、患者级表格、逐记录预测、预训练权重和训练 checkpoint 不进入 GitHub。
+[实验报告](docs/reports/实验结果总报告_最终.md) · [模型对比](docs/ECG_LFM_Joint6_CV_Comparison_Report.md) · [结果数据](results/joint6_cv/summary/) · [文档导航](docs/README.md)
 
-## 📍 从哪里开始
+</div>
 
-| 想查看的内容 | 入口 |
+本仓库保存 ACS–OMI 心电图分类实验的代码、配置、聚合指标和研究记录。主任务使用 **ECG-LFM + LoRA + 单一六分类 Softmax**，从联合类别概率计算 ACS 分类与 OMI 概率，并通过患者级嵌套五折交叉验证比较不同模型。
+
+```text
+12 导联 ECG → 预处理与患者级划分 → ECG-LFM / 对照模型
+           → Joint-6 联合分类 → ACS / OMI 概率 → 冻结阈值评估
+```
+
+## Project Status
+
+- [x] 完成 7 种模型 × 5 个外层折的主对比，保存逐折指标与汇总。
+- [x] 归档标签审计、评价修订、训练曲线及未取得收益的探索实验。
+- [ ] 当前 Joint-6 方法的独立外部测试尚无已归档结果。
+
+以下成绩来自已归档实验。历史报告中的“训练中”是当时的进度记录，不表示当前仍有训练任务。
+
+## Table of Contents
+
+1. [Setup](#setup)
+2. [Phase 1: Data and Protocol](#phase-1-data-and-protocol)
+3. [Phase 2: Training](#phase-2-training)
+4. [Phase 3: Evaluation](#phase-3-evaluation)
+5. [Results](#results)
+6. [Repository Structure](#repository-structure)
+7. [Documentation](#documentation)
+8. [Acknowledgements and License](#acknowledgements-and-license)
+
+## Setup
+
+```bash
+git clone https://github.com/Pendragon08/acs-omi-ami-ecg.git
+cd acs-omi-ami-ecg
+```
+
+复现实验使用 Linux、Python 3.9、PyTorch 2.5.1 / CUDA 12.1 和 ECG-LFM / Fairseq。完整依赖版本及安装顺序见 [环境配置](configs/ecg_lfm/env-spec.json)。本仓库没有统一的根目录 `requirements.txt`。
+
+准备上述环境后，安装仓库内的 ECG-LFM 接口：
+
+```bash
+python -m pip install --editable third_party/ECG-LFM
+export PYTHONPATH="$PWD:$PWD/third_party/ECG-LFM"
+```
+
+原始 ECG、患者级划分、逐记录预测及模型权重不随本仓库发布。训练前需自行准备获准使用的数据与预训练权重，并配置相应路径；详见 [数据说明](DATASET.md)。历史调度脚本中的服务器路径和 GPU 编号需要按实际环境适配。
+
+## Phase 1: Data and Protocol
+
+联合类别为：
+
+| 编号 | 类别 |
+|---:|---|
+| 0 | OTHER |
+| 1 | STEMI + nOMI |
+| 2 | STEMI + OMI |
+| 3 | NSTEMI + nOMI |
+| 4 | NSTEMI + OMI |
+| 5 | UA |
+
+归档实验使用 17,960 条 ECG、17,018 名患者，按患者划分外层五折，每个外层训练集再划分互斥的内部训练集和验证集。检查点选择及 OMI 阈值确定仅使用内部验证集。
+
+由六类概率 `q0…q5` 得到 ACS 四状态概率 `[q0, q1+q2, q3+q4, q5]`，OMI 概率为 `q2+q4`。OTHER 表示 non-ACS，不是第四种 ACS 亚型；特殊标签处理见 [标签定义与审计](DATASET.md)。
+
+## Phase 2: Training
+
+数据、划分与预训练权重就绪后，可在已配置环境中启动一个外层折。例如：
+
+```bash
+python experiments/ecg_lfm/run_joint6_fold.py \
+  --fold 0 --method lora --seed 2026 \
+  --output_root results/joint6_reproduction/ecg_lfm \
+  --audit_output results/joint6_reproduction/label_audit
+```
+
+将 `--method` 改为 `partial` 可运行部分参数微调。五个传统模型的训练入口为 [joint6_traditional_nested.py](experiments/joint6_traditional_nested.py)；完整七模型流程见 [对比调度脚本](scripts/run_joint6_full_comparison_gpu1.sh)。复现时使用新的输出目录，保留原始实验记录。
+
+## Phase 3: Evaluation
+
+对应训练输出的单折评价示例：
+
+```bash
+python experiments/ecg_lfm/evaluate_joint6_fold.py \
+  --fold 0 --method lora \
+  --run_root results/joint6_reproduction/ecg_lfm \
+  --output_root results/joint6_reproduction/evaluation \
+  --manifest_root manifests/ecg_lfm_nested \
+  --device cuda:0 --workers 8 --batch 64
+```
+
+报告 Joint-6、ACS、OMI 及 NSTE-ACS 子组指标。所有外层测试均使用已冻结的检查点和阈值；内部验证、外层五折、pooled OOF 与外部测试分别记录。评价实现与回归检查见 [协作说明](CONTRIBUTING.md) 和 [完整评价报告](docs/ECG_LFM_Joint6_Evaluation_Report.md)。
+
+## Results
+
+以下为外层五折的均值 ± 标准差，完整数据见 [汇总表](results/joint6_cv/summary/)。
+
+| 方法 | Joint-6 Macro AUPRC | ACS Macro AUPRC | OMI AUPRC |
+|---|---:|---:|---:|
+| **ECG-LFM + LoRA** | **0.3843 ± 0.0056** | **0.5445 ± 0.0067** | **0.4299 ± 0.0258** |
+| ECG-LFM Partial FT | 0.3738 ± 0.0029 | 0.5322 ± 0.0058 | 0.4103 ± 0.0275 |
+| InceptionTime | 0.3567 ± 0.0086 | 0.5108 ± 0.0119 | 0.3860 ± 0.0126 |
+| ResNet1D | 0.3506 ± 0.0087 | 0.5044 ± 0.0111 | 0.3742 ± 0.0102 |
+| LSTM | 0.3264 ± 0.0077 | 0.4767 ± 0.0100 | 0.3420 ± 0.0264 |
+| Transformer1D | 0.3161 ± 0.0134 | 0.4619 ± 0.0133 | 0.3261 ± 0.0310 |
+| ViT | 0.3009 ± 0.0106 | 0.4395 ± 0.0119 | 0.3010 ± 0.0267 |
+
+这张表比较完整工程方案：传统模型与 ECG-LFM 的输入预处理不同，不能解释为仅改变网络结构的单变量消融。内部五折结果也不代表独立外部验证或临床部署效果。
+
+## Repository Structure
+
+```text
+experiments/   模型训练、评价与统计
+configs/       实验及环境配置
+scripts/       调度、报告导出与维护入口
+tests/         评价和标签处理的回归检查
+results/       聚合指标、图表及审计记录
+docs/          实验报告、写作交接与日志索引
+third_party/   ECG-LFM 等上游实现及来源记录
+```
+
+## Documentation
+
+| 内容 | 入口 |
 |---|---|
-| 当前模型、已完成对比与分析 | [中文实验结果总报告](docs/reports/实验结果总报告_最终.md) |
-| 本轮曲线/成本修复及学习率优化 | [分阶段优化报告](docs/ECG_LFM_Joint6_Optimization_Report.md) |
-| 所有当前与历史报告 | [文档导航](docs/README.md) |
-| 交给 Codex 在 Overleaf 写论文 | [论文写作交接说明](docs/PAPER_WRITING_HANDOFF.md) |
-| 指标、图表、训练轨迹 | [结果导航](results/README.md) · [日志索引](docs/logs/EXPERIMENT_LOG_INDEX.md) |
-| 协作与安全发布 | [协作说明](CONTRIBUTING.md) · [仓库清单](REPOSITORY_MANIFEST.md) |
+| 主结果与实验边界 | [实验结果总报告](docs/reports/实验结果总报告_最终.md) |
+| 论文写作所需证据 | [写作交接说明](docs/PAPER_WRITING_HANDOFF.md) |
+| 历史优化与否定结果 | [文档导航](docs/README.md) |
+| 结果和日志索引 | [结果目录](results/README.md) · [日志索引](docs/logs/EXPERIMENT_LOG_INDEX.md) |
+| 本次整理前的完整首页 | [历史 README](https://github.com/Pendragon08/acs-omi-ami-ecg/blob/2f1761d7561ebea195b54da29b92e4c50a754da5/README.md) |
 
-## 🎯 当前方案
+## Acknowledgements and License
 
-当前主任务是单一 Joint-6 六分类，不是四个独立 sigmoid，也不是旧的 ACS/OMI 双 Head：
+本项目使用 ECG-LFM 及相关开源实现。上游实现、许可和来源保留于 [third_party/](third_party/)，其中 ECG-LFM 许可见 [LICENSE](third_party/ECG-LFM/LICENSE)。
 
-`OTHER / STEMI+nOMI / STEMI+OMI / NSTEMI+nOMI / NSTEMI+OMI / UA`
-
-- 模型：ECG-LFM + LoRA + 6-way Softmax Head；
-- 损失：CrossEntropyLoss；
-- ACS 概率：`[q0, q1+q2, q3+q4, q5]`，使用 argmax；
-- OMI 概率：`q2+q4`，inner-validation Youden 阈值冻结到 outer-test；
-- 训练池：17,960 条 ECG、17,018 名患者；
-- 划分：patient-level nested 5-fold，seed=2026。
-
-旧 factorized two-head 实现和结果保留作消融与历史参照，但其 pooled OOF protocol 与当前 Joint-6 不完全相同，不能直接用于证明任务形式优劣。
-
-## 📊 已完成的主结果
-
-Joint-6 对比实验已完成 **7 个模型 × 5 folds = 35/35 folds**。按本次对比的主要指标 Joint-6 Macro AUPRC，最佳模型为 ECG-LFM LoRA；不表示每个单项指标均为最高：
-
-| 指标 | 五折 mean ± std |
-|---|---:|
-| Joint-6 Macro AUPRC | **0.3843 ± 0.0056** |
-| Joint-6 Macro AUROC | 0.8122 ± 0.0082 |
-| Joint-6 Macro F1 | **0.3557 ± 0.0095** |
-| ACS Macro AUPRC | **0.5445 ± 0.0067** |
-| OMI AUROC | 0.9104 ± 0.0111 |
-| OMI AUPRC | **0.4299 ± 0.0258** |
-| OMI Sensitivity | 0.8256 ± 0.0608 |
-| OMI Specificity | 0.8446 ± 0.0195 |
-| NSTEMI vs UA AUPRC | **0.5527 ± 0.0363** |
-| OMI among NSTE-ACS AUPRC | **0.2695 ± 0.0599** |
-
-最难的联合类别是 `NSTEMI+OMI`：AUPRC 0.1615 ± 0.0426，Sensitivity 0.0536 ± 0.0373。
-
-完整表格、逐类指标、训练成本和结果分析见：
-
-- [中文实验结果总报告](docs/reports/实验结果总报告_最终.md)
-- [Joint-6 五折模型对比报告](docs/ECG_LFM_Joint6_CV_Comparison_Report.md)
-- [Joint-6 机器可读汇总](results/joint6_cv/summary/)
-- [实验日志索引](docs/logs/EXPERIMENT_LOG_INDEX.md)
-
-## 🔄 在研优化与本次修复
-
-2026-09-07 11:54（北京时间）核验：GPU0 的 `lr5e5` 与 GPU1 的 `lr3e5` 仍在训练；仅运行原 nested Fold0 的学习率对比，尚无两组完整结果。后续静态加权、校准、追加五折与多 seed 未启动。GitHub 是发布时快照，不是服务器实时看板。
-
-已完成 10 个 ECG-LFM 折的训练曲线修复、有效训练参数统计修正和历史 evaluator 版本兼容检查，38 项测试通过，35/35 历史结果完整性复核通过；**原始预测与分类指标未改写**。旧曲线保存在各折 `legacy_reporting_v1/`，不能再用作当前分析。见[优化报告](docs/ECG_LFM_Joint6_Optimization_Report.md)及[测试凭据](results/joint6_optimization_20260907/verification_summary.json)。
-
-## 🔍 主要实验结论
-
-- ECG-LFM LoRA 在 Joint-6 Macro AUPRC、ACS Macro AUPRC、OMI AUPRC 和两个 NSTE-ACS 子组指标上均优于本次 Partial FT 运行与五种传统模型。
-- LoRA 有效训练参数占 0.939%；本次 Partial FT 虽然 `requires_grad` 为 100%，但卷积前端受 `no_grad` 冻结，有效参与更新的参数占 **99.936%**。不可将其简单写成全参微调，也不是仅训练少量层的轻量 Partial FT。历史显存/耗时测量范围不统一，不能直接作为严格训练成本提升证据，见[修正成本表](results/joint6_cv/summary/training_cost.csv)。
-- RDR 自适应重加权未优于未加权 W0；结论为 NO-GO，但不能泛化为所有不平衡学习方法均无效。
-- PCGrad/CAGrad/FairGrad/Aligned-MTL 等多目标优化未通过 Stage-A gate。
-- Direct RL、R1-v2 和 Cross-task RL 尚无可信涨点证据，不应作为已验证 contribution。
-- Joint-7 与 Joint-10 均在训练前标签审计中停止，未通过的方案没有伪造标签或强行训练。
-- 当前 Joint-6 尚无独立外部测试；历史平台结果不能冒充当前任务外部验证。
-
-## 📦 仓库结构
-
-- `experiments/`：训练、nested split、Joint-6 评价和结果汇总；
-- `configs/`：实验配置；
-- `tests/`：标签映射、概率边缘化、梯度与 checkpoint 回归测试；
-- `results/joint6_cv/`：当前 Joint-6 标签审计、每折聚合指标、脱敏曲线和汇总；
-- `results/joint6_optimization_20260907/`：当前 Fold0 优化的安全聚合产物；
-- `results/adaptive_weighting*`：W0–W6 与 RDR Fold0；
-- `results/ecg_lfm_*`：多目标优化与 RL 探索；
-- `docs/`：专项实验报告；
-- `docs/reports/`：中文总报告与完整性审计；
-- `docs/logs/`：脱敏日志索引。
-
-## 🔐 安全与复现边界
-
-禁止提交：
-
-- SSH 密码、私钥或访问令牌；
-- 原始 ECG/WFDB、患者标识或 patient-level assignments；
-- 逐记录 OOF/测试预测、外部平台提交文件；
-- 下载的模型权重和训练 checkpoint；
-- 含患者信息、凭据或逐记录预测的原始日志；新增高频 fairseq event stream 不直接公开。
-
-已归档的 [Joint-6 总调度日志](logs/joint6_cv/full_comparison_gpu1.log)与少量历史 RL 聚合 JSONL 保留，不代表允许直接上传任何原始日志。每折公开训练轨迹以修正后的 `training_curves.csv` 为准；本轮优化原始日志、checkpoint 和逐记录预测保留在受控服务器。数据边界见 [DATASET.md](DATASET.md)。
+仓库目前未提供统一的顶层 LICENSE；第三方代码与数据继续遵循各自许可。数据使用和发布范围见 [DATASET.md](DATASET.md) 与 [仓库清单](REPOSITORY_MANIFEST.md)。引用本仓库实验时，请注明提交版本、数据划分与评价协议，并引用相应上游方法。
